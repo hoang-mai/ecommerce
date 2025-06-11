@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway.route.RouteDefinitionLocator: TRACE
+spring:
+  redis:
+    host: switchback:proxy:rlwy:net
+    port: 36268
+    password: OLfjCMzleOarhMBaZWYfORVMRQHrZRVm
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user/**
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+        - id: chat-service
+          uri: lb://chat-service
+          predicates:
+            - Path=/api/chat/**
+jwt:
+  expiration-access-token: 172800000 # 2 days = 1000 * 60 * 60 * 24 * 2
+  secret-key-access-token: 88aca258cbdefc094bc97298383e7fbd3527d3db3e308075598b5578f430bed7 # access-token
+

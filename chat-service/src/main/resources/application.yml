@@ -1,0 +1,27 @@
+spring:
+  data:
+    mongodb:
+        uri: mongodb+srv://chat-service:CiLAxu5KIRck0Eau@chat.xhbltmc.mongodb.net/chat?retryWrites=true&w=majority&appName=chat
+
+server:
+  port: 8083
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+openapi:
+  service:
+    api-docs: Chat-Service-API-docs
+    serverUrl: http://localhost:${server.port}
+    serverName: server dev
+    title: Chat Service API
+    version: 1.0.0
+    description: API document

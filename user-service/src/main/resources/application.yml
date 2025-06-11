@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user-service
+    username: user_service
+    password: user_service
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 8082
+
+eureka:
+    client:
+        service-url:
+          defaultZone: http://localhost:8761/eureka/
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+openapi:
+  service:
+    api-docs: User-Service-API-docs
+    serverUrl: http://localhost:${server.port}
+    serverName: server dev
+    title: User Service API
+    version: 1.0.0
+    description: API document
+
