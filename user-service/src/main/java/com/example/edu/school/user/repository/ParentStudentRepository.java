@@ -1,8 +1,8 @@
 package com.example.edu.school.user.repository;
 
-import com.example.edu.school.user.model.Parent;
-import com.example.edu.school.user.model.ParentStudent;
-import com.example.edu.school.user.model.Student;
+import com.example.edu.school.user.entity.Parent;
+import com.example.edu.school.user.entity.ParentStudent;
+import com.example.edu.school.user.entity.Student;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

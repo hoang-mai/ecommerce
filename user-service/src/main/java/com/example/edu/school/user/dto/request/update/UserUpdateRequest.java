@@ -2,10 +2,10 @@ package com.example.edu.school.user.dto.request.update;
 
 import java.time.LocalDate;
 
-import com.example.edu.school.user.model.Gender;
-import com.example.edu.school.user.validation.annotation.PhoneSubSet;
+import com.example.edu.school.user.dto.update.TeacherUpdateRequest;
+import com.example.edu.school.library.enumeration.Gender;
+import com.example.edu.school.library.utils.validate.PhoneNumberFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -22,7 +22,7 @@ public class UserUpdateRequest {
     @Schema(description = "Địa chỉ", example = "Hà Nội")
     private String address;
 
-    @PhoneSubSet
+    @PhoneNumberFormat
     @JsonProperty("phone_number")
     @Schema(description = "Số điện thoại", example = "0123456789")
     private String phoneNumber;

@@ -10,11 +10,7 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     org.springframework.cloud.gateway.route.RouteDefinitionLocator: TRACE
-spring:
-  redis:
-    host: switchback:proxy:rlwy:net
-    port: 36268
-    password: OLfjCMzleOarhMBaZWYfORVMRQHrZRVm
+
   cloud:
     gateway:
       routes:
@@ -30,7 +26,4 @@ spring:
           uri: lb://chat-service
           predicates:
             - Path=/api/chat/**
-jwt:
-  expiration-access-token: 172800000 # 2 days = 1000 * 60 * 60 * 24 * 2
-  secret-key-access-token: 88aca258cbdefc094bc97298383e7fbd3527d3db3e308075598b5578f430bed7 # access-token
 
