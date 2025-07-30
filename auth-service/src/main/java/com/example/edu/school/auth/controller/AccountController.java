@@ -1,5 +1,6 @@
 package com.example.edu.school.auth.controller;
 
+import com.example.edu.school.auth.message.saga.service.AccountSagaService;
 import com.example.edu.school.library.component.MessageService;
 import com.example.edu.school.auth.dto.account.ReqCreateAccountDTO;
 import com.example.edu.school.auth.service.AccountService;
@@ -18,28 +19,17 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
 
     private final MessageService messageService;
-    private final AccountService accountService;
+    private final AccountSagaService accountSagaService;
 
     @PostMapping("/create")
     public ResponseEntity<BaseResponse<Void>> createAccount(@Valid @RequestBody ReqCreateAccountDTO reqCreateAccountDTO) {
-        accountService.createAccount(reqCreateAccountDTO);
+        accountSagaService.createAccount(reqCreateAccountDTO);
         return  ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(BaseResponse
                         .<Void>builder()
                         .statusCode(HttpStatus.CREATED.value())
                         .message(messageService.getMessage(MessageSuccess.ACCOUNT_CREATED_SUCCESS))
-                        .build());
-    }
-    @GetMapping("/test")
-    public ResponseEntity<BaseResponse<String>> test() {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(BaseResponse
-                        .<String>builder()
-                        .statusCode(HttpStatus.OK.value())
-                        .message("messageService.getMessage(MessageSuccess.TEST_SUCCESS)")
-                        .data("Test successful")
                         .build());
     }
 }

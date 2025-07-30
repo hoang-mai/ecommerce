@@ -11,6 +11,7 @@ import com.example.edu.school.auth.service.AccountService;
 import com.example.edu.school.auth.service.KeyCloakService;
 import com.example.edu.school.library.utils.Constant;
 import com.example.edu.school.library.utils.FnCommon;
+import io.eventuate.tram.sagas.orchestration.SagaInstanceFactory;
 import io.eventuate.tram.sagas.orchestration.SagaManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,55 +21,17 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
 
     private final KeyCloakService keyCloakService;
-    private final UserClient userClient;
-    private final SagaManager<CreateUserSagaState> createUserSagaStateSagaManager;
 
 
     @Override
-    public void createAccount(ReqCreateAccountDTO reqCreateAccountDTO) {
+    public String createAccount(ReqCreateAccountDTO reqCreateAccountDTO) {
         String email = genEmail(reqCreateAccountDTO);
-        String accountId = keyCloakService.register(reqCreateAccountDTO, email);
-        CreateUserSagaState createUserSagaState = CreateUserSagaState.builder()
-                .accountId(accountId)
-                .email(email)
-                .firstName(reqCreateAccountDTO.getFirstName())
-                .middleName(reqCreateAccountDTO.getMiddleName())
-                .lastName(reqCreateAccountDTO.getLastName())
-                .phoneNumber(reqCreateAccountDTO.getPhoneNumber())
-                .address(reqCreateAccountDTO.getAddress())
-                .role(reqCreateAccountDTO.getRole())
-                .gender(reqCreateAccountDTO.getGender())
-                .dateOfBirth(reqCreateAccountDTO.getDateOfBirth())
-                .build();
-        createUserSagaStateSagaManager.create(createUserSagaState, CreateUserSaga.class, accountId);
+        return keyCloakService.register(reqCreateAccountDTO, email);
     }
 
     @Override
     public void deleteAccount(String accountId) {
 
-    }
-
-    /**
-     * Chuyển đổi từ ReqCreateAccountDTO sang ReqCreateUserDTO.
-     *
-     * @param reqCreateAccountDTO DTO chứa thông tin tài khoản mới
-     * @param accountId           ID của tài khoản đã được tạo
-     * @return DTO chứa thông tin người dùng cần tạo
-     */
-    private ReqCreateUserDTO mapperToReqCreateUserDTO(ReqCreateAccountDTO reqCreateAccountDTO, String accountId, String email) {
-        return ReqCreateUserDTO.builder()
-                .accountId(accountId)
-                .email(email)
-                .firstName(reqCreateAccountDTO.getFirstName())
-                .lastName(reqCreateAccountDTO.getLastName())
-                .phoneNumber(reqCreateAccountDTO.getPhoneNumber())
-                .address(reqCreateAccountDTO.getAddress())
-                .role(reqCreateAccountDTO.getRole())
-                .dateOfBirth(reqCreateAccountDTO.getDateOfBirth())
-                .middleName(reqCreateAccountDTO.getMiddleName())
-                .gender(reqCreateAccountDTO.getGender())
-                .phoneNumber(reqCreateAccountDTO.getPhoneNumber())
-                .build();
     }
 
     /**

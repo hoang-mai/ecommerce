@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = {
 		"com.example.edu.school.auth",
 		"com.example.edu.school.library",
+		"io.eventuate.tram.sagas.spring.orchestration",
 })
 public class AuthServiceApplication {
 

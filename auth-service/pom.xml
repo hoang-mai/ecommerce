@@ -80,19 +80,6 @@
             <groupId>com.example.edu.school</groupId>
             <artifactId>library</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.eventuate.tram.sagas</groupId>
-            <artifactId>eventuate-tram-sagas-spring-orchestration-simple-dsl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.eventuate.tram.sagas</groupId>
-            <artifactId>eventuate-tram-sagas-spring-participant</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.eventuate.tram.sagas</groupId>
-            <artifactId>eventuate-tram-sagas-spring-orchestration</artifactId>
-        </dependency>
-
     </dependencies>
     <build>
         <plugins>

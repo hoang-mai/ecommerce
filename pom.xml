@@ -62,21 +62,6 @@
                 <artifactId>library</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
-            <dependency>
-                <groupId>io.eventuate.tram.sagas</groupId>
-                <artifactId>eventuate-tram-sagas-spring-orchestration-simple-dsl</artifactId>
-                <version>${saga.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.eventuate.tram.sagas</groupId>
-                <artifactId>eventuate-tram-sagas-spring-participant</artifactId>
-                <version>${saga.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.eventuate.tram.sagas</groupId>
-                <artifactId>eventuate-tram-sagas-spring-orchestration</artifactId>
-                <version>${saga.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>

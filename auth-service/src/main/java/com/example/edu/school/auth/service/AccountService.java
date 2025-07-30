@@ -8,7 +8,7 @@ public interface AccountService {
      *
      * @param reqCreateAccountDTO DTO chứa thông tin tài khoản mới
      */
-    void createAccount(ReqCreateAccountDTO reqCreateAccountDTO);
+    String createAccount(ReqCreateAccountDTO reqCreateAccountDTO);
 
     /**
      * Xoá tài khoản theo ID.
