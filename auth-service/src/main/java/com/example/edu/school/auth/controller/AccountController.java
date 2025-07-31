@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
 
     private final MessageService messageService;
-    private final AccountSagaService accountSagaService;
+    private final AccountService accountService;
 
     @PostMapping("/create")
     public ResponseEntity<BaseResponse<Void>> createAccount(@Valid @RequestBody ReqCreateAccountDTO reqCreateAccountDTO) {
-        accountSagaService.createAccount(reqCreateAccountDTO);
+        accountService.createAccount(reqCreateAccountDTO);
         return  ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(BaseResponse

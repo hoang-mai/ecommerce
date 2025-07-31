@@ -1,18 +1,11 @@
 package com.example.edu.school.auth.service.impl;
 
-import com.example.edu.school.auth.client.UserClient;
-import com.example.edu.school.auth.client.dto.ReqCreateUserDTO;
 import com.example.edu.school.auth.dto.account.ReqCreateAccountDTO;
 
-import com.example.edu.school.auth.message.command.CreateUserCommand;
-import com.example.edu.school.auth.message.saga.CreateUserSaga;
-import com.example.edu.school.auth.message.saga.state.CreateUserSagaState;
 import com.example.edu.school.auth.service.AccountService;
 import com.example.edu.school.auth.service.KeyCloakService;
 import com.example.edu.school.library.utils.Constant;
 import com.example.edu.school.library.utils.FnCommon;
-import io.eventuate.tram.sagas.orchestration.SagaInstanceFactory;
-import io.eventuate.tram.sagas.orchestration.SagaManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
