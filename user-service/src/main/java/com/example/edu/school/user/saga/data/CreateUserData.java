@@ -1,4 +1,4 @@
-package com.example.edu.school.auth.client.dto;
+package com.example.edu.school.user.saga.data;
 
 import com.example.edu.school.library.enumeration.Gender;
 import com.example.edu.school.library.enumeration.Role;
@@ -9,11 +9,13 @@ import lombok.Setter;
 import java.time.LocalDate;
 
 @Getter
-@Builder
 @Setter
-public class ReqCreateUserDTO {
+@Builder
+public class CreateUserData {
     private String accountId;
+    private Long userId;
     private String email;
+    private String password;
     private String firstName;
     private String middleName;
     private String lastName;

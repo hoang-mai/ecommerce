@@ -35,7 +35,7 @@ public class UserController {
     @PostMapping("/create")
     public ResponseEntity<BaseResponse<Void>> register(@Valid @RequestBody ReqCreateUserDTO reqCreateUserDTO) {
         log.info("Registering user: {}", reqCreateUserDTO);
-        userService.create(reqCreateUserDTO);
+        userService.createUser(reqCreateUserDTO);
         log.info("User registered successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.CREATED.value())

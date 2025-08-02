@@ -12,9 +12,10 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "role", visible = true, defaultImpl = ReqCreateUserDTO.class)
 @JsonSubTypes({
@@ -23,16 +24,13 @@ import lombok.Getter;
         @Type(value = ParentReqCreateUserDTO.class, name = "PARENT")
 })
 @Getter
+@SuperBuilder
 public class ReqCreateUserDTO {
 
-    @NotBlank(message = MessageError.ACCOUNT_ID_NOT_BLANK)
-    @Schema(description = "Account ID must be between 1 and 20 characters", example = "john_doe_123")
-    private String accountId;
-
-    @Email(message = MessageError.INVALID_EMAIL)
-    @NotBlank(message = MessageError.EMAIL_NOT_BLANK)
-    private String email;
-
+    @NotBlank(message = MessageError.PASSWORD_NOT_BLANK)
+    @Size(min = 6, max = 20, message = MessageError.PASSWORD_SIZE)
+    @Schema(description = "Password must be between 6 and 20 characters", example = "password123")
+    private String password;
 
     @NotBlank(message = MessageError.FIRST_NAME_NOT_BLANK)
     @Schema(description = "First name must be between 1 and 10 characters", example = "John")

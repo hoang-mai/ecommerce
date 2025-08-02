@@ -8,6 +8,7 @@ import com.example.edu.school.library.utils.PageResponse;
 import com.example.edu.school.user.dto.user.UserPreviewResponse;
 import com.example.edu.school.user.dto.information.UserResponse;
 import com.example.edu.school.library.enumeration.Role;
+import com.example.edu.school.user.saga.data.CreateUserData;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -28,5 +29,20 @@ public interface UserService {
      * Tạo người dùng mới.
      * @param reqCreateUserDTO DTO chứa thông tin người dùng mới
      */
-    void create(ReqCreateUserDTO reqCreateUserDTO);
+    void createUser(ReqCreateUserDTO reqCreateUserDTO);
+
+    /**
+     * Xoá người dùng theo ID.
+     * @param userId ID của người dùng cần xoá
+     */
+    void deleteUser(Long userId);
+
+    /**
+     * Tạo người dùng mới với thông tin từ CreateUserData.
+     * @param createUserData DTO chứa thông tin người dùng mới
+     * @return ID của người dùng mới được tạo
+     */
+    Long saveUser(CreateUserData createUserData);
+
+
 }

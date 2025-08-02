@@ -4,6 +4,8 @@ public final class Constant {
 
     public static final String EMAIL_DOMAIN = "@school.edu.vn";
 
+    public static final String CREATE_USER_QUEUE = "createUserQueue";
+
     public static final String REQUEST_MAPPING = "/api/v1";
 
     public static final String AUTH= REQUEST_MAPPING + "/auth";

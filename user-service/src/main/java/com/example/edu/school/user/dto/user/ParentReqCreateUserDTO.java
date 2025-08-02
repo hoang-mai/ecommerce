@@ -7,8 +7,10 @@ import com.example.edu.school.library.utils.validate.PhoneNumberFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
+@SuperBuilder
 public class ParentReqCreateUserDTO extends ReqCreateUserDTO {
 
     @NotNull(message = "Mối quan hệ không được để trống")

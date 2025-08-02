@@ -1,10 +1,13 @@
 package com.example.edu.school.user.service.impl;
 
 import com.example.edu.school.library.exception.NotFoundException;
-import com.example.edu.school.user.dto.update.ParentRelationshipUpdateRequest;
+import com.example.edu.school.library.utils.Constant;
+import com.example.edu.school.library.utils.FnCommon;
 import com.example.edu.school.user.dto.update.TeacherUpdateRequest;
 import com.example.edu.school.user.dto.update.UserUpdateRequest;
 import com.example.edu.school.user.dto.user.ReqCreateUserDTO;
+import com.example.edu.school.user.saga.data.CreateUserData;
+import com.example.edu.school.user.saga.workflow.CreateUserWorkFlow;
 import com.example.edu.school.user.service.ParentStudentService;
 import com.example.edu.school.user.service.UserService;
 import com.example.edu.school.library.utils.PageResponse;
@@ -13,6 +16,8 @@ import com.example.edu.school.user.dto.information.UserResponse;
 import com.example.edu.school.library.enumeration.Role;
 import com.example.edu.school.user.entity.*;
 import com.example.edu.school.user.repository.UserRepository;
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -23,26 +28,49 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class UserServiceImp implements UserService {
+public class UserServiceImpl implements UserService {
+
+    private final WorkflowClient workflowClient;
     private final UserRepository userRepository;
     private final ParentStudentService parentStudentService;
 
-    @Transactional
     @Override
-    public void create(ReqCreateUserDTO reqCreateUserDTO) {
-        User user = User.builder()
-                .accountId(reqCreateUserDTO.getAccountId())
+    public void createUser(ReqCreateUserDTO reqCreateUserDTO) {
+        WorkflowOptions options = WorkflowOptions.newBuilder().setTaskQueue(Constant.CREATE_USER_QUEUE).build();
+        CreateUserWorkFlow createUserWorkFlow = workflowClient.newWorkflowStub(CreateUserWorkFlow.class, options);
+        createUserWorkFlow.createUser(CreateUserData.builder()
+                .password(reqCreateUserDTO.getPassword())
                 .firstName(reqCreateUserDTO.getFirstName())
                 .middleName(reqCreateUserDTO.getMiddleName())
                 .lastName(reqCreateUserDTO.getLastName())
                 .role(reqCreateUserDTO.getRole())
-                .gender(reqCreateUserDTO.getGender())
                 .phoneNumber(reqCreateUserDTO.getPhoneNumber())
-                .dateOfBirth(reqCreateUserDTO.getDateOfBirth())
                 .address(reqCreateUserDTO.getAddress())
-                .email(reqCreateUserDTO.getEmail())
+                .gender(reqCreateUserDTO.getGender())
+                .dateOfBirth(reqCreateUserDTO.getDateOfBirth())
+                .build());
+//
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
+    }
+
+    @Override
+    public Long saveUser(CreateUserData createUserData) {
+        String email = genEmail(createUserData);
+        User user = User.builder()
+                .firstName(createUserData.getFirstName())
+                .middleName(createUserData.getMiddleName())
+                .lastName(createUserData.getLastName())
+                .role(createUserData.getRole())
+                .gender(createUserData.getGender())
+                .phoneNumber(createUserData.getPhoneNumber())
+                .dateOfBirth(createUserData.getDateOfBirth())
+                .address(createUserData.getAddress())
+                .email(email)
                 .build();
-        userRepository.save(user);
 //        switch (reqCreateUserDTO.getRole()) {
 //            case ADMIN, ASSISTANT, PRINCIPAL:
 //
@@ -69,6 +97,10 @@ public class UserServiceImp implements UserService {
 //            default:
 //                throw new IllegalArgumentException("Vai trò không hợp lệ");
 //        }
+        userRepository.save(user);
+        createUserData.setEmail(email);
+        createUserData.setUserId(user.getUserId());
+        return user.getUserId();
     }
 
 
@@ -98,6 +130,27 @@ public class UserServiceImp implements UserService {
         userRepository.save(user);
     }
 
+    /**
+     * Tạo email từ thông tin tài khoản.
+     * Quy tắc tạo email:
+     * - Lấy chữ cái đầu tiên của tên (lastName) viết hoa.
+     * - Lấy các chữ cái còn lại của tên.
+     * - Lấy chữ cái đầu tiên của họ (firstName) viết hoa.
+     * - Nếu có tên đệm (middleName), lấy chữ cái đầu tiên viết hoa.
+     * - Kết thúc với "@school.edu.vn".
+     * Ví dụ: Họ là "Nguyễn", Tên là "Văn", Tên đệm là "A" thì email sẽ là "Van.NA@school.edu.vn".
+     *
+     * @param createUserData DTO chứa thông tin tài khoản mới
+     * @return email được tạo
+     */
+    private String genEmail(CreateUserData createUserData) {
+        String lastNameWithoutAccents = FnCommon.removeVietnameseAccents(createUserData.getLastName());
+        return lastNameWithoutAccents.substring(0, 1).toUpperCase()
+                + lastNameWithoutAccents.substring(1).toLowerCase() + "."
+                + createUserData.getFirstName().toUpperCase().charAt(0)
+                + (FnCommon.isNullOrEmpty(createUserData.getMiddleName()) ? createUserData.getMiddleName().toUpperCase().charAt(0) : "")
+                + Constant.EMAIL_DOMAIN;
+    }
 
 }
  
