@@ -38,7 +38,8 @@ public class UserServiceImpl implements UserService {
     public void createUser(ReqCreateUserDTO reqCreateUserDTO) {
         WorkflowOptions options = WorkflowOptions.newBuilder().setTaskQueue(Constant.CREATE_USER_QUEUE).build();
         CreateUserWorkFlow createUserWorkFlow = workflowClient.newWorkflowStub(CreateUserWorkFlow.class, options);
-        createUserWorkFlow.createUser(CreateUserData.builder()
+
+        WorkflowClient.start(createUserWorkFlow::createUser,CreateUserData.builder()
                 .password(reqCreateUserDTO.getPassword())
                 .firstName(reqCreateUserDTO.getFirstName())
                 .middleName(reqCreateUserDTO.getMiddleName())
@@ -49,7 +50,6 @@ public class UserServiceImpl implements UserService {
                 .gender(reqCreateUserDTO.getGender())
                 .dateOfBirth(reqCreateUserDTO.getDateOfBirth())
                 .build());
-//
     }
 
     @Override

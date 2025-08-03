@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package enumeration;
+
+option java_package = "com.example.edu.school.enumeration";
+option java_multiple_files = true;
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ADMIN = 1;
+  PRINCIPAL = 2;
+  ASSISTANT = 3;
+  TEACHER = 4;
+  STUDENT = 5;
+  PARENT = 6;
+}

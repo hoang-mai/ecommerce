@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package auth;
+import "enumeration/role.proto";
+import "utils/base_response.proto";
+
+option java_multiple_files = true;
+option java_package = "com.example.edu.school.auth";
+
+service AccountService {
+  rpc CreateAccount (ReqCreateAccountDTO) returns (utils.base_response.BaseResponse);
+  rpc DelteAccount (ReqDeleteAccountDTO) returns (utils.base_response.BaseResponse);
+}
+
+message ReqCreateAccountDTO {
+  string email = 1;
+  string password = 2;
+  int64 userId = 3;
+  enumeration.Role role = 4;
+}
+
+message ReqDeleteAccountDTO {
+  string accountId = 1;
+}
+
+message ResCreateAccountDTO {
+  string accountId = 1;
+}

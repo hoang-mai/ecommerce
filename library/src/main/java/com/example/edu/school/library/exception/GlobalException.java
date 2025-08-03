@@ -52,4 +52,15 @@ public class GlobalException {
                         .build());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<BaseResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity
+                .badRequest()
+                .body(BaseResponse.<Void>builder()
+                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                        .message(messageService.getMessage(e.getMessage()))
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
 }

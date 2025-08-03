@@ -1,6 +1,6 @@
 package com.example.edu.school.auth.service.impl;
 
-import com.example.edu.school.auth.dto.account.ReqCreateAccountDTO;
+import com.example.edu.school.auth.ReqCreateAccountDTO;
 import com.example.edu.school.auth.dto.auth.ReqLoginDTO;
 import com.example.edu.school.auth.dto.keycloak.ResKeycloakLoginDTO;
 import com.example.edu.school.library.enumeration.AccountStatus;
@@ -63,8 +63,8 @@ public class KeyCloakServiceImpl implements KeyCloakService {
 
 
     @Override
-    public String register(ReqCreateAccountDTO reqCreateAccountDTO, String email) {
-        UserRepresentation user = mapperToUserRepresentation(reqCreateAccountDTO, email);
+    public String register(ReqCreateAccountDTO reqCreateAccountDTO) {
+        UserRepresentation user = mapperToUserRepresentation(reqCreateAccountDTO);
         try (Response response = keycloak.realm(realm).users().create(user)) {
             int status = response.getStatus();
 
@@ -94,11 +94,14 @@ public class KeyCloakServiceImpl implements KeyCloakService {
      * @param reqCreateAccountDTO DTO chứa thông tin tài khoản mới
      * @return UserRepresentation đại diện cho người dùng trong Keycloak
      */
-    private UserRepresentation mapperToUserRepresentation(ReqCreateAccountDTO reqCreateAccountDTO, String email) {
+    private UserRepresentation mapperToUserRepresentation(ReqCreateAccountDTO reqCreateAccountDTO) {
         UserRepresentation user = new UserRepresentation();
-        user.setUsername(email);
-        user.setEmail(email);
-        Map<String, List<String>> attributes = Map.of("status", List.of(AccountStatus.ACTIVE.getStatus()));
+        user.setUsername(reqCreateAccountDTO.getEmail());
+        user.setEmail(reqCreateAccountDTO.getEmail());
+        Map<String, List<String>> attributes = Map.of(
+                "status", List.of(AccountStatus.ACTIVE.getStatus()),
+                "userId", List.of(String.valueOf(reqCreateAccountDTO.getUserId())
+                ));
         user.setAttributes(attributes);
         user.setEnabled(true);
         user.setEmailVerified(true);
