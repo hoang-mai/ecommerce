@@ -17,14 +17,11 @@ public class GrpcConfig {
 
     @Bean
     AccountServiceGrpc.AccountServiceBlockingStub stub(GrpcChannelFactory channels) {
-        return AccountServiceGrpc.newBlockingStub(channels.createChannel("auth-service"),
+        return AccountServiceGrpc.newBlockingStub(channels.createChannel("auth-service",
                 ChannelBuilderOptions.defaults().withInterceptors(List.of(new BearerTokenAuthenticationInterceptor(() -> {
-                    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                    if (authentication instanceof JwtAuthenticationToken ){
-                        return ((JwtAuthenticationToken) authentication).getToken().getTokenValue();
-                    }else {
-                        throw new IllegalStateException("Authentication is not an instance of JwtAuthenticationToken");
-                    }
-                }))));
+                    JwtAuthenticationToken authentication =(JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+                    System.out.println("Authentication: " + authentication + ", Token: " + authentication.getToken().getTokenValue());
+                    return authentication.getToken().getTokenValue();
+                })))));
     }
 }
