@@ -7,25 +7,23 @@ services:
     ports:
       - "3307:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: temporal
-      MYSQL_DATABASE: temporal
-      MYSQL_USER: temporal
-      MYSQL_PASSWORD: temporal
+      MYSQL_ROOT_PASSWORD: password
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
 
   temporal:
     image: temporalio/auto-setup
+    container_name: temporal
     ports:
       - "7233:7233"
-
     environment:
-      DB: mysql8
-      MYSQL_USER: root
-      MYSQL_PWD: temporal
-      MYSQL_SEEDS: mysql
-      MYSQL_DB: temporal
-      TEMPORAL_WEB_ENABLED: true
+      - DB=mysql8
+      - MYSQL_USER=temporal
+      - MYSQL_PWD=temporal
+      - MYSQL_SEEDS=mysql
+      - MYSQL_DB=temporal
+      - TEMPORAL_WEB_ENABLED=true
     depends_on:
       - mysql
   temporal-ui:
@@ -37,6 +35,27 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
     depends_on:
       - temporal
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.5
+    container_name: keycloak
+    ports:
+      - "8081:8080"
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=123456
+      - DB_VENDOR=mysql
+      - DB_ADDR=mysql8
+      - DB_PORT=3306
+      - DB_DATABASE=keycloak
+      - DB_USER=keycloak
+      - DB_PASSWORD=keycloak
+    volumes:
+      - ./keycloak/providers:/opt/keycloak/providers
+    command:
+      - start-dev
+      - --http-relative-path=/auth
+    depends_on:
+      - mysql
 
 volumes:
   mysql-data:

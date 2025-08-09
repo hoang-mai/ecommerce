@@ -13,8 +13,8 @@ public class UserServiceSagaImpl implements UserServiceSaga {
     private final UserService userService;
 
     @Override
-    public void saveUser(CreateUserData createUserData) {
-        userService.saveUser(createUserData);
+    public CreateUserData saveUser(CreateUserData createUserData) {
+        return userService.saveUser(createUserData);
     }
 
     @Override

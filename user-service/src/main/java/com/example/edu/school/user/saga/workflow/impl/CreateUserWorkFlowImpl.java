@@ -16,7 +16,8 @@ import java.time.Duration;
 public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
     private final ActivityOptions options =
             ActivityOptions.newBuilder()
-                    .setStartToCloseTimeout(Duration.ofMinutes(1))
+                    .setStartToCloseTimeout(Duration.ofMinutes(5))
+                    .setScheduleToCloseTimeout(Duration.ofMinutes(10))
                     .setRetryOptions(RetryOptions.newBuilder().setMaximumAttempts(1).build())
                     .build();
     private final CreateUserActivities activities =
@@ -27,7 +28,7 @@ public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
         Saga.Options sagaOptions = new Saga.Options.Builder().setParallelCompensation(true).build();
         Saga saga = new Saga(sagaOptions);
         try {
-            activities.createUser(createUserData);
+            createUserData = activities.createUser(createUserData);
             saga.addCompensation(activities::deleteUser, createUserData.getUserId());
 
             String accountId = activities.createAccount(createUserData);

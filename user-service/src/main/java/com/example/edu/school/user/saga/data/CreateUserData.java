@@ -2,15 +2,15 @@ package com.example.edu.school.user.saga.data;
 
 import com.example.edu.school.library.enumeration.Gender;
 import com.example.edu.school.library.enumeration.Role;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateUserData {
     private String accountId;
     private Long userId;

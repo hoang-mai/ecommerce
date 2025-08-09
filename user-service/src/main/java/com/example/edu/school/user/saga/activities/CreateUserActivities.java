@@ -10,6 +10,7 @@ public interface CreateUserActivities {
 
     /**
      * Tạo tài khoản người dùng mới
+     *
      * @param createUserData DTO chứa thông tin tài khoản mới
      * @return accountId ID của tài khoản mới được tạo
      */
@@ -17,18 +18,22 @@ public interface CreateUserActivities {
 
     /**
      * Xoá tài khoản người dùng
+     *
      * @param accountId ID của tài khoản cần xoá
      */
     void deleteAccount(String accountId);
 
     /**
      * Tạo người dùng mới
+     *
      * @param createUserData DTO chứa thông tin người dùng mới
+     * @return CreateUserData chứa thông tin người dùng mới đã được tạo
      */
-    void createUser(CreateUserData createUserData);
+    CreateUserData createUser(CreateUserData createUserData);
 
     /**
      * Xoá người dùng
+     *
      * @param userId ID của người dùng cần xoá
      */
     void deleteUser(Long userId);

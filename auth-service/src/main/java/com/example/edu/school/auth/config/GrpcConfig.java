@@ -1,0 +1,19 @@
+package com.example.edu.school.auth.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.grpc.server.GlobalServerInterceptor;
+import org.springframework.grpc.server.security.AuthenticationProcessInterceptor;
+import org.springframework.grpc.server.security.GrpcSecurity;
+import org.springframework.security.config.Customizer;
+
+@Configuration
+public class GrpcConfig {
+
+    @GlobalServerInterceptor
+    public AuthenticationProcessInterceptor jwtSecurityFilterChain(GrpcSecurity grpc) throws Exception {
+        return grpc.authorizeRequests(requestMapperConfigurer ->
+                        requestMapperConfigurer.allRequests().authenticated())
+                .oauth2ResourceServer(oAuth2ResourceServerConfigurer ->
+                        oAuth2ResourceServerConfigurer.jwt(Customizer.withDefaults())).build();
+    }
+}

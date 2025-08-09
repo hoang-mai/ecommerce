@@ -55,8 +55,8 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
     }
 
     @Override
-    public void createUser(CreateUserData createUserData) {
-        userServiceSaga.saveUser(createUserData);
+    public CreateUserData createUser(CreateUserData createUserData) {
+        return userServiceSaga.saveUser(createUserData);
     }
 
     @Override

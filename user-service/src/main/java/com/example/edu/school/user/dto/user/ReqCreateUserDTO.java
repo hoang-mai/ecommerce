@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "role", visible = true, defaultImpl = ReqCreateUserDTO.class)
@@ -25,6 +26,7 @@ import lombok.experimental.SuperBuilder;
 })
 @Getter
 @SuperBuilder
+@NoArgsConstructor
 public class ReqCreateUserDTO {
 
     @NotBlank(message = MessageError.PASSWORD_NOT_BLANK)

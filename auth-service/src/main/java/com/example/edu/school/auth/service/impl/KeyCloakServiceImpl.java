@@ -31,6 +31,9 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     @Value("${keycloak.client-secret}")
     private String clientSecret;
 
+    @Value("${keycloak.client-id-login}")
+    private String clientIdLogin;
+
     @Value("${keycloak.realm}")
     private String realm;
 
@@ -46,7 +49,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     public ResKeycloakLoginDTO login(ReqLoginDTO reqLoginDTO) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", OAuth2Constants.PASSWORD);
-        formData.add("client_id", "auth-service");
+        formData.add("client_id", clientIdLogin);
         formData.add("client_secret", clientSecret);
         formData.add("username", reqLoginDTO.getEmail());
         formData.add("password", reqLoginDTO.getPassword());

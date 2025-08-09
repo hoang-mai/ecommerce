@@ -9,6 +9,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8081/auth/realms/edu-school
+          jwk-set-uri:
 #       opaquetoken:
 #          client-id:
 #          client-secret:
@@ -20,7 +21,7 @@ keycloak:
   realm: edu-school
   client-id-register: admin-cli
   client-id-login: auth-service
-  client-secret: YyupQFGJp4OPF99XZDKjq9rgpfL4aD5B
+  client-secret: BXpEWYAfOswyEtlvZ4PMxGVXFEBYwbbX
   username: admin@example.com
   password: 123456
 

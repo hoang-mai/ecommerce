@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void saveUser(CreateUserData createUserData) {
+    public CreateUserData saveUser(CreateUserData createUserData) {
         String email = genEmail(createUserData);
         User user = User.builder()
                 .firstName(createUserData.getFirstName())
@@ -105,6 +105,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         createUserData.setEmail(email);
         createUserData.setUserId(user.getUserId());
+        return createUserData;
     }
 
 
@@ -152,7 +153,7 @@ public class UserServiceImpl implements UserService {
         return lastNameWithoutAccents.substring(0, 1).toUpperCase()
                 + lastNameWithoutAccents.substring(1).toLowerCase() + "."
                 + createUserData.getFirstName().toUpperCase().charAt(0)
-                + (FnCommon.isNullOrEmpty(createUserData.getMiddleName()) ? createUserData.getMiddleName().toUpperCase().charAt(0) : "")
+                + (!FnCommon.isNullOrEmpty(createUserData.getMiddleName()) ? createUserData.getMiddleName().toUpperCase().charAt(0) : "")
                 + Constant.EMAIL_DOMAIN;
     }
 
