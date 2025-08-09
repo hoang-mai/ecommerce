@@ -16,8 +16,10 @@ import com.example.edu.school.user.dto.information.UserResponse;
 import com.example.edu.school.library.enumeration.Role;
 import com.example.edu.school.user.entity.*;
 import com.example.edu.school.user.repository.UserRepository;
+import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
+import io.temporal.client.WorkflowStub;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -35,11 +37,11 @@ public class UserServiceImpl implements UserService {
     private final ParentStudentService parentStudentService;
 
     @Override
-    public void createUser(ReqCreateUserDTO reqCreateUserDTO) {
+    public String createUser(ReqCreateUserDTO reqCreateUserDTO) {
         WorkflowOptions options = WorkflowOptions.newBuilder().setTaskQueue(Constant.CREATE_USER_QUEUE).build();
         CreateUserWorkFlow createUserWorkFlow = workflowClient.newWorkflowStub(CreateUserWorkFlow.class, options);
 
-        WorkflowClient.start(createUserWorkFlow::createUser,CreateUserData.builder()
+        WorkflowExecution workflowExecution= WorkflowClient.start(createUserWorkFlow::createUser,CreateUserData.builder()
                 .password(reqCreateUserDTO.getPassword())
                 .firstName(reqCreateUserDTO.getFirstName())
                 .middleName(reqCreateUserDTO.getMiddleName())
@@ -50,6 +52,9 @@ public class UserServiceImpl implements UserService {
                 .gender(reqCreateUserDTO.getGender())
                 .dateOfBirth(reqCreateUserDTO.getDateOfBirth())
                 .build());
+        WorkflowStub untypedStub = workflowClient.newUntypedWorkflowStub(workflowExecution.getWorkflowId());
+
+        return untypedStub.getResult(String.class);
     }
 
     @Override
@@ -58,7 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long saveUser(CreateUserData createUserData) {
+    public void saveUser(CreateUserData createUserData) {
         String email = genEmail(createUserData);
         User user = User.builder()
                 .firstName(createUserData.getFirstName())
@@ -100,7 +105,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         createUserData.setEmail(email);
         createUserData.setUserId(user.getUserId());
-        return user.getUserId();
     }
 
 

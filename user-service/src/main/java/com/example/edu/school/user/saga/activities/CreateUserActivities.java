@@ -24,9 +24,8 @@ public interface CreateUserActivities {
     /**
      * Tạo người dùng mới
      * @param createUserData DTO chứa thông tin người dùng mới
-     * @return userId ID của người dùng mới được tạo
      */
-    Long createUser(CreateUserData createUserData);
+    void createUser(CreateUserData createUserData);
 
     /**
      * Xoá người dùng

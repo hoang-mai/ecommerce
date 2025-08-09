@@ -29,7 +29,7 @@ public interface UserService {
      * Tạo người dùng mới.
      * @param reqCreateUserDTO DTO chứa thông tin người dùng mới
      */
-    void createUser(ReqCreateUserDTO reqCreateUserDTO);
+    String createUser(ReqCreateUserDTO reqCreateUserDTO);
 
     /**
      * Xoá người dùng theo ID.
@@ -40,9 +40,8 @@ public interface UserService {
     /**
      * Tạo người dùng mới với thông tin từ CreateUserData.
      * @param createUserData DTO chứa thông tin người dùng mới
-     * @return ID của người dùng mới được tạo
      */
-    Long saveUser(CreateUserData createUserData);
+    void saveUser(CreateUserData createUserData);
 
 
 }

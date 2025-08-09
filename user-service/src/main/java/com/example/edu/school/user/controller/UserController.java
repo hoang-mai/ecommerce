@@ -33,13 +33,14 @@ public class UserController {
     private final MessageService messageService;
 
     @PostMapping("/create")
-    public ResponseEntity<BaseResponse<Void>> register(@Valid @RequestBody ReqCreateUserDTO reqCreateUserDTO) {
+    public ResponseEntity<BaseResponse<String>> register(@Valid @RequestBody ReqCreateUserDTO reqCreateUserDTO) {
         log.info("Registering user: {}", reqCreateUserDTO);
-        userService.createUser(reqCreateUserDTO);
+        String email = userService.createUser(reqCreateUserDTO);
         log.info("User registered successfully");
-        return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<Void>builder()
+        return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<String>builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message(messageService.getMessage(MessageSuccess.USER_CREATED_SUCCESS))
+                .data(email)
                 .build());
     }
 

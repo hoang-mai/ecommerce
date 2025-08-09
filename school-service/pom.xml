@@ -6,10 +6,11 @@
 		<groupId>com.example.edu.school</groupId>
 		<artifactId>edu-school</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath/>
 	</parent>
+
 	<artifactId>school-service</artifactId>
 	<name>school-service</name>
+
 	<url/>
 	<licenses>
 		<license/>

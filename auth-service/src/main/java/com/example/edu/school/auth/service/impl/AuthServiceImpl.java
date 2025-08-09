@@ -30,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
             ResKeycloakLoginDTO resKeycloakLoginDTO = keyCloakService.login(reqLoginDTO);
 
             if (resKeycloakLoginDTO == null) {
-                throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
             }
             return ResLoginDTO.builder()
                     .accessToken(resKeycloakLoginDTO.getAccessToken())

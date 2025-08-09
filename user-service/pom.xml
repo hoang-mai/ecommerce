@@ -7,10 +7,10 @@
 		<groupId>com.example.edu.school</groupId>
 		<artifactId>edu-school</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath/>
 	</parent>
 	<artifactId>user-service</artifactId>
 	<name>user-service</name>
+
 	<url />
 	<licenses>
 		<license />
@@ -69,16 +69,22 @@
 			<artifactId>library</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.example.edu.school</groupId>
-			<artifactId>proto</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>io.temporal</groupId>
 			<artifactId>temporal-sdk</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
 			<artifactId>spring-grpc-spring-boot-starter</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>io.grpc</groupId>
+					<artifactId>grpc-netty</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-netty-shaded</artifactId>
 		</dependency>
 	</dependencies>
 

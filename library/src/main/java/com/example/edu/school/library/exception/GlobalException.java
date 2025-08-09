@@ -3,6 +3,7 @@ package com.example.edu.school.library.exception;
 import com.example.edu.school.library.component.MessageService;
 import com.example.edu.school.library.utils.BaseResponse;
 import com.example.edu.school.library.utils.MessageError;
+import io.temporal.failure.ActivityFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class GlobalException {
                 .status(e.getStatusCode())
                 .body(BaseResponse.<Void>builder()
                         .statusCode(e.getStatusCode())
-                        .message(e.getMessage())
+                        .message(messageService.getMessage(e.getMessage()))
                         .timestamp(e.getTimestamp())
                         .build());
     }
@@ -47,7 +48,7 @@ public class GlobalException {
                 .status(HttpStatus.NOT_FOUND)
                 .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.NOT_FOUND.value())
-                        .message(e.getMessage())
+                        .message(messageService.getMessage(e.getMessage()))
                         .timestamp(LocalDateTime.now())
                         .build());
     }

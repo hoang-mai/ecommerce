@@ -2,15 +2,22 @@ package com.example.edu.school.user.saga.activities.impl;
 
 import com.example.edu.school.auth.AccountServiceGrpc;
 import com.example.edu.school.auth.ReqCreateAccountDTO;
+import com.example.edu.school.auth.ReqDeleteAccountDTO;
 import com.example.edu.school.auth.ResCreateAccountDTO;
 import com.example.edu.school.library.enumeration.Role;
+import com.example.edu.school.library.exception.HttpRequestException;
+import com.example.edu.school.library.utils.FnCommon;
+import com.example.edu.school.library.utils.MessageError;
 import com.example.edu.school.user.saga.activities.CreateUserActivities;
 import com.example.edu.school.user.saga.data.CreateUserData;
 import com.example.edu.school.user.saga.service.UserServiceSaga;
 import com.example.edu.school.utils.base_response.BaseResponse;
 import com.google.protobuf.InvalidProtocolBufferException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -25,28 +32,31 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
                 .setEmail(createUserData.getEmail())
                 .setPassword(createUserData.getPassword())
                 .setUserId(createUserData.getUserId())
-                .setRole(convertRoleToProtoRole(createUserData.getRole()))
+                .setRole(FnCommon.convertRoleToRoleProto(createUserData.getRole()))
                 .build());
         if (baseResponse.hasData()) {
             try {
                 ResCreateAccountDTO res = baseResponse.getData().unpack(ResCreateAccountDTO.class);
                 return res.getAccountId();
             } catch (InvalidProtocolBufferException e) {
-                throw new RuntimeException(e);
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
             }
-        }else {
-            throw new RuntimeException("Failed to create account: " + baseResponse.getMessage());
+        } else {
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         }
     }
 
     @Override
     public void deleteAccount(String accountId) {
-
+        BaseResponse baseResponse = accountServiceBlockingStub.deleteAccount(ReqDeleteAccountDTO.newBuilder().setAccountId(accountId).build());
+        if (baseResponse.getStatusCode()!=HttpStatus.OK.value()) {
+            throw new HttpRequestException(MessageError.CANNOT_DELETE_ACCOUNT, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+        }
     }
 
     @Override
-    public Long createUser(CreateUserData createUserData) {
-        return userServiceSaga.saveUser(createUserData);
+    public void createUser(CreateUserData createUserData) {
+        userServiceSaga.saveUser(createUserData);
     }
 
     @Override
@@ -54,14 +64,4 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
         userServiceSaga.deleteUser(userId);
     }
 
-    private com.example.edu.school.enumeration.Role convertRoleToProtoRole(Role role) {
-        return switch (role) {
-            case ADMIN -> com.example.edu.school.enumeration.Role.ADMIN;
-            case PRINCIPAL -> com.example.edu.school.enumeration.Role.PRINCIPAL;
-            case ASSISTANT -> com.example.edu.school.enumeration.Role.ASSISTANT;
-            case TEACHER -> com.example.edu.school.enumeration.Role.TEACHER;
-            case STUDENT -> com.example.edu.school.enumeration.Role.STUDENT;
-            case PARENT -> com.example.edu.school.enumeration.Role.PARENT;
-        };
-    }
 }

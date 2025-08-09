@@ -6,10 +6,8 @@
 		<groupId>com.example.edu.school</groupId>
 		<artifactId>edu-school</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>chat-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<name>chat-service</name>
 
 	<url/>

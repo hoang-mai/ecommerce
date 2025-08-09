@@ -22,4 +22,6 @@ public interface KeyCloakService {
      * @throws DuplicateException nếu email đã tồn tại
      */
     String register(ReqCreateAccountDTO reqCreateAccountDTO);
+
+    void delete(String accountId);
 }

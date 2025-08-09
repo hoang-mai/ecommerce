@@ -7,6 +7,7 @@ import com.example.edu.school.library.enumeration.AccountStatus;
 import com.example.edu.school.library.exception.DuplicateException;
 import com.example.edu.school.auth.service.KeyCloakService;
 
+import com.example.edu.school.library.utils.FnCommon;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.OAuth2Constants;
@@ -88,6 +89,18 @@ public class KeyCloakServiceImpl implements KeyCloakService {
 
     }
 
+    @Override
+    public void delete(String accountId) {
+        try(Response response = keycloak.realm(realm).users().delete(accountId)) {
+            int status = response.getStatus();
+            if (status != Response.Status.NO_CONTENT.getStatusCode()) {
+                String reason = response.getStatusInfo() != null ? response.getStatusInfo().getReasonPhrase() : "Unknown";
+                throw new RuntimeException("Failed to delete user: " + reason + " (status: " + status + ")");
+            }
+            response.close();
+        }
+    }
+
     /**
      * Chuyển đổi CreateAccountDTO thành UserRepresentation
      *
@@ -100,8 +113,9 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         user.setEmail(reqCreateAccountDTO.getEmail());
         Map<String, List<String>> attributes = Map.of(
                 "status", List.of(AccountStatus.ACTIVE.getStatus()),
-                "userId", List.of(String.valueOf(reqCreateAccountDTO.getUserId())
-                ));
+                "userId", List.of(String.valueOf(reqCreateAccountDTO.getUserId())),
+                "role", List.of(FnCommon.convertRoleProtoToRole(reqCreateAccountDTO.getRole()).getRole())
+        );
         user.setAttributes(attributes);
         user.setEnabled(true);
         user.setEmailVerified(true);

@@ -23,16 +23,16 @@ public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
             Workflow.newActivityStub(CreateUserActivities.class, options);
 
     @Override
-    public void createUser(CreateUserData createUserData) {
+    public String createUser(CreateUserData createUserData) {
         Saga.Options sagaOptions = new Saga.Options.Builder().setParallelCompensation(true).build();
         Saga saga = new Saga(sagaOptions);
         try {
-            Long userId = activities.createUser(createUserData);
-            saga.addCompensation(activities::deleteUser, userId);
+            activities.createUser(createUserData);
+            saga.addCompensation(activities::deleteUser, createUserData.getUserId());
 
             String accountId = activities.createAccount(createUserData);
             saga.addCompensation(activities::deleteAccount, accountId);
-
+            return createUserData.getEmail();
         } catch (ActivityFailure e) {
             saga.compensate();
             throw e;

@@ -7,5 +7,5 @@ import io.temporal.workflow.WorkflowMethod;
 @WorkflowInterface
 public interface CreateUserWorkFlow {
     @WorkflowMethod
-    void createUser(CreateUserData createUserData);
+    String createUser(CreateUserData createUserData);
 }

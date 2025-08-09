@@ -9,7 +9,7 @@ option java_package = "com.example.edu.school.auth";
 
 service AccountService {
   rpc CreateAccount (ReqCreateAccountDTO) returns (utils.base_response.BaseResponse);
-  rpc DelteAccount (ReqDeleteAccountDTO) returns (utils.base_response.BaseResponse);
+  rpc DeleteAccount (ReqDeleteAccountDTO) returns (utils.base_response.BaseResponse);
 }
 
 message ReqCreateAccountDTO {
