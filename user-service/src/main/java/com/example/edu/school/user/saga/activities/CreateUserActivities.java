@@ -1,7 +1,5 @@
 package com.example.edu.school.user.saga.activities;
 
-import com.example.edu.school.user.dto.account.ReqCreateAccountDTO;
-import com.example.edu.school.user.dto.user.ReqCreateUserDTO;
 import com.example.edu.school.user.saga.data.CreateUserData;
 import io.temporal.activity.ActivityInterface;
 
@@ -12,16 +10,16 @@ public interface CreateUserActivities {
      * Tạo tài khoản người dùng mới
      *
      * @param createUserData DTO chứa thông tin tài khoản mới
-     * @return accountId ID của tài khoản mới được tạo
+     * @return CreateUserData chứa accountId thông tin tài khoản đã được tạo
      */
-    String createAccount(CreateUserData createUserData);
+    CreateUserData createAccount(CreateUserData createUserData);
 
     /**
      * Xoá tài khoản người dùng
      *
-     * @param accountId ID của tài khoản cần xoá
+     * @param createUserData DTO chứa accountId thông tin tài khoản cần xoá
      */
-    void deleteAccount(String accountId);
+    void deleteAccount(CreateUserData createUserData);
 
     /**
      * Tạo người dùng mới

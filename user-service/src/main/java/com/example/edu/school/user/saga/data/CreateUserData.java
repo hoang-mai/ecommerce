@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateUserData {
+    private String token;
     private String accountId;
     private Long userId;
     private String email;

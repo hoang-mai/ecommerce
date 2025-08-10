@@ -20,4 +20,6 @@ public final class MessageError {
     public static final String PHONE_NUMBER_NOT_BLANK = "phone.number.not.blank";
     public static final String EMAIL_NOT_BLANK = "email.not.blank";
     public static final String CANNOT_DELETE_ACCOUNT = "cannot.delete.account";
+    public static final String ACCOUNT_DUPLICATE = "account.duplicate";
+    public static final String SYSTEM_ERROR = "system.error";
 }

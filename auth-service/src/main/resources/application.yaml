@@ -20,7 +20,7 @@ keycloak:
   realm: edu-school
   client-id-register: admin-cli
   client-id-login: auth-service
-  client-secret: BXpEWYAfOswyEtlvZ4PMxGVXFEBYwbbX
+  client-secret: Udsp48DZyfKi5D7v2eyRNZ40uBLuULQ5
   username: admin@example.com
   password: 123456
 

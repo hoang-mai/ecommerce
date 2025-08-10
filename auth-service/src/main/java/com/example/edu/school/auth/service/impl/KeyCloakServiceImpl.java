@@ -7,7 +7,9 @@ import com.example.edu.school.library.enumeration.AccountStatus;
 import com.example.edu.school.library.exception.DuplicateException;
 import com.example.edu.school.auth.service.KeyCloakService;
 
+import com.example.edu.school.library.exception.HttpRequestException;
 import com.example.edu.school.library.utils.FnCommon;
+import com.example.edu.school.library.utils.MessageError;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.OAuth2Constants;
@@ -15,12 +17,14 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -41,9 +45,6 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     private String authServerUrl;
 
     private final Keycloak keycloak;
-
-    private final PasswordEncoder passwordEncoder;
-
 
     @Override
     public ResKeycloakLoginDTO login(ReqLoginDTO reqLoginDTO) {
@@ -72,35 +73,29 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         try (Response response = keycloak.realm(realm).users().create(user)) {
             int status = response.getStatus();
 
-
-            String errorBody = response.readEntity(String.class);
-            System.out.println("Keycloak error response: " + errorBody);
-
             if (status == Response.Status.CONFLICT.getStatusCode()) {
-                throw new DuplicateException("User already exists");
+                throw new DuplicateException(MessageError.ACCOUNT_DUPLICATE);
             }
-
             if (status != Response.Status.CREATED.getStatusCode()) {
-                String reason = response.getStatusInfo() != null ? response.getStatusInfo().getReasonPhrase() : "Unknown";
-                throw new RuntimeException("Failed to create user: " + reason + " (status: " + status + ")");
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
             }
-            String accountId = response.getLocation().getPath().replaceAll(".*/users/", "");
-            response.close();
-            return accountId;
+            return response.getLocation().getPath().replaceAll(".*/users/", "");
 
+        } catch (Exception e) {
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         }
 
     }
 
     @Override
     public void delete(String accountId) {
-        try(Response response = keycloak.realm(realm).users().delete(accountId)) {
+        try (Response response = keycloak.realm(realm).users().delete(accountId)) {
             int status = response.getStatus();
             if (status != Response.Status.NO_CONTENT.getStatusCode()) {
-                String reason = response.getStatusInfo() != null ? response.getStatusInfo().getReasonPhrase() : "Unknown";
-                throw new RuntimeException("Failed to delete user: " + reason + " (status: " + status + ")");
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
             }
-            response.close();
+        }catch (Exception e) {
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         }
     }
 

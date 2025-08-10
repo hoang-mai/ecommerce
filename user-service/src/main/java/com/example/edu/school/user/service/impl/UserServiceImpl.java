@@ -22,8 +22,10 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,8 +42,8 @@ public class UserServiceImpl implements UserService {
     public String createUser(ReqCreateUserDTO reqCreateUserDTO) {
         WorkflowOptions options = WorkflowOptions.newBuilder().setTaskQueue(Constant.CREATE_USER_QUEUE).build();
         CreateUserWorkFlow createUserWorkFlow = workflowClient.newWorkflowStub(CreateUserWorkFlow.class, options);
-
-        WorkflowExecution workflowExecution= WorkflowClient.start(createUserWorkFlow::createUser,CreateUserData.builder()
+        WorkflowExecution workflowExecution = WorkflowClient.start(createUserWorkFlow::createUser, CreateUserData.builder()
+                .token(((JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication()).getToken().getTokenValue())
                 .password(reqCreateUserDTO.getPassword())
                 .firstName(reqCreateUserDTO.getFirstName())
                 .middleName(reqCreateUserDTO.getMiddleName())

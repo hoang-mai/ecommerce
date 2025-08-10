@@ -11,6 +11,8 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - service-network
 
   temporal:
     image: temporalio/auto-setup
@@ -26,6 +28,9 @@ services:
       - TEMPORAL_WEB_ENABLED=true
     depends_on:
       - mysql
+    networks:
+      - service-network
+
   temporal-ui:
     image: temporalio/ui:latest
     container_name: temporal-ui
@@ -35,6 +40,9 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
     depends_on:
       - temporal
+    networks:
+      - service-network
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.5
     container_name: keycloak
@@ -44,7 +52,7 @@ services:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=123456
       - DB_VENDOR=mysql
-      - DB_ADDR=mysql8
+      - DB_ADDR=mysql
       - DB_PORT=3306
       - DB_DATABASE=keycloak
       - DB_USER=keycloak
@@ -56,6 +64,12 @@ services:
       - --http-relative-path=/auth
     depends_on:
       - mysql
+    networks:
+      - service-network
 
 volumes:
   mysql-data:
+
+networks:
+  service-network:
+    driver: bridge

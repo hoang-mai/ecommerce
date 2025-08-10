@@ -3,7 +3,6 @@ package com.example.edu.school.library.exception;
 import com.example.edu.school.library.component.MessageService;
 import com.example.edu.school.library.utils.BaseResponse;
 import com.example.edu.school.library.utils.MessageError;
-import io.temporal.failure.ActivityFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +15,7 @@ import java.time.LocalDateTime;
 
 @ControllerAdvice
 @RequiredArgsConstructor
-public class GlobalException {
+public class RestException {
 
     private final MessageService messageService;
 
@@ -59,6 +58,17 @@ public class GlobalException {
                 .badRequest()
                 .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.BAD_REQUEST.value())
+                        .message(messageService.getMessage(e.getMessage()))
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<BaseResponse<Void>> handleGenericException(Exception e) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(BaseResponse.<Void>builder()
+                        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .message(messageService.getMessage(e.getMessage()))
                         .timestamp(LocalDateTime.now())
                         .build());

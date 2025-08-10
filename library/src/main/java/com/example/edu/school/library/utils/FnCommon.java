@@ -2,6 +2,7 @@ package com.example.edu.school.library.utils;
 
 
 import com.example.edu.school.library.enumeration.Role;
+import io.grpc.Status;
 
 public final class FnCommon {
 
@@ -58,6 +59,32 @@ public final class FnCommon {
             case STUDENT -> Role.STUDENT;
             case PARENT -> Role.PARENT;
             default -> throw new IllegalArgumentException(MessageError.INVALID_ROLE);
+        };
+    }
+
+    /**
+     * Chuyển đổi status code từ gRPC sang HTTP
+     *
+     * @param code mã trạng thái từ gRPC
+     * @return mã trạng thái HTTP tương ứng
+     */
+    public static int convertGrpcCodeToHttpStatus(Status.Code code) {
+        if (code == null) {
+            return 500;
+        }
+        return switch (code) {
+            case OK -> 200;
+            case CANCELLED -> 499;
+            case UNKNOWN, DATA_LOSS, INTERNAL -> 500;
+            case INVALID_ARGUMENT, FAILED_PRECONDITION, OUT_OF_RANGE -> 400;
+            case DEADLINE_EXCEEDED -> 504;
+            case NOT_FOUND -> 404;
+            case ALREADY_EXISTS, ABORTED -> 409;
+            case PERMISSION_DENIED -> 403;
+            case RESOURCE_EXHAUSTED -> 429;
+            case UNIMPLEMENTED -> 501;
+            case UNAVAILABLE -> 503;
+            case UNAUTHENTICATED -> 401;
         };
     }
 }

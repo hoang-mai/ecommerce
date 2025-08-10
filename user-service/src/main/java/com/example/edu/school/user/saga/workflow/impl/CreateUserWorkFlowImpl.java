@@ -1,6 +1,8 @@
 package com.example.edu.school.user.saga.workflow.impl;
 
 
+import com.example.edu.school.library.exception.HttpRequestException;
+import com.example.edu.school.library.utils.MessageError;
 import com.example.edu.school.user.dto.user.ReqCreateUserDTO;
 import com.example.edu.school.user.saga.activities.CreateUserActivities;
 import com.example.edu.school.user.saga.data.CreateUserData;
@@ -31,12 +33,16 @@ public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
             createUserData = activities.createUser(createUserData);
             saga.addCompensation(activities::deleteUser, createUserData.getUserId());
 
-            String accountId = activities.createAccount(createUserData);
-            saga.addCompensation(activities::deleteAccount, accountId);
+            createUserData = activities.createAccount(createUserData);
+            saga.addCompensation(activities::deleteAccount, createUserData);
             return createUserData.getEmail();
         } catch (ActivityFailure e) {
             saga.compensate();
-            throw e;
+            if (e.getCause() instanceof HttpRequestException httpRequestException) {
+                throw new HttpRequestException(httpRequestException.getMessage(), httpRequestException.getStatusCode(), httpRequestException.getTimestamp());
+            } else {
+                throw new RuntimeException(MessageError.SYSTEM_ERROR);
+            }
         }
     }
 }
