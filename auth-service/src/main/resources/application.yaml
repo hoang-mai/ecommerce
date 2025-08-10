@@ -9,7 +9,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8081/auth/realms/edu-school
-          jwk-set-uri:
 #       opaquetoken:
 #          client-id:
 #          client-secret:

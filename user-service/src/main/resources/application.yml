@@ -4,6 +4,11 @@ spring:
       channels:
         auth-service:
           address: localhost:9090
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/auth/realms/edu-school
   datasource:
     url: jdbc:mysql://localhost:3306/user-service
     username: root
