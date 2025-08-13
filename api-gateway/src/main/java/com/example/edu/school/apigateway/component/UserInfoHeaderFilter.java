@@ -20,8 +20,7 @@ public class UserInfoHeaderFilter implements GlobalFilter  {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return exchange.getPrincipal().cast(Authentication.class)
                 .flatMap(authentication ->{
-                    if(authentication.getPrincipal() instanceof JwtAuthenticationToken jwtAuthenticationToken){
-                        Jwt jwt = jwtAuthenticationToken.getToken();
+                    if(authentication.getPrincipal() instanceof Jwt jwt){
                         String userId = jwt.getClaimAsString("user-id");
                         String role = jwt.getClaimAsString("role");
                         String email = jwt.getClaimAsString("email");

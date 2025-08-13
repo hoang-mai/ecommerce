@@ -10,20 +10,25 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     org.springframework.cloud.gateway.route.RouteDefinitionLocator: TRACE
-
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/auth/realms/edu-school
   cloud:
     gateway:
       routes:
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/api/user/**
+            - Path=/api/v1/user/**
         - id: auth-service
           uri: lb://auth-service
           predicates:
-            - Path=/api/auth/**
+            - Path=/api/v1/auth/**
         - id: chat-service
           uri: lb://chat-service
           predicates:
-            - Path=/api/chat/**
+            - Path=/api/v1/chat/**
 
