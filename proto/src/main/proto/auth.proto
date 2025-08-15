@@ -5,7 +5,7 @@ import "enumeration/role.proto";
 import "utils/base_response.proto";
 
 option java_multiple_files = true;
-option java_package = "com.example.edu.school.auth";
+option java_package = "com.example.app.chat.auth";
 
 service AccountService {
   rpc CreateAccount (ReqCreateAccountDTO) returns (utils.base_response.BaseResponse);

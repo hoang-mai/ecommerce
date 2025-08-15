@@ -8,11 +8,11 @@
         <version>3.4.4</version>
         <relativePath/>
     </parent>
-    <groupId>com.example.edu.school</groupId>
-    <artifactId>edu-school</artifactId>
+    <groupId>com.example.app.chat</groupId>
+    <artifactId>app-chat</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>edu-school</name>
-    <description>edu-school microservice</description>
+    <name>app-chat</name>
+    <description>app-chat microservice</description>
     <packaging>pom</packaging>
     <modules>
         <module>user-service</module>
@@ -20,7 +20,6 @@
         <module>discovery-service</module>
         <module>api-gateway</module>
         <module>auth-service</module>
-        <module>school-service</module>
         <module>library</module>
     </modules>
     <url/>
@@ -58,7 +57,7 @@
                 <version>2.8.6</version>
             </dependency>
             <dependency>
-                <groupId>com.example.edu.school</groupId>
+                <groupId>com.example.app.chat</groupId>
                 <artifactId>library</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>

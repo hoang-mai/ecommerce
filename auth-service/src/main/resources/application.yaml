@@ -8,7 +8,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081/auth/realms/edu-school
+          issuer-uri: http://localhost:8081/auth/realms/app-chat
 #       opaquetoken:
 #          client-id:
 #          client-secret:
@@ -17,7 +17,7 @@ spring:
 
 keycloak:
   auth-server-url: http://localhost:8081/auth
-  realm: edu-school
+  realm: app-chat
   client-id-register: admin-cli
   client-id-login: auth-service
   client-secret: Udsp48DZyfKi5D7v2eyRNZ40uBLuULQ5

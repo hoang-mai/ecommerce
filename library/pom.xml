@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.example.edu.school</groupId>
-        <artifactId>edu-school</artifactId>
+        <groupId>com.example.app.chat</groupId>
+        <artifactId>app-chat</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
@@ -36,7 +36,7 @@
             <artifactId>hibernate-validator</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.example.edu.school</groupId>
+            <groupId>com.example.app.chat</groupId>
             <artifactId>proto</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
