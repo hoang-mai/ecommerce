@@ -22,4 +22,10 @@ public final class MessageError {
     public static final String CANNOT_DELETE_ACCOUNT = "cannot.delete.account";
     public static final String ACCOUNT_DUPLICATE = "account.duplicate";
     public static final String SYSTEM_ERROR = "system.error";
+    public static final String USERNAME_NOT_BLANK = "username.not.blank";
+    public static final String USERNAME_SIZE = "username.size";
+    public static final String USERNAME_DUPLICATE = "username.duplicate";
+    public static final String USER_NOT_FOUND = "user.not.found";
+    public static final String USERNAME_NOT_FOUND = "username.not.found";
+    public static final String USER_NOT_ACTIVE = "user.not.active";
 }

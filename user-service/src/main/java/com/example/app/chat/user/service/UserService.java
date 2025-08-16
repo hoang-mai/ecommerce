@@ -25,7 +25,7 @@ public interface UserService {
      *
      * @param reqCreateUserDTO DTO chứa thông tin người dùng mới
      */
-    String createUser(ReqCreateUserDTO reqCreateUserDTO);
+    void createUser(ReqCreateUserDTO reqCreateUserDTO);
 
     /**
      * Xoá người dùng theo ID.

@@ -28,26 +28,14 @@ public class UserController {
     @PostMapping("/create")
     public ResponseEntity<BaseResponse<String>> register(@Valid @RequestBody ReqCreateUserDTO reqCreateUserDTO) {
         log.info("Registering user: {}", reqCreateUserDTO);
-        String email = userService.createUser(reqCreateUserDTO);
+        userService.createUser(reqCreateUserDTO);
         log.info("User registered successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<String>builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message(messageService.getMessage(MessageSuccess.USER_CREATED_SUCCESS))
-                .data(email)
                 .build());
     }
 
-//    @PostMapping("/register-parent")
-//    public ResponseEntity<BaseResponse<String>> registerParent(@Valid @RequestBody ParentReqCreateUserDTO registerRequest, @RequestParam @JsonProperty("student_id") Long studentId) {
-//        log.info("Registering parent: {}", registerRequest);
-//        String email = userService.registerParent(registerRequest, studentId);
-//        log.info("Parent registered successfully: {}", email);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<String>builder()
-//                .statusCode(HttpStatus.CREATED.value())
-//                .message(messageService.getMessage(MessageSuccess.USER_CREATED_SUCCESS))
-//                .data(email)
-//                .build());
-//    }
 
     @GetMapping("/{userId}")
     public ResponseEntity<BaseResponse<UserResponse>> getUserById(@PathVariable Long userId) {

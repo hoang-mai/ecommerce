@@ -25,7 +25,7 @@ public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
             Workflow.newActivityStub(CreateUserActivities.class, options);
 
     @Override
-    public String createUser(CreateUserData createUserData) {
+    public void createUser(CreateUserData createUserData) {
         Saga.Options sagaOptions = new Saga.Options.Builder().setParallelCompensation(true).build();
         Saga saga = new Saga(sagaOptions);
         try {
@@ -34,7 +34,6 @@ public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
 
             createUserData = activities.createAccount(createUserData);
             saga.addCompensation(activities::deleteAccount, createUserData);
-            return createUserData.getEmail();
         } catch (ActivityFailure e) {
             saga.compensate();
             if (e.getCause() instanceof HttpRequestException httpRequestException) {

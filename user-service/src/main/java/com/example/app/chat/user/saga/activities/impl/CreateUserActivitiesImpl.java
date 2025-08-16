@@ -4,6 +4,7 @@ import com.example.app.chat.auth.AccountServiceGrpc;
 import com.example.app.chat.auth.ReqCreateAccountDTO;
 import com.example.app.chat.auth.ReqDeleteAccountDTO;
 import com.example.app.chat.auth.ResCreateAccountDTO;
+import com.example.app.chat.library.enumeration.Role;
 import com.example.app.chat.library.exception.HttpRequestException;
 import com.example.app.chat.library.utils.FnCommon;
 import com.example.app.chat.library.utils.MessageError;
@@ -34,10 +35,10 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
         AccountServiceGrpc.AccountServiceBlockingStub stubWithToken = accountServiceBlockingStub.withInterceptors(new BearerTokenAuthenticationInterceptor(createUserData.getToken()));
         try {
             BaseResponse baseResponse = stubWithToken.createAccount(ReqCreateAccountDTO.newBuilder()
-                    .setEmail(createUserData.getEmail())
+                    .setUsername(createUserData.getUsername())
                     .setPassword(createUserData.getPassword())
                     .setUserId(createUserData.getUserId())
-                    .setRole(FnCommon.convertRoleToRoleProto(createUserData.getRole()))
+                    .setRole(FnCommon.convertRoleToRoleProto(Role.USER))
                     .build());
             if (baseResponse.hasData()) {
                 try {

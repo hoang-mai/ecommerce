@@ -3,38 +3,33 @@ package com.example.app.chat.user.dto.user;
 import java.time.LocalDate;
 
 import com.example.app.chat.library.enumeration.Gender;
-import com.example.app.chat.library.enumeration.Role;
 import com.example.app.chat.library.utils.MessageError;
 import com.example.app.chat.library.utils.validate.PhoneNumberFormat;
-import com.example.app.chat.library.utils.validate.RoleFormat;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "role", visible = true, defaultImpl = ReqCreateUserDTO.class)
-@JsonSubTypes({
-        @Type(value = StudentReqCreateUserDTO.class, name = "STUDENT"),
-        @Type(value = TeacherReqCreateUserDTO.class, name = "TEACHER"),
-        @Type(value = ParentReqCreateUserDTO.class, name = "PARENT")
-})
 @Getter
-@SuperBuilder
+@AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ReqCreateUserDTO {
+
+    @NotBlank(message = MessageError.USERNAME_NOT_BLANK)
+    @Size(min = 3, max = 20, message = MessageError.USERNAME_SIZE)
+    @Schema(description = "Username must be between 3 and 20 characters", example = "john_doe")
+    private String username;
 
     @NotBlank(message = MessageError.PASSWORD_NOT_BLANK)
     @Size(min = 6, max = 20, message = MessageError.PASSWORD_SIZE)
     @Schema(description = "Password must be between 6 and 20 characters", example = "password123")
     private String password;
 
-    @NotBlank(message = MessageError.FIRST_NAME_NOT_BLANK)
     @Schema(description = "First name must be between 1 and 10 characters", example = "John")
     private String firstName;
 
@@ -48,10 +43,6 @@ public class ReqCreateUserDTO {
     @PhoneNumberFormat
     @Schema(description = "Phone number must be in the format 0123456789", example = "0123456789")
     private String phoneNumber;
-
-    @RoleFormat
-    @Schema(description = "Role must be one of the following: STUDENT, TEACHER, ADMIN", example = "STUDENT")
-    private Role role;
 
     @Schema(description = "Gender must be one of the following: MALE, FEMALE, OTHER", example = "MALE")
     private Gender gender;

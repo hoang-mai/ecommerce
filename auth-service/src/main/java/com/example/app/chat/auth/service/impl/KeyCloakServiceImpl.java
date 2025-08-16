@@ -51,7 +51,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         formData.add("grant_type", OAuth2Constants.PASSWORD);
         formData.add("client_id", clientIdLogin);
         formData.add("client_secret", clientSecret);
-        formData.add("username", reqLoginDTO.getEmail());
+        formData.add("username", reqLoginDTO.getUsername());
         formData.add("password", reqLoginDTO.getPassword());
         return RestClient.builder()
                 .baseUrl(authServerUrl)
@@ -106,8 +106,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
      */
     private UserRepresentation mapperToUserRepresentation(ReqCreateAccountDTO reqCreateAccountDTO) {
         UserRepresentation user = new UserRepresentation();
-        user.setUsername(reqCreateAccountDTO.getEmail());
-        user.setEmail(reqCreateAccountDTO.getEmail());
+        user.setUsername(reqCreateAccountDTO.getUsername());
         Map<String, List<String>> attributes = Map.of(
                 "status", List.of(AccountStatus.ACTIVE.getStatus()),
                 "userId", List.of(String.valueOf(reqCreateAccountDTO.getUserId())),

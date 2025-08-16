@@ -10,8 +10,8 @@ import lombok.Setter;
 @Setter
 public class ReqLoginDTO {
 
-    @Email(message = MessageError.INVALID_EMAIL)
-    private String email;
+    @NotBlank(message = MessageError.USERNAME_NOT_BLANK)
+    private String username;
 
     @NotBlank(message = MessageError.PASSWORD_NOT_BLANK)
     private String password;
