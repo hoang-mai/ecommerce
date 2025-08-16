@@ -2,7 +2,6 @@ package com.example.app.chat.user.dto.request.update;
 
 import java.time.LocalDate;
 
-import com.example.app.chat.user.dto.update.TeacherUpdateRequest;
 import com.example.app.chat.library.enumeration.Gender;
 import com.example.app.chat.library.utils.validate.PhoneNumberFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

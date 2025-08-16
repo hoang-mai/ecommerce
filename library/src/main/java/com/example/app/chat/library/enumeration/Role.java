@@ -7,11 +7,7 @@ import lombok.Getter;
 @Getter
 public enum Role {
     ADMIN(1L, "ADMIN"),
-    PRINCIPAL(2L, "PRINCIPAL"),
-    ASSISTANT(3L, "ASSISTANT"),
-    TEACHER(4L, "TEACHER"),
-    STUDENT(5L, "STUDENT"),
-    PARENT(6L, "PARENT");
+    USER(2L, "USER");
 
     private final Long roleId;
     private final String role;

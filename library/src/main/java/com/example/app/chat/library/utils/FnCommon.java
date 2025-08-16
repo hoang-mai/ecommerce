@@ -36,11 +36,7 @@ public final class FnCommon {
     public static com.example.app.chat.enumeration.Role convertRoleToRoleProto(Role role) {
         return switch (role) {
             case ADMIN -> com.example.app.chat.enumeration.Role.ADMIN;
-            case PRINCIPAL -> com.example.app.chat.enumeration.Role.PRINCIPAL;
-            case ASSISTANT -> com.example.app.chat.enumeration.Role.ASSISTANT;
-            case TEACHER -> com.example.app.chat.enumeration.Role.TEACHER;
-            case STUDENT -> com.example.app.chat.enumeration.Role.STUDENT;
-            case PARENT -> com.example.app.chat.enumeration.Role.PARENT;
+            case USER -> com.example.app.chat.enumeration.Role.USER;
         };
     }
 
@@ -53,11 +49,7 @@ public final class FnCommon {
     public static Role convertRoleProtoToRole(com.example.app.chat.enumeration.Role role) {
         return switch (role) {
             case ADMIN -> Role.ADMIN;
-            case PRINCIPAL -> Role.PRINCIPAL;
-            case ASSISTANT -> Role.ASSISTANT;
-            case TEACHER -> Role.TEACHER;
-            case STUDENT -> Role.STUDENT;
-            case PARENT -> Role.PARENT;
+            case USER -> Role.USER;
             default -> throw new IllegalArgumentException(MessageError.INVALID_ROLE);
         };
     }

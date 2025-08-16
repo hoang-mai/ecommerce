@@ -1,18 +1,13 @@
 package com.example.app.chat.user.controller;
 
 import com.example.app.chat.library.component.MessageService;
-import com.example.app.chat.user.dto.update.ParentRelationshipUpdateRequest;
 import com.example.app.chat.user.dto.update.UserUpdateRequest;
-import com.example.app.chat.user.dto.user.ParentReqCreateUserDTO;
 import com.example.app.chat.user.dto.user.ReqCreateUserDTO;
 import com.example.app.chat.library.utils.BaseResponse;
 import com.example.app.chat.library.utils.MessageSuccess;
-import com.example.app.chat.library.utils.PageResponse;
-import com.example.app.chat.user.dto.user.UserPreviewResponse;
 import com.example.app.chat.user.dto.information.UserResponse;
 import com.example.app.chat.user.service.UserService;
 import com.example.app.chat.library.utils.Constant;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @Slf4j

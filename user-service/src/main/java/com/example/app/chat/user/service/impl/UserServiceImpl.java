@@ -3,7 +3,6 @@ package com.example.app.chat.user.service.impl;
 import com.example.app.chat.library.exception.NotFoundException;
 import com.example.app.chat.library.utils.Constant;
 import com.example.app.chat.library.utils.FnCommon;
-import com.example.app.chat.user.dto.update.TeacherUpdateRequest;
 import com.example.app.chat.user.dto.update.UserUpdateRequest;
 import com.example.app.chat.user.dto.user.ReqCreateUserDTO;
 import com.example.app.chat.user.saga.data.CreateUserData;

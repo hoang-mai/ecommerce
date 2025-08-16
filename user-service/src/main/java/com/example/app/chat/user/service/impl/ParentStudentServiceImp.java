@@ -1,9 +1,5 @@
 package com.example.app.chat.user.service.impl;
 
-import com.example.app.chat.user.entity.Parent;
-import com.example.app.chat.library.enumeration.ParentRelationship;
-import com.example.app.chat.user.entity.ParentStudent;
-import com.example.app.chat.user.entity.Student;
 import com.example.app.chat.user.repository.ParentStudentRepository;
 import com.example.app.chat.user.service.ParentStudentService;
 import lombok.RequiredArgsConstructor;
