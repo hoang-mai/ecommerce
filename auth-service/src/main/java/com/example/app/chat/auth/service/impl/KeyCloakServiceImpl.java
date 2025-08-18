@@ -2,7 +2,9 @@ package com.example.app.chat.auth.service.impl;
 
 import com.example.app.chat.auth.ReqCreateAccountDTO;
 import com.example.app.chat.auth.dto.auth.ReqLoginDTO;
+import com.example.app.chat.auth.dto.auth.ReqUpdateAccountDTO;
 import com.example.app.chat.auth.dto.keycloak.ResKeycloakLoginDTO;
+import com.example.app.chat.library.component.UserHelper;
 import com.example.app.chat.library.enumeration.AccountStatus;
 import com.example.app.chat.library.exception.DuplicateException;
 import com.example.app.chat.auth.service.KeyCloakService;
@@ -44,6 +46,9 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     private String authServerUrl;
 
     private final Keycloak keycloak;
+
+    private final UserHelper userHelper;
+    ;
 
     @Override
     public ResKeycloakLoginDTO login(ReqLoginDTO reqLoginDTO) {
@@ -93,7 +98,58 @@ public class KeyCloakServiceImpl implements KeyCloakService {
             if (status != Response.Status.NO_CONTENT.getStatusCode()) {
                 throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+        }
+    }
+
+    @Override
+    public void updateAccount(ReqUpdateAccountDTO reqUpdateAccountDTO) {
+        if (!FnCommon.isNullOrEmpty(reqUpdateAccountDTO.getAccountStatus().getStatus())) {
+            updateAccountStatus(reqUpdateAccountDTO.getAccountStatus().getStatus());
+        } else if (!FnCommon.isNullOrEmpty(reqUpdateAccountDTO.getPassword())) {
+            updatePassword(reqUpdateAccountDTO.getPassword());
+        }
+    }
+
+    /**
+     * Cập nhật mật khẩu tài khoản trong Keycloak
+     *
+     * @param password mật khẩu mới
+     */
+    private void updatePassword(String password) {
+        String accountId = userHelper.getAccountId();
+        UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
+        if (user == null) {
+            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
+        }
+        CredentialRepresentation credential = new CredentialRepresentation();
+        credential.setType(CredentialRepresentation.PASSWORD);
+        credential.setValue(password);
+        credential.setTemporary(false);
+        user.setCredentials(List.of(credential));
+        try {
+            keycloak.realm(realm).users().get(accountId).update(user);
+        } catch (Exception e) {
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+        }
+    }
+
+    /**
+     * Cập nhật trạng thái tài khoản trong Keycloak
+     *
+     * @param accountStatus trạng thái tài khoản mới
+     */
+    private void updateAccountStatus(String accountStatus) {
+        String accountId = userHelper.getAccountId();
+        UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
+        if (user == null) {
+            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
+        }
+        user.setEnabled(AccountStatus.ACTIVE.getStatus().equals(accountStatus));
+        try {
+            keycloak.realm(realm).users().get(accountId).update(user);
+        } catch (Exception e) {
             throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         }
     }
@@ -108,7 +164,6 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(reqCreateAccountDTO.getUsername());
         Map<String, List<String>> attributes = Map.of(
-                "status", List.of(AccountStatus.ACTIVE.getStatus()),
                 "userId", List.of(String.valueOf(reqCreateAccountDTO.getUserId())),
                 "role", List.of(FnCommon.convertRoleProtoToRole(reqCreateAccountDTO.getRole()).getRole())
         );

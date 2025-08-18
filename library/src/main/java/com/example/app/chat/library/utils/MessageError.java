@@ -28,4 +28,9 @@ public final class MessageError {
     public static final String USER_NOT_FOUND = "user.not.found";
     public static final String USERNAME_NOT_FOUND = "username.not.found";
     public static final String USER_NOT_ACTIVE = "user.not.active";
+    public static final String EMAIL_EXISTS = "email.exists";
+    public static final String USER_ID_NOT_FOUND = "user.id.not.found";
+    public static final String INVALID_ACCOUNT_STATUS = "invalid.account.status";
+    public static final String ACCOUNT_NOT_FOUND = "account.not.found";
+    public static final String ACCOUNT_ID_NOT_FOUND = "account.id.not.found";
 }

@@ -1,11 +1,15 @@
 package com.example.app.chat.user.controller;
 
 import com.example.app.chat.library.component.MessageService;
-import com.example.app.chat.user.dto.update.UserUpdateRequest;
-import com.example.app.chat.user.dto.user.ReqCreateUserDTO;
+import com.example.app.chat.library.exception.DuplicateException;
+import com.example.app.chat.library.exception.NotFoundException;
+import com.example.app.chat.library.utils.PageResponse;
+import com.example.app.chat.user.dto.ReqUpdateUserDTO;
+import com.example.app.chat.user.dto.ReqCreateUserDTO;
 import com.example.app.chat.library.utils.BaseResponse;
 import com.example.app.chat.library.utils.MessageSuccess;
-import com.example.app.chat.user.dto.information.UserResponse;
+import com.example.app.chat.user.dto.ResInfoPreviewUserDTO;
+import com.example.app.chat.user.dto.ResInfoUserDTO;
 import com.example.app.chat.user.service.UserService;
 import com.example.app.chat.library.utils.Constant;
 
@@ -16,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -25,6 +30,12 @@ public class UserController {
     private final UserService userService;
     private final MessageService messageService;
 
+    /**
+     * Tạo người dùng mới
+     * 
+     * @param reqCreateUserDTO Thông tin tạo người dùng mới
+     * @return Trả về thành công
+     */
     @PostMapping("/create")
     public ResponseEntity<BaseResponse<String>> register(@Valid @RequestBody ReqCreateUserDTO reqCreateUserDTO) {
         log.info("Registering user: {}", reqCreateUserDTO);
@@ -36,69 +47,88 @@ public class UserController {
                 .build());
     }
 
-
+    /**
+     * Lấy thông tin người dùng theo ID
+     * 
+     * @param userId ID của người dùng
+     * @return Thông tin người dùng
+     * @throws NotFoundException nếu người dùng không tồn tại
+     */
     @GetMapping("/{userId}")
-    public ResponseEntity<BaseResponse<UserResponse>> getUserById(@PathVariable Long userId) {
+    public ResponseEntity<BaseResponse<ResInfoUserDTO>> getUserById(@PathVariable Long userId) throws NotFoundException {
         log.info("Fetching user by id: {}", userId);
-        UserResponse userResponse = userService.getUserById(userId);
+        ResInfoUserDTO userResponse = userService.getUserById(userId);
         log.info("User fetched successfully: {}", userResponse);
-        return ResponseEntity.ok(BaseResponse.<UserResponse>builder()
+        return ResponseEntity.ok(BaseResponse.<ResInfoUserDTO>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Lấy thông tin người dùng thành công")
+                .message(messageService.getMessage(MessageSuccess.GET_INFO_USER_SUCCESS))
                 .data(userResponse)
                 .build());
     }
 
-    @PatchMapping("/{userId}")
-    public ResponseEntity<BaseResponse<Void>> updateUser(@PathVariable Long userId, @RequestBody UserUpdateRequest userUpdateRequest) {
+    /**
+     * Cập nhật thông tin người dùng theo ID
+     * @param userId ID của người dùng hiện tại
+     * @param reqUpdateUserDTO Thông tin cập nhật người dùng
+     * @throws NotFoundException nếu người dùng không tồn tại
+     * @throws DuplicateException nếu thông tin cập nhật trùng lặp (ví dụ: email đã tồn tại)
+     * @return Trả về thành công
+     */
+    @PatchMapping()
+    public ResponseEntity<BaseResponse<Void>> updateUserById(@RequestHeader("user-id") Long userId,
+            @RequestBody ReqUpdateUserDTO reqUpdateUserDTO) throws NotFoundException, DuplicateException {
         log.info("Updating user with id: {}", userId);
-        userService.updateUser(userId, userUpdateRequest);
+        userService.updateUserById(userId, reqUpdateUserDTO);
         log.info("User updated successfully: {}", userId);
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Cập nhật thông tin người dùng thành công")
+                .message(messageService.getMessage(MessageSuccess.UPDATE_USER_SUCCESS))
                 .build());
     }
 
-//    @PatchMapping("/update-parent-relationship")
-//    public ResponseEntity<BaseResponse<Void>> updateParentRelationship(@RequestBody ParentRelationshipUpdateRequest parentRelationshipUpdateRequest) {
-//        log.info("Updating parent relationship: {}", parentRelationshipUpdateRequest);
-//        userService.updateParentRelationship(parentRelationshipUpdateRequest);
-//        log.info("Parent relationship updated successfully: {}", parentRelationshipUpdateRequest);
-//        return ResponseEntity.ok(BaseResponse.<Void>builder()
-//                .statusCode(HttpStatus.OK.value())
-//                .message("Cập nhật mối quan hệ giữa phụ huynh và học sinh thành công")
-//                .build());
-//    }
+    /**
+     * Lấy thông tin người dùng hiện tại
+     *
+     * @param userId ID của người dùng hiện tại
+     * @return Thông tin người dùng hiện tại
+     */
+    @GetMapping()
+    public ResponseEntity<BaseResponse<ResInfoUserDTO>> getCurrentUser(@RequestHeader("user-id") Long userId) {
+        ResInfoUserDTO userResponse = userService.getCurrentUserById(userId);
+        log.info("Current user fetched successfully: {}", userResponse);
+        return ResponseEntity.ok(BaseResponse.<ResInfoUserDTO>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_INFO_USER_SUCCESS))
+                .data(userResponse)
+                .build());
+    }
 
-//    @GetMapping("/search")
-//    public ResponseEntity<BaseResponse<PageResponse<List<UserPreviewResponse>>>> searchUsers(
-//            @RequestParam(value = "page_no", defaultValue = "0") int page,
-//            @RequestParam(value = "page_size", defaultValue = "5") int size,
-//            @RequestParam(value = "query") String query
-//    ) {
-//        log.info("Searching users with query: {}", query);
-//        PageResponse<List<UserPreviewResponse>> userPreviewResponsePageResponse = userService.searchUsers(page, size, query);
-//        log.info("User search results: {}", userPreviewResponsePageResponse);
-//        return ResponseEntity.ok(BaseResponse.<PageResponse<List<UserPreviewResponse>>>builder()
-//                .statusCode(HttpStatus.OK.value())
-//                .message("Tìm kiếm người dùng thành công")
-//                .data(userPreviewResponsePageResponse)
-//                .build());
-//    }
-//    @GetMapping()
-//    public ResponseEntity<BaseResponse<PageResponse<List<UserPreviewResponse>>>> getUsers(
-//            @RequestParam(value = "page_no", defaultValue = "0") int page,
-//            @RequestParam(value = "page_size", defaultValue = "20") int size
-//    ){
-//        log.info("Searching users with query: {}", role);
-//        PageResponse<List<UserPreviewResponse>> userPreviewResponsePageResponse = userService.getUsers(page, size, role);
-//        log.info("User search results: {}", userPreviewResponsePageResponse);
-//        return ResponseEntity.ok(BaseResponse.<PageResponse<List<UserPreviewResponse>>>builder()
-//                .statusCode(HttpStatus.OK.value())
-//                .message("Tìm kiếm người dùng thành công")
-//                .data(userPreviewResponsePageResponse)
-//                .build());
-//    }
+
+    /**
+     * Tìm kiếm người dùng theo từ khóa
+     *
+     * @param pageNo Số trang (mặc định là 0)
+     * @param pageSize Kích thước trang (mặc định là 5)
+     * @param query Từ khóa tìm kiếm
+     * @return Danh sách người dùng phù hợp với từ khóa
+     */
+    @GetMapping("/search")
+    public ResponseEntity<BaseResponse<PageResponse<List<ResInfoPreviewUserDTO>>>>
+    searchUsers(
+            @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
+            @RequestParam(value = "query") String query
+    ) {
+        log.info("Searching users with query: {}", query);
+        PageResponse<List<ResInfoPreviewUserDTO>> listUserPageResponse =
+                userService.searchUsers(pageNo, pageSize, query);
+        log.info("User search results: {}", listUserPageResponse);
+        return
+                ResponseEntity.ok(BaseResponse.<PageResponse<List<ResInfoPreviewUserDTO>>>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message(messageService.getMessage(MessageSuccess.SEARCH_USER_SUCCESS))
+                        .data(listUserPageResponse)
+                        .build());
+    }
 
 }

@@ -30,6 +30,17 @@ public class RestException {
                         .build());
     }
 
+    @ExceptionHandler(DuplicateException.class)
+    public ResponseEntity<BaseResponse<Void>> handleDuplicateException(DuplicateException e) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(BaseResponse.<Void>builder()
+                        .statusCode(HttpStatus.CONFLICT.value())
+                        .message(messageService.getMessage(e.getMessage()))
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<BaseResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
         return ResponseEntity
@@ -58,6 +69,17 @@ public class RestException {
                 .badRequest()
                 .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.BAD_REQUEST.value())
+                        .message(messageService.getMessage(e.getMessage()))
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<BaseResponse<Void>> handleIllegalStateException(IllegalStateException e) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(BaseResponse.<Void>builder()
+                        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .message(messageService.getMessage(e.getMessage()))
                         .timestamp(LocalDateTime.now())
                         .build());

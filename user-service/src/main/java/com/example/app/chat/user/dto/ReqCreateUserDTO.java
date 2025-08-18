@@ -1,4 +1,4 @@
-package com.example.app.chat.user.dto.user;
+package com.example.app.chat.user.dto;
 
 import java.time.LocalDate;
 
@@ -7,6 +7,7 @@ import com.example.app.chat.library.utils.MessageError;
 import com.example.app.chat.library.utils.validate.PhoneNumberFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -15,9 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class ReqCreateUserDTO {
 
     @NotBlank(message = MessageError.USERNAME_NOT_BLANK)
@@ -29,6 +27,11 @@ public class ReqCreateUserDTO {
     @Size(min = 6, max = 20, message = MessageError.PASSWORD_SIZE)
     @Schema(description = "Password must be between 6 and 20 characters", example = "password123")
     private String password;
+
+    @Email
+    @NotBlank(message = MessageError.EMAIL_NOT_BLANK)
+    @Schema(description = "Email must be a valid email address", example = "john.d@gmail.com")
+    private String email;
 
     @Schema(description = "First name must be between 1 and 10 characters", example = "John")
     private String firstName;

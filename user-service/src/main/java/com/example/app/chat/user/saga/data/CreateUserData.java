@@ -17,6 +17,7 @@ public class CreateUserData {
     private Long userId;
     private String username;
     private String password;
+    private String email;
     private String firstName;
     private String middleName;
     private String lastName;

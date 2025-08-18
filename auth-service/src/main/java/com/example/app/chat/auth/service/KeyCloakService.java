@@ -2,6 +2,7 @@ package com.example.app.chat.auth.service;
 
 import com.example.app.chat.auth.ReqCreateAccountDTO;
 import com.example.app.chat.auth.dto.auth.ReqLoginDTO;
+import com.example.app.chat.auth.dto.auth.ReqUpdateAccountDTO;
 import com.example.app.chat.auth.dto.keycloak.ResKeycloakLoginDTO;
 import com.example.app.chat.library.exception.DuplicateException;
 
@@ -23,5 +24,17 @@ public interface KeyCloakService {
      */
     String register(ReqCreateAccountDTO reqCreateAccountDTO);
 
+    /**
+     * Xóa tài khoản trong Keycloak
+     *
+     * @param accountId ID của tài khoản cần xóa
+     */
     void delete(String accountId);
+
+    /**
+     * Cập nhật thông tin tài khoản trong Keycloak
+     *
+     * @param reqUpdateStatusAccountDTO DTO chứa thông tin cập nhật trạng thái tài khoản
+     */
+    void updateAccount(ReqUpdateAccountDTO reqUpdateStatusAccountDTO);
 }

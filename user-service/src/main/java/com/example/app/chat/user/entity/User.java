@@ -29,6 +29,9 @@ public class User {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "email", unique = true, nullable = false)
+    private String email;
+
     @Column(name = "first_name")
     private String firstName;
 
@@ -44,7 +47,7 @@ public class User {
     @Column(name = "address")
     private String address;
 
-    @Column(name = "role")
+    @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
 

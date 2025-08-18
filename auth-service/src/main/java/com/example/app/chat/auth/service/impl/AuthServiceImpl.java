@@ -1,5 +1,6 @@
 package com.example.app.chat.auth.service.impl;
 
+import com.example.app.chat.auth.dto.auth.ReqUpdateAccountDTO;
 import com.example.app.chat.library.component.MessageService;
 import com.example.app.chat.auth.dto.auth.ReqLoginDTO;
 import com.example.app.chat.auth.dto.auth.ResLoginDTO;
@@ -54,5 +55,10 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         }
+    }
+
+    @Override
+    public void updateAccount(ReqUpdateAccountDTO reqUpdateStatusAccountDTO) {
+        keyCloakService.updateAccount(reqUpdateStatusAccountDTO);
     }
 }
