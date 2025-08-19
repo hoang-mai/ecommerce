@@ -1,4 +1,4 @@
-package com.example.app.chat.user.config;
+package com.example.app.chat.library.config;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
