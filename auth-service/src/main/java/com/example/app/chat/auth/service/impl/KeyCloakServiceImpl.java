@@ -105,9 +105,9 @@ public class KeyCloakServiceImpl implements KeyCloakService {
 
     @Override
     public void updateAccount(ReqUpdateAccountDTO reqUpdateAccountDTO) {
-        if (!FnCommon.isNullOrEmpty(reqUpdateAccountDTO.getAccountStatus().getStatus())) {
+        if (FnCommon.isNotNullOrEmpty(reqUpdateAccountDTO.getAccountStatus().getStatus())) {
             updateAccountStatus(reqUpdateAccountDTO.getAccountStatus().getStatus());
-        } else if (!FnCommon.isNullOrEmpty(reqUpdateAccountDTO.getPassword())) {
+        } else if (FnCommon.isNotNullOrEmpty(reqUpdateAccountDTO.getPassword())) {
             updatePassword(reqUpdateAccountDTO.getPassword());
         }
     }

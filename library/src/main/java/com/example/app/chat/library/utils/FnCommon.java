@@ -10,10 +10,20 @@ public final class FnCommon {
      * Kiểm tra xem chuỗi có null hoặc rỗng hay không
      *
      * @param str chuỗi cần kiểm tra
-     * @return true nếu chuỗi là null hoặc rỗng, false nếu không
+     * @return false nếu chuỗi là null hoặc rỗng, true nếu không
      */
-    public static boolean isNullOrEmpty(String str) {
-        return str == null || str.isEmpty();
+    public static boolean isNotNullOrEmpty(String str) {
+        return str != null && !str.isEmpty();
+    }
+
+    /**
+     * Kiểm tra xem đối tượng có null hay không
+     *
+     * @param obj đối tượng cần kiểm tra
+     * @return false nếu đối tượng là null, true nếu không
+     */
+    public static boolean isNotNull(Object obj) {
+        return obj != null;
     }
 
     /**
@@ -24,7 +34,20 @@ public final class FnCommon {
      */
     public static String removeVietnameseAccents(String str) {
         if (str == null) return null;
-        return str.replaceAll("[àáạảãâầấẩẫậăắặẳẵ]", "a").replaceAll("[èéẹẻẽêềếểễệ]", "e").replaceAll("[ìíịỉĩ]", "i").replaceAll("[òóọỏõôồốổỗộơờớởỡợ]", "o").replaceAll("[ùúụủũưừứửữự]", "u").replaceAll("[ỳýỵỷỹ]", "y").replaceAll("đ", "d").replaceAll("[ÀÁẠẢÃÂẦẤẨẪẬĂẮẶẲẴ]", "A").replaceAll("[ÈÉẸẺẼÊỀẾỂỄỆ]", "E").replaceAll("[ÌÍỊỈĨ]", "I").replaceAll("[ÒÓỌỎÕÔỒỐỔỖỘƠỜỚỞỠỢ]", "O").replaceAll("[ÙÚỤỦŨƯỪỨỬỮỰ]", "U").replaceAll("[ỲÝỴỶỸ]", "Y").replaceAll("Đ", "D");
+        return str.replaceAll("[àáạảãâầấẩẫậăắặẳẵ]", "a")
+                .replaceAll("[èéẹẻẽêềếểễệ]", "e")
+                .replaceAll("[ìíịỉĩ]", "i")
+                .replaceAll("[òóọỏõôồốổỗộơờớởỡợ]", "o")
+                .replaceAll("[ùúụủũưừứửữự]", "u")
+                .replaceAll("[ỳýỵỷỹ]", "y")
+                .replaceAll("đ", "d")
+                .replaceAll("[ÀÁẠẢÃÂẦẤẨẪẬĂẮẶẲẴ]", "A")
+                .replaceAll("[ÈÉẸẺẼÊỀẾỂỄỆ]", "E")
+                .replaceAll("[ÌÍỊỈĨ]", "I")
+                .replaceAll("[ÒÓỌỎÕÔỒỐỔỖỘƠỜỚỞỠỢ]", "O")
+                .replaceAll("[ÙÚỤỦŨƯỪỨỬỮỰ]", "U")
+                .replaceAll("[ỲÝỴỶỸ]", "Y")
+                .replaceAll("Đ", "D");
     }
 
     /**

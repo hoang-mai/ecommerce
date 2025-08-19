@@ -32,6 +32,9 @@ public class User {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "first_name")
     private String firstName;
 

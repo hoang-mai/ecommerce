@@ -11,10 +11,8 @@ public final class MessageError {
     public static final String PASSWORD_NOT_BLANK = "password.not.blank";
     public static final String INVALID_ROLE = "invalid.role";
     public static final String PASSWORD_SIZE = "password.size";
-    public static final String FIRST_NAME_NOT_BLANK = "first.name.not.blank";
     public static final String LAST_NAME_NOT_BLANK = "last.name.not.blank";
-    public static final String FIRST_NAME_SIZE = "first.name.size";
-    public static final String LAST_NAME_SIZE = "last.name.size";
+    public static final String NAME_SIZE = "name.size";
     public static final String INVALID_PHONE_NUMBER = "invalid.phone.number";
     public static final String ACCOUNT_ID_NOT_BLANK = "account.id.not.blank";
     public static final String PHONE_NUMBER_NOT_BLANK = "phone.number.not.blank";

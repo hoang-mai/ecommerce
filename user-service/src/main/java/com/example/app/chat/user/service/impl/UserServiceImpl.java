@@ -4,6 +4,7 @@ import com.example.app.chat.library.component.UserHelper;
 import com.example.app.chat.library.exception.DuplicateException;
 import com.example.app.chat.library.exception.NotFoundException;
 import com.example.app.chat.library.utils.Constant;
+import com.example.app.chat.library.utils.FnCommon;
 import com.example.app.chat.library.utils.MessageError;
 import com.example.app.chat.user.dto.ReqUpdateUserDTO;
 import com.example.app.chat.user.dto.ResInfoPreviewUserDTO;
@@ -120,17 +121,35 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
 
-        if (reqUpdateUserDTO.getEmail() != null && userRepository.existsEmailAlreadyUsedByAnotherUser(userId, reqUpdateUserDTO.getEmail())) {
-            throw new DuplicateException(MessageError.EMAIL_EXISTS);
+        if (FnCommon.isNotNull(reqUpdateUserDTO.getEmail())) {
+            if(userRepository.existsEmailAlreadyUsedByAnotherUser(userId, reqUpdateUserDTO.getEmail()))throw new DuplicateException(MessageError.EMAIL_EXISTS);
+            else user.setEmail(reqUpdateUserDTO.getEmail());
         }
-        user.setEmail(reqUpdateUserDTO.getEmail());
-        user.setFirstName(reqUpdateUserDTO.getFirstName());
-        user.setMiddleName(reqUpdateUserDTO.getMiddleName());
-        user.setLastName(reqUpdateUserDTO.getLastName());
-        user.setPhoneNumber(reqUpdateUserDTO.getPhoneNumber());
-        user.setAddress(reqUpdateUserDTO.getAddress());
-        user.setGender(reqUpdateUserDTO.getGender());
-        user.setDateOfBirth(reqUpdateUserDTO.getDateOfBirth());
+        if(FnCommon.isNotNull(reqUpdateUserDTO.getDescription())) {
+            user.setDescription(reqUpdateUserDTO.getDescription());
+        }
+        if(FnCommon.isNotNull(reqUpdateUserDTO.getFirstName())) {
+            user.setFirstName(reqUpdateUserDTO.getFirstName());
+        }
+        if(FnCommon.isNotNull(reqUpdateUserDTO.getMiddleName())) {
+            user.setMiddleName(reqUpdateUserDTO.getMiddleName());
+        }
+        if(FnCommon.isNotNull(reqUpdateUserDTO.getLastName())) {
+            user.setLastName(reqUpdateUserDTO.getLastName());
+        }
+        if(FnCommon.isNotNull(reqUpdateUserDTO.getPhoneNumber())) {
+            user.setPhoneNumber(reqUpdateUserDTO.getPhoneNumber());
+        }
+        if(FnCommon.isNotNull(reqUpdateUserDTO.getAddress())) {
+            user.setAddress(reqUpdateUserDTO.getAddress());
+        }
+        if(FnCommon.isNotNull(reqUpdateUserDTO.getGender())) {
+            user.setGender(reqUpdateUserDTO.getGender());
+        }
+        if(FnCommon.isNotNull(reqUpdateUserDTO.getDateOfBirth())) {
+            user.setDateOfBirth(reqUpdateUserDTO.getDateOfBirth());
+        }
+
         userRepository.save(user);
     }
 
@@ -142,6 +161,7 @@ public class UserServiceImpl implements UserService {
         return ResInfoUserDTO.builder()
                 .userId(user.getUserId())
                 .email(user.getEmail())
+                .description(user.getDescription())
                 .firstName(user.getFirstName())
                 .middleName(user.getMiddleName())
                 .lastName(user.getLastName())

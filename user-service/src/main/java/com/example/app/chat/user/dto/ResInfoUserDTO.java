@@ -13,6 +13,7 @@ import lombok.*;
 public class ResInfoUserDTO {
     private Long userId;
     private String email;
+    private String description;
     private String firstName;
     private String middleName;
     private String lastName;

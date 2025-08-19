@@ -33,13 +33,16 @@ public class ReqCreateUserDTO {
     @Schema(description = "Email must be a valid email address", example = "john.d@gmail.com")
     private String email;
 
+    @Size(min = 1, max = 10, message = MessageError.NAME_SIZE)
     @Schema(description = "First name must be between 1 and 10 characters", example = "John")
     private String firstName;
 
+    @Size(min = 1, max = 10, message = MessageError.NAME_SIZE)
     @Schema(description = "Middle name is optional and can be up to 10 characters", example = "A")
     private String middleName;
 
     @NotBlank(message = MessageError.LAST_NAME_NOT_BLANK)
+    @Size(min = 1, max = 10, message = MessageError.NAME_SIZE)
     @Schema(description = "Last name must be between 1 and 10 characters", example = "Doe")
     private String lastName;
 
