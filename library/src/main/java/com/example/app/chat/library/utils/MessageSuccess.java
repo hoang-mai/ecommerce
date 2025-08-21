@@ -11,4 +11,5 @@ public final class MessageSuccess {
     public static final String UPDATE_ACCOUNT_SUCCESS = "update.account.success";
     public static final String GET_LIST_CHAT_PREVIEW_SUCCESS = "get.list.chat.preview.success";
     public static final String GET_CHAT_SUCCESS = "get.chat.success";
+    public static final String UPDATE_MESSAGE_SUCCESS = "update.message.success";
 }

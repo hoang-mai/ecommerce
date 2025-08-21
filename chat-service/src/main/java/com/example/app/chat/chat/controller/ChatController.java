@@ -1,6 +1,7 @@
 package com.example.app.chat.chat.controller;
 
 import com.example.app.chat.chat.dto.ReqPrivateMessageDTO;
+import com.example.app.chat.chat.dto.ReqUpdateMessageDTO;
 import com.example.app.chat.chat.dto.ResChatPreviewDTO;
 import com.example.app.chat.chat.dto.ResMessageDTO;
 import com.example.app.chat.chat.service.ChatService;
@@ -46,7 +47,7 @@ public class ChatController {
                 .build()
         );
     }
-    @GetMapping("{chatId}")
+    @GetMapping("/{chatId}")
     public ResponseEntity<BaseResponse<PageResponse<ResMessageDTO>>> getChatById(
             @PathVariable String chatId,
             @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
@@ -56,6 +57,19 @@ public class ChatController {
                 .statusCode(200)
                 .message(MessageSuccess.GET_CHAT_SUCCESS)
                 .data(chat)
+                .build()
+        );
+    }
+
+    @PatchMapping("/{messageId}")
+    public ResponseEntity<BaseResponse<ReqUpdateMessageDTO>> updateMessage(
+            @PathVariable String messageId,
+            @RequestBody ReqUpdateMessageDTO reqUpdateMessageDTO) {
+        chatService.updateMessage(messageId, reqUpdateMessageDTO);
+        return ResponseEntity.ok(BaseResponse.<ReqUpdateMessageDTO>builder()
+                .statusCode(200)
+                .message(MessageSuccess.UPDATE_MESSAGE_SUCCESS)
+                .data(reqUpdateMessageDTO)
                 .build()
         );
     }

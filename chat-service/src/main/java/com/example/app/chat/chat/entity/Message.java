@@ -33,6 +33,12 @@ public class Message {
     @Field("message_content")
     private String messageContent;
 
+    @Field("is_updated")
+    private boolean isUpdated;
+
+    @Field("is_deleted")
+    private boolean isDeleted;
+
     @Field("chat_member_id")
     private String chatMemberId;
 

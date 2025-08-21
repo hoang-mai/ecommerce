@@ -2,7 +2,6 @@ package com.example.app.chat.chat.repository;
 
 import com.example.app.chat.chat.dto.ResMessageDTO;
 import com.example.app.chat.chat.entity.Message;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mongodb.repository.Aggregation;
@@ -45,22 +44,29 @@ public interface MessageRepository extends MongoRepository<Message, String> {
             """,
             "{ '$unwind': '$sender' }",
             """
-            {
-              $project: {
-                messageId: '$_id',
-                messageType: '$message_type',
-                content: '$content',
-                timestamp: '$updated_at',
-                isUpdated: { $cond: [{ $ne: ['$created_at', '$updated_at'] }, true, false] },
-                chatMemberId: '$chat_member_id',
-                nickName: '$sender.nick_name',
-                sender: {
-                  userId: '$sender.user.userId',
-                  avatarUrl: '$sender.user.avatarUrl'
-                }
-              }
-            }
-            """
+                    {
+                      $project: {
+                        messageId: '$_id',
+                        messageType: '$message_type',
+                        content: {
+                                  $cond: {
+                                         if: { $eq: ['$lastMessage.is_deleted', true] },
+                                         then: null,
+                                         else: '$lastMessage.message_content'
+                                         }
+                                  },
+                        timestamp: '$updated_at',
+                        isUpdated: '$is_updated',
+                        isDeleted: '$is_deleted',
+                        chatMemberId: '$chat_member_id',
+                        nickName: '$sender.nick_name',
+                        sender: {
+                          userId: '$sender.user.userId',
+                          avatarUrl: '$sender.user.avatarUrl'
+                        }
+                      }
+                    }
+                    """
     })
     Slice<ResMessageDTO> findByChatId(String chatId, Pageable pageable);
 

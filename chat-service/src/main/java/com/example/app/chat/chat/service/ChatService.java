@@ -1,6 +1,7 @@
 package com.example.app.chat.chat.service;
 
 import com.example.app.chat.chat.dto.ReqPrivateMessageDTO;
+import com.example.app.chat.chat.dto.ReqUpdateMessageDTO;
 import com.example.app.chat.chat.dto.ResChatPreviewDTO;
 import com.example.app.chat.chat.dto.ResMessageDTO;
 import com.example.app.chat.library.utils.PageResponse;
@@ -31,4 +32,12 @@ public interface ChatService {
      * @return Thông tin cuộc trò chuyện
      */
     PageResponse<ResMessageDTO> getChatById(String chatId, int pageNo, int pageSize);
+
+    /**
+     * Cập nhật tin nhắn theo ID
+     *
+     * @param messageId ID của tin nhắn cần cập nhật
+     * @param reqUpdateMessageDTO Thông tin cập nhật tin nhắn
+     */
+    void updateMessage(String messageId, ReqUpdateMessageDTO reqUpdateMessageDTO);
 }

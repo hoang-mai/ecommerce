@@ -29,6 +29,10 @@ public class GrpcException {
                 return Status.ALREADY_EXISTS
                         .withDescription(messageService.getMessage(exception.getMessage()))
                         .asException(metadata);
+            } else if (exception instanceof NotFoundException) {
+                return Status.NOT_FOUND
+                        .withDescription(messageService.getMessage(exception.getMessage()))
+                        .asException(metadata);
             }
             return null;
         };

@@ -33,4 +33,6 @@ public final class MessageError {
     public static final String ACCOUNT_ID_NOT_FOUND = "account.id.not.found";
     public static final String TOKEN_NOT_FOUND = "token.not.found";
     public static final String CHAT_MEMBER_NOT_FOUND = "chat.member.not.found";
+    public static final String CHAT_NOT_FOUND = "chat.not.found";
+    public static final String MESSAGE_NOT_FOUND = "message.not.found";
 }
