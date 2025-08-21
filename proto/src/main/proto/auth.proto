@@ -20,9 +20,9 @@ message ReqCreateAccountDTO {
 }
 
 message ReqDeleteAccountDTO {
-  string accountId = 1;
+  string account_id = 1;
 }
 
 message ResCreateAccountDTO {
-  string accountId = 1;
+  string account_id = 1;
 }

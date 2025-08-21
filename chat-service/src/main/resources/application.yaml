@@ -1,10 +1,15 @@
 spring:
+  gprc:
+    client:
+      channels:
+        user-service:
+          address: localhost:9093
   data:
     mongodb:
-        uri: mongodb+srv://chat-service:CiLAxu5KIRck0Eau@chat.xhbltmc.mongodb.net/chat?retryWrites=true&w=majority&appName=chat
+        uri: mongodb://root:rootpassword@localhost:27017/chatdb
 
 server:
-  port: 8083
+  port: 8084
 
 eureka:
   client:

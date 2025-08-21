@@ -58,6 +58,10 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.example.app.chat</groupId>
+			<artifactId>library</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

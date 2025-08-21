@@ -59,7 +59,7 @@ public interface UserService {
      * @param query   Chuỗi tìm kiếm (tên  hoặc email)
      * @return Danh sách người dùng phù hợp với trang và kích thước trang
      */
-    PageResponse<List<ResInfoPreviewUserDTO>> searchUsers(int pageNo, int pageSize, String query);
+    PageResponse<ResInfoPreviewUserDTO> searchUsers(int pageNo, int pageSize, String query);
 
     /**
      * Lấy thông tin người dùng hiện tại theo ID.

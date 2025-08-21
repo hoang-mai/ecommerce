@@ -33,8 +33,8 @@ public class Message {
     @Field("message_content")
     private String messageContent;
 
-    @Field("sender_id")
-    private Long senderId;
+    @Field("chat_member_id")
+    private String chatMemberId;
 
     @Field("chat_id")
     private String chatId;

@@ -2,7 +2,6 @@ package com.example.app.chat.library.utils;
 
 public final class Constant {
 
-    public static final String EMAIL_DOMAIN = "@school.edu.vn";
 
     public static final String CREATE_USER_QUEUE = "createUserQueue";
 
@@ -13,4 +12,6 @@ public final class Constant {
     public  static final String ACCOUNT = REQUEST_MAPPING + "/account";
 
     public static final String USER = REQUEST_MAPPING + "/user";
+
+    public static final String CHAT = REQUEST_MAPPING + "/chat";
 }

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package user;
+
+import "utils/base_response.proto";
+
+option java_multiple_files = true;
+option java_package = "com.example.app.chat.user";
+
+service UserService {
+  rpc GetUserChatById (ReqGetUserChatDTO) returns (utils.base_response.BaseResponse);
+}
+
+message ReqGetUserChatDTO {
+  int64 user_id = 1;
+}
+
+message ResGetUserChatDTO {
+  int64 user_id = 1;
+  string avatar_url = 2;
+  string first_name = 3;
+  string middle_name = 4;
+  string last_name = 5;
+}

@@ -1,39 +1,37 @@
 package com.example.app.chat.chat.entity;
 
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.LocalDateTime;
 
-@Document(collection = "chat_members")
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Document(collection = "users")
 @Getter
 @Setter
-public class ChatMember {
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class User {
 
-    @Id
-    @Field("chat_member_id")
-    private String chatMemberId;
-
-    @Field("chat_id")
-    private String chatId;
-
+    @Indexed
     @Field("user_id")
     private Long userId;
 
-    @Field("nick_name")
-    private String nickName;
+    @Field("avatar_url")
+    private String avatarUrl;
+
+    @Field("first_name")
+    private String firstName;
+
+    @Field("middle_name")
+    private String middleName;
+
+    @Field("last_name")
+    private String lastName;
 
     @Field("created_at")
     @CreatedDate

@@ -1,5 +1,7 @@
 spring:
   gprc:
+    server:
+      port: 9093
     client:
       channels:
         auth-service:

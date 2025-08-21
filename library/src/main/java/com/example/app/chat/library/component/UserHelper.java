@@ -34,4 +34,18 @@ public class UserHelper {
             throw new IllegalStateException(MessageError.ACCOUNT_ID_NOT_FOUND);
         }
     }
+
+    public String getToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication.getPrincipal() instanceof Jwt jwt){
+            String token = jwt.getTokenValue();
+            if (token != null) {
+                return token;
+            } else {
+                throw new IllegalStateException(MessageError.TOKEN_NOT_FOUND);
+            }
+        } else {
+            throw new IllegalStateException(MessageError.TOKEN_NOT_FOUND);
+        }
+    }
 }

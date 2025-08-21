@@ -70,10 +70,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageResponse<List<ResInfoPreviewUserDTO>> searchUsers(int pageNo, int pageSize, String query) {
+    public PageResponse<ResInfoPreviewUserDTO> searchUsers(int pageNo, int pageSize, String query) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Page<List<ResInfoPreviewUserDTO>> listPage = userRepository.searchUsersByNameOrEmail(query, pageable);
-        return PageResponse.<List<ResInfoPreviewUserDTO>>builder()
+        Page<ResInfoPreviewUserDTO> listPage = userRepository.searchUsersByNameOrEmail(query, pageable);
+        return PageResponse.<ResInfoPreviewUserDTO>builder()
                 .pageNo(listPage.getNumber())
                 .pageSize(listPage.getSize())
                 .totalPages(listPage.getTotalPages())

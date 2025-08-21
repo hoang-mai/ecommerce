@@ -57,8 +57,6 @@ services:
       - DB_DATABASE=keycloak
       - DB_USER=keycloak
       - DB_PASSWORD=keycloak
-    volumes:
-      - ./keycloak/providers:/opt/keycloak/providers
     command:
       - start-dev
       - --http-relative-path=/auth

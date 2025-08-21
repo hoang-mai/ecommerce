@@ -24,20 +24,5 @@ public class WebSocketController {
         return  message ;
     }
 
-    @MessageMapping("/private")
-    public void sendPrivateMessage(@Payload PrivateMessage message) {
-        // Gửi đến user cụ thể (theo receiver)
-        System.out.println("Sending private message: " + message);
-        System.out.println("Receiver: " + message.getReceiver());
-        simpMessagingTemplate.convertAndSendToUser(
-            message.getReceiver(), "/queue/messages", message
-        );
-        
-    }
-}
-@Data
-class PrivateMessage {
-    private String sender;
-    private String receiver;
-    private String content;
+
 }

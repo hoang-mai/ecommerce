@@ -113,18 +113,18 @@ public class UserController {
      * @return Danh sách người dùng phù hợp với từ khóa
      */
     @GetMapping("/search")
-    public ResponseEntity<BaseResponse<PageResponse<List<ResInfoPreviewUserDTO>>>>
+    public ResponseEntity<BaseResponse<PageResponse<ResInfoPreviewUserDTO>>>
     searchUsers(
             @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
             @RequestParam(value = "query") String query
     ) {
         log.info("Searching users with query: {}", query);
-        PageResponse<List<ResInfoPreviewUserDTO>> listUserPageResponse =
+        PageResponse<ResInfoPreviewUserDTO> listUserPageResponse =
                 userService.searchUsers(pageNo, pageSize, query);
         log.info("User search results: {}", listUserPageResponse);
         return
-                ResponseEntity.ok(BaseResponse.<PageResponse<List<ResInfoPreviewUserDTO>>>builder()
+                ResponseEntity.ok(BaseResponse.<PageResponse<ResInfoPreviewUserDTO>>builder()
                         .statusCode(HttpStatus.OK.value())
                         .message(messageService.getMessage(MessageSuccess.SEARCH_USER_SUCCESS))
                         .data(listUserPageResponse)

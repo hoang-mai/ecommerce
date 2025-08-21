@@ -35,19 +35,13 @@ public class Chat {
     @Field("updated_at")
     private LocalDateTime updatedAt;
 
-    @Field("chat_members")
-    private Set<ChatMember> chatMembers;
-
     @Field("chat_name")
     private String chatName;
 
     @Field("is_group_chat")
     private boolean isGroupChat;
 
-    @Field("is_private_chat")
+    @Field("chat_image_url")
     private String chatImageUrl;
-
-    @Field("admin_id")
-    private Long adminId;
 
 }
