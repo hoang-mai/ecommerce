@@ -113,12 +113,10 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public PageResponse<ResMessageDTO> getChatById(String chatId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Page<ResMessageDTO> resMessageDTOS = messageRepository.findByChatId(chatId, pageable);
+        Slice<ResMessageDTO> resMessageDTOS = messageRepository.findByChatId(chatId, pageable);
         return PageResponse.<ResMessageDTO>builder()
                 .pageNo(resMessageDTOS.getNumber())
                 .pageSize(resMessageDTOS.getSize())
-                .totalPages(resMessageDTOS.getTotalPages())
-                .totalElements(resMessageDTOS.getTotalElements())
                 .hasNextPage(resMessageDTOS.hasNext())
                 .hasPreviousPage(resMessageDTOS.hasPrevious())
                 .data(resMessageDTOS.getContent())

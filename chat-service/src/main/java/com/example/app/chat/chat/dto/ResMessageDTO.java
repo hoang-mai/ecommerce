@@ -14,5 +14,6 @@ public class ResMessageDTO {
     private String messageType;
     private String content;
     private LocalDateTime timestamp;
+    private boolean isUpdated;
     private ResUserPreviewDTO sender;
 }
