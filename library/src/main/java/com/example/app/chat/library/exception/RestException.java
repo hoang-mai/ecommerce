@@ -20,7 +20,7 @@ public class RestException {
     private final MessageService messageService;
 
     @ExceptionHandler(HttpRequestException.class)
-    public ResponseEntity<BaseResponse<Void>> handleBadRequestException(HttpRequestException e) {
+    public ResponseEntity<BaseResponse<Void>> handleHttpRequestException(HttpRequestException e) {
         return ResponseEntity
                 .status(e.getStatusCode())
                 .body(BaseResponse.<Void>builder()
