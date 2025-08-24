@@ -2,7 +2,6 @@ package com.example.app.chat.chat.repository;
 
 import com.example.app.chat.chat.dto.ResChatPreviewDTO;
 import com.example.app.chat.chat.entity.Chat;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mongodb.repository.Aggregation;
@@ -65,7 +64,12 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
                                         chatMemberId: '$lastMessage.sender_id',
                                         nickName: '$lastMessage.sender.nick_name',
                                         messageType: '$lastMessage.message_type',
-                                        content: '$lastMessage.message_content',
+                                        isDeleted: '$lastMessage.is_deleted',
+                                        content: { $cond: {
+                                            if: { $eq: ['$lastMessage.is_deleted', true] },
+                                            then: null,
+                                            else: '$lastMessage.message_content'
+                                        }},
                                         timestamp: '$lastMessage.updated_at',
                                         sender: {
                                             senderId: '$lastMessage.sender.user.user_id',
@@ -74,4 +78,6 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
                     """
     })
     Slice<ResChatPreviewDTO> findByUserId(Long userId, Pageable pageable);
+
+    boolean existsByChatId(String chatId);
 }

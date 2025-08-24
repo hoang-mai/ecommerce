@@ -1,6 +1,7 @@
 package com.example.app.chat.chat.service.impl;
 
 import com.example.app.chat.chat.dto.ReqPrivateMessageDTO;
+import com.example.app.chat.chat.dto.ReqUpdateMessageDTO;
 import com.example.app.chat.chat.dto.ResChatPreviewDTO;
 import com.example.app.chat.chat.dto.ResMessageDTO;
 import com.example.app.chat.chat.entity.Chat;
@@ -78,16 +79,23 @@ public class ChatServiceImpl implements ChatService {
                     .messageContent(reqPrivateMessageDTO.getMessageContent())
                     .chatMemberId(chatSender.getChatMemberId())
                     .chatId(chat.getChatId())
+                    .isDeleted(false)
+                    .isUpdated(false)
                     .build();
             messageRepository.save(message);
         }else{
             ChatMember chatSender = chatMemberRepository.findByChatIdAndUserId(reqPrivateMessageDTO.getChatId(), senderId)
                     .orElseThrow(() -> new NotFoundException(MessageError.CHAT_MEMBER_NOT_FOUND));
+            if(chatRepository.existsByChatId(reqPrivateMessageDTO.getChatId())) {
+                throw new NotFoundException(MessageError.CHAT_NOT_FOUND);
+            }
             Message message = Message.builder()
                     .chatId(reqPrivateMessageDTO.getChatId())
                     .messageType(reqPrivateMessageDTO.getMessageType())
                     .messageContent(reqPrivateMessageDTO.getMessageContent())
                     .chatMemberId(chatSender.getChatMemberId())
+                    .isDeleted(false)
+                    .isUpdated(false)
                     .build();
             messageRepository.save(message);
         }
@@ -121,6 +129,19 @@ public class ChatServiceImpl implements ChatService {
                 .hasPreviousPage(resMessageDTOS.hasPrevious())
                 .data(resMessageDTOS.getContent())
                 .build();
+    }
+
+    @Override
+    public void updateMessage(String messageId, ReqUpdateMessageDTO reqUpdateMessageDTO) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new NotFoundException(MessageError.MESSAGE_NOT_FOUND));
+        if(FnCommon.isNotNull(reqUpdateMessageDTO.getContent())){
+            message.setMessageContent(reqUpdateMessageDTO.getContent());
+            message.setUpdated(true);
+        } else if (FnCommon.isNotNull(reqUpdateMessageDTO.getIsDeleted())) {
+            message.setDeleted(reqUpdateMessageDTO.getIsDeleted());
+        }
+        messageRepository.save(message);
     }
 
     /**
