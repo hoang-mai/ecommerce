@@ -101,6 +101,27 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
+
+    @Override
+    public void createMessageGroup(ReqPrivateMessageDTO reqPrivateMessageDTO) {
+        if(!chatRepository.existsByChatId(reqPrivateMessageDTO.getChatId())) {
+            throw new NotFoundException(MessageError.CHAT_NOT_FOUND);
+        }
+        Long senderId = userHelper.getCurrentUserId();
+        ChatMember chatSender = chatMemberRepository.findByChatIdAndUserId(reqPrivateMessageDTO.getChatId(), senderId)
+                .orElseThrow(() -> new NotFoundException(MessageError.CHAT_MEMBER_NOT_FOUND));
+        Message message = Message.builder()
+                .chatId(reqPrivateMessageDTO.getChatId())
+                .messageType(reqPrivateMessageDTO.getMessageType())
+                .messageContent(reqPrivateMessageDTO.getMessageContent())
+                .chatMemberId(chatSender.getChatMemberId())
+                .isDeleted(false)
+                .isUpdated(false)
+                .build();
+        messageRepository.save(message);
+    }
+
+
     @Override
     public PageResponse<ResChatPreviewDTO> getListChatPreview(Long userId, int pageNo, int pageSize) {
         Long currentUserId = userHelper.getCurrentUserId();

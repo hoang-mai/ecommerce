@@ -40,4 +40,11 @@ public interface ChatService {
      * @param reqUpdateMessageDTO Thông tin cập nhật tin nhắn
      */
     void updateMessage(String messageId, ReqUpdateMessageDTO reqUpdateMessageDTO);
+
+    /**
+     * Tạo một tin nhắn nhóm
+     *
+     * @param reqPrivateMessageDTO Thông tin tin nhắn nhóm
+     */
+    void createMessageGroup(ReqPrivateMessageDTO reqPrivateMessageDTO);
 }

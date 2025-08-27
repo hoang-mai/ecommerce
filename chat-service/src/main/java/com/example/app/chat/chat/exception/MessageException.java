@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -19,6 +20,7 @@ public class MessageException {
 
     private final MessageService messageService;
 
+    @SendToUser("/queue/errors")
     @MessageExceptionHandler(NotFoundException.class)
     public ResponseEntity<BaseResponse<Void>> handleNotFoundException(NotFoundException e) {
         return ResponseEntity
@@ -30,6 +32,7 @@ public class MessageException {
                         .build());
     }
 
+    @SendToUser("/queue/errors")
     @ExceptionHandler(HttpRequestException.class)
     public ResponseEntity<BaseResponse<Void>> handleHttpRequestException(HttpRequestException e) {
         return ResponseEntity

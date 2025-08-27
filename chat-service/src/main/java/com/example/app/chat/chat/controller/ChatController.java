@@ -11,6 +11,7 @@ import com.example.app.chat.library.utils.MessageSuccess;
 import com.example.app.chat.library.utils.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -30,6 +31,15 @@ public class ChatController {
         simpMessagingTemplate.convertAndSendToUser(
                 reqPrivateMessageDTO.getReceiverId().toString(),
                 "/queue/messages",
+                reqPrivateMessageDTO
+        );
+    }
+
+    @MessageMapping("/group/{groupId}")
+    public void sendGroupMessage(@Payload ReqPrivateMessageDTO reqPrivateMessageDTO, @DestinationVariable String groupId) {
+        chatService.createMessageGroup(reqPrivateMessageDTO);
+        simpMessagingTemplate.convertAndSend(
+                "/topic/group/" + groupId,
                 reqPrivateMessageDTO
         );
     }
