@@ -12,7 +12,7 @@ spring:
         jwt:
           issuer-uri: http://localhost:8081/auth/realms/app-chat
   datasource:
-    url: jdbc:mysql://localhost:3306/user-service
+    url: jdbc:mysql://localhost:3307/user_service
     username: root
     password: password
     driver-class-name: com.mysql.cj.jdbc.Driver
