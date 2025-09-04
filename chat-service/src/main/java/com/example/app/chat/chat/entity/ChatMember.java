@@ -35,6 +35,12 @@ public class ChatMember {
     @Field("nick_name")
     private String nickName;
 
+    @Field("is_admin")
+    private Boolean isAdmin;
+
+    @Field("is_deleted")
+    private Boolean isDeleted;
+
     @Field("created_at")
     @CreatedDate
     private LocalDateTime createdAt;

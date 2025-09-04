@@ -1,9 +1,6 @@
 package com.example.app.chat.chat.service.impl;
 
-import com.example.app.chat.chat.dto.ReqPrivateMessageDTO;
-import com.example.app.chat.chat.dto.ReqUpdateMessageDTO;
-import com.example.app.chat.chat.dto.ResChatPreviewDTO;
-import com.example.app.chat.chat.dto.ResMessageDTO;
+import com.example.app.chat.chat.dto.*;
 import com.example.app.chat.chat.entity.Chat;
 import com.example.app.chat.chat.entity.ChatMember;
 import com.example.app.chat.chat.entity.Message;
@@ -69,12 +66,14 @@ public class ChatServiceImpl implements ChatService {
             ChatMember chatSender = ChatMember.builder()
                     .chatId(chat.getChatId())
                     .userId(sender.getUserId())
-                    .nickName(sender.getFirstName()+" "+sender.getMiddleName()+" "+sender.getLastName())
+                    .nickName(generateNickName(sender))
+                    .isDeleted(false)
                     .build();
             ChatMember chatReceiver = ChatMember.builder()
                     .chatId(chat.getChatId())
                     .userId(receiver.getUserId())
-                    .nickName(receiver.getFirstName()+" "+receiver.getMiddleName()+" "+receiver.getLastName())
+                    .nickName(generateNickName(receiver))
+                    .isDeleted(false)
                     .build();
             chatMemberRepository.save(chatSender);
             chatMemberRepository.save(chatReceiver);
@@ -87,10 +86,10 @@ public class ChatServiceImpl implements ChatService {
                     .isUpdated(false)
                     .build();
             messageRepository.save(message);
-        }else{
-            ChatMember chatSender = chatMemberRepository.findByChatIdAndUserId(reqPrivateMessageDTO.getChatId(), senderId)
+        } else {
+            ChatMember chatSender = chatMemberRepository.findByChatIdAndUserIdAndIsDeleted(reqPrivateMessageDTO.getChatId(), senderId, false)
                     .orElseThrow(() -> new NotFoundException(MessageError.CHAT_MEMBER_NOT_FOUND));
-            if(chatRepository.existsByChatId(reqPrivateMessageDTO.getChatId())) {
+            if (chatRepository.existsByChatId(reqPrivateMessageDTO.getChatId())) {
                 throw new NotFoundException(MessageError.CHAT_NOT_FOUND);
             }
             Message message = Message.builder()
@@ -108,11 +107,11 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void createMessageGroup(ReqPrivateMessageDTO reqPrivateMessageDTO) {
-        if(!chatRepository.existsByChatId(reqPrivateMessageDTO.getChatId())) {
+        if (!chatRepository.existsByChatId(reqPrivateMessageDTO.getChatId())) {
             throw new NotFoundException(MessageError.CHAT_NOT_FOUND);
         }
         Long senderId = userHelper.getCurrentUserId();
-        ChatMember chatSender = chatMemberRepository.findByChatIdAndUserId(reqPrivateMessageDTO.getChatId(), senderId)
+        ChatMember chatSender = chatMemberRepository.findByChatIdAndUserIdAndIsDeleted(reqPrivateMessageDTO.getChatId(), senderId, false)
                 .orElseThrow(() -> new NotFoundException(MessageError.CHAT_MEMBER_NOT_FOUND));
         Message message = Message.builder()
                 .chatId(reqPrivateMessageDTO.getChatId())
@@ -131,6 +130,77 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
+    @Override
+    @Transactional
+    public void createGroupChat(ReqCreateGroupChatDTO reqCreateGroupChatDTO) {
+        Chat chat = Chat.builder()
+                .isGroupChat(true)
+                .build();
+        chatRepository.save(chat);
+        for (Long userId : reqCreateGroupChatDTO.getUserIds()) {
+            // User có thể không tồn tại trong database local nên cần gọi gRPC để lấy thông tin
+            User user = getUserById(userId);
+            ChatMember chatMember = ChatMember.builder()
+                    .chatId(chat.getChatId())
+                    .userId(user.getUserId())
+                    .nickName(generateNickName(user))
+                    .isDeleted(false)
+                    .isAdmin(false)
+                    .build();
+            chatMemberRepository.save(chatMember);
+        }
+        User adminUser = getUserById(userHelper.getCurrentUserId());
+        ChatMember adminChatMember = ChatMember.builder()
+                .chatId(chat.getChatId())
+                .userId(adminUser.getUserId())
+                .nickName(generateNickName(adminUser))
+                .isDeleted(false)
+                .isAdmin(true)
+                .build();
+        chatMemberRepository.save(adminChatMember);
+        reqCreateGroupChatDTO.getUserIds().add(adminUser.getUserId());
+        String chatName = generateChatName(reqCreateGroupChatDTO);
+        chat.setChatName(chatName);
+        chatRepository.save(chat);
+    }
+
+    @Override
+    @Transactional
+    public void addMemberToGroupChat(String chatId, ReqCreateGroupChatDTO reqCreateGroupChatDTO) {
+        for (Long userId : reqCreateGroupChatDTO.getUserIds()) {
+            Optional<ChatMember> optionalChatMember = chatMemberRepository.findByChatIdAndUserId(chatId, userId);
+            if (optionalChatMember.isPresent()) {
+                ChatMember chatMember = optionalChatMember.get();
+                chatMember.setIsDeleted(false);
+                chatMemberRepository.save(chatMember);
+                continue;
+            }
+            // User có thể không tồn tại trong database local nên cần gọi gRPC để lấy thông tin
+            User user = getUserById(userId);
+            ChatMember chatMember = ChatMember.builder()
+                    .chatId(chatId)
+                    .userId(user.getUserId())
+                    .nickName(generateNickName(user))
+                    .isDeleted(false)
+                    .isAdmin(false)
+                    .build();
+            chatMemberRepository.save(chatMember);
+        }
+    }
+
+    @Override
+    public void updateChat(String chatId, ReqUpdateChatDTO reqUpdateChatDTO) {
+        Chat chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new NotFoundException(MessageError.CHAT_NOT_FOUND));
+        if (FnCommon.isNotNullOrEmpty(reqUpdateChatDTO.getChatName())) {
+            chat.setChatName(reqUpdateChatDTO.getChatName());
+        }
+        if (FnCommon.isNotNullOrEmpty(reqUpdateChatDTO.getChatImageUrl())) {
+            chat.setChatImageUrl(reqUpdateChatDTO.getChatImageUrl());
+        }
+        chatRepository.save(chat);
+    }
+
 
     @Override
     public PageResponse<ResChatPreviewDTO> getListChatPreview(Long userId, int pageNo, int pageSize) {
@@ -139,7 +209,7 @@ public class ChatServiceImpl implements ChatService {
             throw new NotFoundException(MessageError.USER_NOT_FOUND);
         }
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Slice<ResChatPreviewDTO> resChatPreviewDTOS=chatRepository.findByUserId(userId, pageable);
+        Slice<ResChatPreviewDTO> resChatPreviewDTOS = chatRepository.findByUserId(userId, pageable);
         return PageResponse.<ResChatPreviewDTO>builder()
                 .pageNo(resChatPreviewDTOS.getNumber())
                 .pageSize(resChatPreviewDTOS.getSize())
@@ -162,64 +232,86 @@ public class ChatServiceImpl implements ChatService {
                 .build();
     }
 
-    @Override
-    public void updateMessage(String messageId, ReqUpdateMessageDTO reqUpdateMessageDTO) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NotFoundException(MessageError.MESSAGE_NOT_FOUND));
-        if(FnCommon.isNotNull(reqUpdateMessageDTO.getContent())){
-            message.setMessageContent(reqUpdateMessageDTO.getContent());
-            message.setUpdated(true);
-        } else if (FnCommon.isNotNull(reqUpdateMessageDTO.getIsDeleted())) {
-            message.setDeleted(reqUpdateMessageDTO.getIsDeleted());
-        }
-        messageRepository.save(message);
-    }
 
     /**
      * Lấy thông tin người dùng theo ID
+     * B1: Kiểm tra trong cơ sở dữ liệu cục bộ (userRepository)
+     * B2: Nếu không tìm thấy, gọi dịch vụ gRPC để lấy thông tin
+     * B3: Lưu thông tin người dùng vào cơ sở dữ liệu cục bộ để sử dụng lần sau
+     * B4: Trả về đối tượng User chứa thông tin người dùng
      *
      * @param userId ID của người dùng cần lấy thông tin
      * @return User đối tượng chứa thông tin người dùng
      */
     private User getUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            try {
-                UserServiceGrpc.UserServiceBlockingStub stubWithToken = userServiceBlockingStub.withInterceptors(new BearerTokenAuthenticationInterceptor(userHelper.getToken()));
-                BaseResponse baseResponse = stubWithToken.getUserChatById(ReqGetUserChatDTO.newBuilder()
-                        .setUserId(userHelper.getCurrentUserId())
-                        .build());
-                if (baseResponse.hasData()) {
-                    try {
-                        ResGetUserChatDTO res = baseResponse.getData().unpack(ResGetUserChatDTO.class);
-                        User user = User.builder()
-                                .userId(res.getUserId())
-                                .avatarUrl(res.getAvatarUrl())
-                                .firstName(res.getFirstName())
-                                .middleName(res.getMiddleName())
-                                .lastName(res.getLastName())
-                                .build();
-                        userRepository.save(user);
-                        return user;
-                    } catch (InvalidProtocolBufferException e) {
-                        throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
-                    }
-                } else {
-                    throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
-                }
-            } catch (StatusRuntimeException e) {
-                Metadata metadata = e.getTrailers();
-                LocalDateTime timestamp = LocalDateTime.now();
-                if (metadata != null && metadata.containsKey(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER))) {
-                    String timeStamp = metadata.get(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER));
-                    if (timeStamp != null && !timeStamp.isEmpty()) {
-                        timestamp = LocalDateTime.parse(timeStamp);
-                    }
-                }
-                throw new HttpRequestException(e.getStatus().getDescription(), FnCommon.convertGrpcCodeToHttpStatus(e.getStatus().getCode()), timestamp);
-            }
-        } else {
+        if (userOptional.isPresent()) {
             return userOptional.get();
         }
+        try {
+            UserServiceGrpc.UserServiceBlockingStub stubWithToken = userServiceBlockingStub.withInterceptors(new BearerTokenAuthenticationInterceptor(userHelper.getToken()));
+            BaseResponse baseResponse = stubWithToken.getUserChatById(ReqGetUserChatDTO.newBuilder()
+                    .setUserId(userHelper.getCurrentUserId())
+                    .build());
+            if (baseResponse.hasData()) {
+                try {
+                    ResGetUserChatDTO res = baseResponse.getData().unpack(ResGetUserChatDTO.class);
+                    User user = User.builder()
+                            .userId(res.getUserId())
+                            .avatarUrl(res.getAvatarUrl())
+                            .firstName(res.getFirstName())
+                            .middleName(res.getMiddleName())
+                            .lastName(res.getLastName())
+                            .build();
+                    userRepository.save(user);
+                    return user;
+                } catch (InvalidProtocolBufferException e) {
+                    throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+                }
+            } else {
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            }
+        } catch (StatusRuntimeException e) {
+            Metadata metadata = e.getTrailers();
+            LocalDateTime timestamp = LocalDateTime.now();
+            if (metadata != null && metadata.containsKey(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER))) {
+                String timeStamp = metadata.get(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER));
+                if (timeStamp != null && !timeStamp.isEmpty()) {
+                    timestamp = LocalDateTime.parse(timeStamp);
+                }
+            }
+            throw new HttpRequestException(e.getStatus().getDescription(), FnCommon.convertGrpcCodeToHttpStatus(e.getStatus().getCode()), timestamp);
+        }
+    }
+
+    /**
+     * Tạo biệt danh cho thành viên trong cuộc trò chuyện
+     *
+     * @param user Đối tượng User chứa thông tin người dùng
+     * @return Biệt danh được tạo dựa trên họ và tên của người dùng
+     */
+    private String generateNickName(User user) {
+        return user.getFirstName() + " " + user.getMiddleName() + " " + user.getLastName();
+    }
+
+    /**
+     * Tạo tên cuộc trò chuyện nhóm dựa trên danh sách ID người dùng
+     *
+     * @param reqCreateGroupChatDTO Đối tượng chứa danh sách ID người dùng
+     * @return Tên cuộc trò chuyện nhóm được tạo
+     */
+    private String generateChatName(ReqCreateGroupChatDTO reqCreateGroupChatDTO) {
+        List<User> users = userRepository.findAllById(reqCreateGroupChatDTO.getUserIds());
+        StringBuilder chatName = new StringBuilder();
+        for (User user : users) {
+            if (!chatName.isEmpty()) {
+                chatName.append(", ");
+            }
+            chatName.append(user.getFirstName()).append(" ").append(user.getMiddleName()).append(" ").append(user.getLastName());
+        }
+        if (chatName.length() > 30) {
+            return chatName.substring(0, 27) + "...";
+        }
+        return chatName.toString();
     }
 }

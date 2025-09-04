@@ -22,7 +22,8 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
                         pipeline: [
                           { $match: { $expr: { $and: [
                                                { $eq: ["$chat_id", "$$chatId"] },
-                                               { $eq: ["$user_id", ?0] }
+                                               { $eq: ["$user_id", ?0] },
+                                               { $eq: ["$is_deleted", false] }
                                                ] } } }
                         ],
                         as: "members"

@@ -1,14 +1,13 @@
 package com.example.app.chat.chat.controller;
 
-import com.example.app.chat.chat.dto.ReqPrivateMessageDTO;
-import com.example.app.chat.chat.dto.ReqUpdateMessageDTO;
-import com.example.app.chat.chat.dto.ResChatPreviewDTO;
-import com.example.app.chat.chat.dto.ResMessageDTO;
+import com.example.app.chat.chat.dto.*;
 import com.example.app.chat.chat.service.ChatService;
+import com.example.app.chat.library.component.MessageService;
 import com.example.app.chat.library.utils.BaseResponse;
 import com.example.app.chat.library.utils.Constant;
 import com.example.app.chat.library.utils.MessageSuccess;
 import com.example.app.chat.library.utils.PageResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -24,6 +23,7 @@ public class ChatController {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ChatService chatService;
+    private final MessageService messageService;
 
     @MessageMapping("/private")
     public void sendPrivateMessage(@Payload ReqPrivateMessageDTO reqPrivateMessageDTO) {
@@ -44,6 +44,28 @@ public class ChatController {
         );
     }
 
+    @PostMapping()
+    public ResponseEntity<BaseResponse<Void>> createGroupChat(@RequestBody ReqCreateGroupChatDTO reqCreateGroupChatDTO) {
+        chatService.createGroupChat(reqCreateGroupChatDTO);
+        return ResponseEntity.ok(BaseResponse.<Void>builder()
+                .statusCode(200)
+                .message(messageService.getMessage(MessageSuccess.CREATE_GROUP_CHAT_SUCCESS))
+                .build()
+        );
+    }
+
+    @PostMapping("/add-member/{chatId}")
+    public ResponseEntity<BaseResponse<Void>> addMemberToGroupChat(
+            @PathVariable String chatId,
+            @RequestBody ReqCreateGroupChatDTO reqCreateGroupChatDTO) {
+        chatService.addMemberToGroupChat(chatId, reqCreateGroupChatDTO);
+        return ResponseEntity.ok(BaseResponse.<Void>builder()
+                .statusCode(200)
+                .message(messageService.getMessage(MessageSuccess.ADD_MEMBER_TO_GROUP_CHAT_SUCCESS))
+                .build()
+        );
+    }
+
     @GetMapping("/list")
     public ResponseEntity<BaseResponse<PageResponse<ResChatPreviewDTO>>> getListChatPreview(
             @RequestHeader("user-id") Long userId,
@@ -52,11 +74,12 @@ public class ChatController {
         PageResponse<ResChatPreviewDTO> chatPreviews = chatService.getListChatPreview(userId, pageNo, pageSize);
         return ResponseEntity.ok(BaseResponse.<PageResponse<ResChatPreviewDTO>>builder()
                 .statusCode(200)
-                .message(MessageSuccess.GET_LIST_CHAT_PREVIEW_SUCCESS)
+                .message(messageService.getMessage(MessageSuccess.GET_LIST_CHAT_PREVIEW_SUCCESS))
                 .data(chatPreviews)
                 .build()
         );
     }
+
     @GetMapping("/{chatId}")
     public ResponseEntity<BaseResponse<PageResponse<ResMessageDTO>>> getChatById(
             @PathVariable String chatId,
@@ -65,21 +88,20 @@ public class ChatController {
         PageResponse<ResMessageDTO> chat = chatService.getChatById(chatId, pageNo, pageSize);
         return ResponseEntity.ok(BaseResponse.<PageResponse<ResMessageDTO>>builder()
                 .statusCode(200)
-                .message(MessageSuccess.GET_CHAT_SUCCESS)
+                .message(messageService.getMessage(MessageSuccess.GET_CHAT_SUCCESS))
                 .data(chat)
                 .build()
         );
     }
 
-    @PatchMapping("/{messageId}")
-    public ResponseEntity<BaseResponse<ReqUpdateMessageDTO>> updateMessage(
-            @PathVariable String messageId,
-            @RequestBody ReqUpdateMessageDTO reqUpdateMessageDTO) {
-        chatService.updateMessage(messageId, reqUpdateMessageDTO);
-        return ResponseEntity.ok(BaseResponse.<ReqUpdateMessageDTO>builder()
+    @PatchMapping("/{chatId}")
+    public ResponseEntity<BaseResponse<Void>> updateChat(
+            @PathVariable String chatId,
+            @RequestBody ReqUpdateChatDTO reqUpdateChatDTO) {
+        chatService.updateChat(chatId, reqUpdateChatDTO);
+        return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(200)
-                .message(MessageSuccess.UPDATE_MESSAGE_SUCCESS)
-                .data(reqUpdateMessageDTO)
+                .message(messageService.getMessage(MessageSuccess.UPDATE_CHAT_SUCCESS))
                 .build()
         );
     }

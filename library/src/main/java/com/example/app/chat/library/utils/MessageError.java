@@ -35,4 +35,9 @@ public final class MessageError {
     public static final String CHAT_MEMBER_NOT_FOUND = "chat.member.not.found";
     public static final String CHAT_NOT_FOUND = "chat.not.found";
     public static final String MESSAGE_NOT_FOUND = "message.not.found";
+    public static final String CHAT_NAME_NOT_BLANK = "chat.name.not.blank";
+    public static final String CHAT_MEMBER_NOT_BLANK = "chat.member.not.blank";
+
+    public static final String NICKNAME_NOT_BLANK = "nickname.not.blank";
+    public static final String FORBIDDEN = "forbidden";
 }

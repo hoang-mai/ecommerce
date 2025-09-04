@@ -12,4 +12,8 @@ public final class MessageSuccess {
     public static final String GET_LIST_CHAT_PREVIEW_SUCCESS = "get.list.chat.preview.success";
     public static final String GET_CHAT_SUCCESS = "get.chat.success";
     public static final String UPDATE_MESSAGE_SUCCESS = "update.message.success";
+    public static final String CREATE_GROUP_CHAT_SUCCESS = "create.group.chat.success";
+    public static final String ADD_MEMBER_TO_GROUP_CHAT_SUCCESS = "add.member.to.group.chat.success";
+    public static final String UPDATE_NICKNAME_SUCCESS = "update.nickname.success";
+    public static final String UPDATE_CHAT_SUCCESS = "update.chat.success";
 }
