@@ -8,6 +8,9 @@ import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Set;
+
 @Repository
 public interface ChatRepository extends MongoRepository<Chat, String> {
 
@@ -80,4 +83,12 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
     Slice<ResChatPreviewDTO> findByUserId(Long userId, Pageable pageable);
 
     boolean existsByChatId(String chatId);
+
+    @Aggregation(pipeline = {
+            "{ $match: { chat_id: ?0 } }",
+            "{ $lookup: { from: 'chat_members', localField: 'chat_id', foreignField: 'chat_id', as: 'members' } }",
+            "{ $unwind: '$members' }",
+            "{ $project: { userId: '$members.user_id', _id: 0 } }"
+    })
+    Set<Long> getUserIdsByChatId(String chatId);
 }

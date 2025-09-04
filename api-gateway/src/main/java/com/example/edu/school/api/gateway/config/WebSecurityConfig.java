@@ -16,7 +16,6 @@ import reactor.core.publisher.Mono;
 
 @Configuration
 @EnableWebFluxSecurity
-@RequiredArgsConstructor
 public class WebSecurityConfig {
 
     @Bean

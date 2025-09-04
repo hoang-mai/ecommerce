@@ -4,9 +4,17 @@ spring:
       channels:
         user-service:
           address: localhost:9093
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/auth/realms/app-chat
   data:
     mongodb:
         uri: mongodb://root:rootpassword@localhost:27017/chatdb
+    redis:
+      host: localhost
+      port: 6379
 
 server:
   port: 8084

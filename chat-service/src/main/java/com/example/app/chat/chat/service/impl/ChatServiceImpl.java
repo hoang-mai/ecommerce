@@ -28,14 +28,17 @@ import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.grpc.client.interceptor.security.BearerTokenAuthenticationInterceptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +50,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMemberRepository chatMemberRepository;
     private final UserHelper userHelper;
     private final UserServiceGrpc.UserServiceBlockingStub userServiceBlockingStub;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Transactional
     @Override
@@ -119,6 +123,12 @@ public class ChatServiceImpl implements ChatService {
                 .isUpdated(false)
                 .build();
         messageRepository.save(message);
+
+        Set<Long> userIds = chatRepository.getUserIdsByChatId(reqPrivateMessageDTO.getChatId());
+        Set<String> userIdsInGroup = stringRedisTemplate.opsForSet().members("group:" + reqPrivateMessageDTO.getChatId());
+        if (FnCommon.isNotNull(userIdsInGroup)) {
+            userIdsInGroup.stream().map(Long::valueOf).toList().forEach(userIds::remove);
+        }
     }
 
 
