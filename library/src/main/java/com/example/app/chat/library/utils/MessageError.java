@@ -40,4 +40,5 @@ public final class MessageError {
 
     public static final String NICKNAME_NOT_BLANK = "nickname.not.blank";
     public static final String FORBIDDEN = "forbidden";
+    public static final String BAD_REQUEST = "bad.request";
 }

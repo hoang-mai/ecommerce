@@ -23,7 +23,7 @@ public class ChatMemberServiceImpl implements ChatMemberService {
         if (FnCommon.isNotNullOrEmpty(reqUpdateChatMemberDTO.getNickname())) {
             chatMember.setNickName(reqUpdateChatMemberDTO.getNickname());
         }
-        if (FnCommon.isNotNull(reqUpdateChatMemberDTO.getIsDeleted())) {
+        if (FnCommon.isNotNull(reqUpdateChatMemberDTO.getIsDeleted()) && reqUpdateChatMemberDTO.getIsDeleted()) {
             Long userId = userHelper.getCurrentUserId();
             if (!userId.equals(chatMember.getUserId())) {
                 ChatMember currentChatMember = chatMemberRepository.findByChatIdAndUserId(chatMember.getChatId(), userId)
@@ -32,7 +32,7 @@ public class ChatMemberServiceImpl implements ChatMemberService {
                     throw new RuntimeException(MessageError.FORBIDDEN);
                 }
             }
-            chatMember.setIsDeleted(reqUpdateChatMemberDTO.getIsDeleted());
+            chatMember.setIsDeleted(true);
         }
         if (FnCommon.isNotNull(reqUpdateChatMemberDTO.getIsAdmin())) {
             Long userId = userHelper.getCurrentUserId();
