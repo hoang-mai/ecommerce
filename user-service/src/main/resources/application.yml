@@ -1,5 +1,7 @@
 spring:
-  gprc:
+  application:
+    name: user-service
+  grpc:
     server:
       port: 9093
     client:
@@ -13,14 +15,15 @@ spring:
           issuer-uri: http://localhost:8081/auth/realms/app-chat
   datasource:
     url: jdbc:mysql://localhost:3307/user_service
-    username: root
-    password: password
+    username: user_service
+    password: user_service
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
+
 
 server:
   port: 8083

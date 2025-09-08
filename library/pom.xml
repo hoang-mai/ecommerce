@@ -7,6 +7,7 @@
         <groupId>com.example.app.chat</groupId>
         <artifactId>app-chat</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>library</artifactId>

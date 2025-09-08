@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping(Constant.USER)
 @RequiredArgsConstructor
@@ -36,11 +35,9 @@ public class UserController {
      * @param reqCreateUserDTO Thông tin tạo người dùng mới
      * @return Trả về thành công
      */
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<BaseResponse<String>> register(@Valid @RequestBody ReqCreateUserDTO reqCreateUserDTO) {
-        log.info("Registering user: {}", reqCreateUserDTO);
         userService.createUser(reqCreateUserDTO);
-        log.info("User registered successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<String>builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message(messageService.getMessage(MessageSuccess.USER_CREATED_SUCCESS))
@@ -56,9 +53,7 @@ public class UserController {
      */
     @GetMapping("/{userId}")
     public ResponseEntity<BaseResponse<ResInfoUserDTO>> getUserById(@PathVariable Long userId) throws NotFoundException {
-        log.info("Fetching user by id: {}", userId);
         ResInfoUserDTO userResponse = userService.getUserById(userId);
-        log.info("User fetched successfully: {}", userResponse);
         return ResponseEntity.ok(BaseResponse.<ResInfoUserDTO>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.GET_INFO_USER_SUCCESS))
@@ -67,19 +62,16 @@ public class UserController {
     }
 
     /**
-     * Cập nhật thông tin người dùng theo ID
-     * @param userId ID của người dùng hiện tại
+     * Cập nhật thông tin người dùng hiện tại
      * @param reqUpdateUserDTO Thông tin cập nhật người dùng
      * @throws NotFoundException nếu người dùng không tồn tại
      * @throws DuplicateException nếu thông tin cập nhật trùng lặp (ví dụ: email đã tồn tại)
      * @return Trả về thành công
      */
     @PatchMapping()
-    public ResponseEntity<BaseResponse<Void>> updateUserById(@RequestHeader("user-id") Long userId,
-            @RequestBody ReqUpdateUserDTO reqUpdateUserDTO) throws NotFoundException, DuplicateException {
-        log.info("Updating user with id: {}", userId);
-        userService.updateUserById(userId, reqUpdateUserDTO);
-        log.info("User updated successfully: {}", userId);
+    public ResponseEntity<BaseResponse<Void>> updateUser(
+            @Valid @RequestBody ReqUpdateUserDTO reqUpdateUserDTO) throws NotFoundException, DuplicateException {
+        userService.updateUser(reqUpdateUserDTO);
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.UPDATE_USER_SUCCESS))
@@ -89,13 +81,11 @@ public class UserController {
     /**
      * Lấy thông tin người dùng hiện tại
      *
-     * @param userId ID của người dùng hiện tại
      * @return Thông tin người dùng hiện tại
      */
     @GetMapping()
-    public ResponseEntity<BaseResponse<ResInfoUserDTO>> getCurrentUser(@RequestHeader("user-id") Long userId) {
-        ResInfoUserDTO userResponse = userService.getCurrentUserById(userId);
-        log.info("Current user fetched successfully: {}", userResponse);
+    public ResponseEntity<BaseResponse<ResInfoUserDTO>> getCurrentUser() {
+        ResInfoUserDTO userResponse = userService.getCurrentUser();
         return ResponseEntity.ok(BaseResponse.<ResInfoUserDTO>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.GET_INFO_USER_SUCCESS))
@@ -119,12 +109,9 @@ public class UserController {
             @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
             @RequestParam(value = "query") String query
     ) {
-        log.info("Searching users with query: {}", query);
         PageResponse<ResInfoPreviewUserDTO> listUserPageResponse =
                 userService.searchUsers(pageNo, pageSize, query);
-        log.info("User search results: {}", listUserPageResponse);
-        return
-                ResponseEntity.ok(BaseResponse.<PageResponse<ResInfoPreviewUserDTO>>builder()
+        return ResponseEntity.ok(BaseResponse.<PageResponse<ResInfoPreviewUserDTO>>builder()
                         .statusCode(HttpStatus.OK.value())
                         .message(messageService.getMessage(MessageSuccess.SEARCH_USER_SUCCESS))
                         .data(listUserPageResponse)

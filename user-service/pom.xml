@@ -7,6 +7,7 @@
 		<groupId>com.example.app.chat</groupId>
 		<artifactId>app-chat</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>user-service</artifactId>
 	<name>user-service</name>
@@ -71,20 +72,6 @@
 		<dependency>
 			<groupId>io.temporal</groupId>
 			<artifactId>temporal-sdk</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.grpc</groupId>
-			<artifactId>spring-grpc-spring-boot-starter</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>io.grpc</groupId>
-					<artifactId>grpc-netty</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-netty-shaded</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

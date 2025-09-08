@@ -9,9 +9,9 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Constraint(validatedBy = AccountStatusValidator.class)
-public @interface AccountStatusFormat {
-    String message() default MessageError.INVALID_ACCOUNT_STATUS;
+@Constraint(validatedBy = GenderFormatValidator.class)
+public @interface GenderFormat {
+    String message() default MessageError.INVALID_GENDER;
 
     Class<?>[] groups() default {};
 

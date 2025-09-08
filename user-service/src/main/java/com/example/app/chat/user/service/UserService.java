@@ -38,10 +38,9 @@ public interface UserService {
     /**
      * Cập nhật thông tin người dùng theo ID.
      *
-     * @param userId           ID của người dùng cần cập nhật
      * @param reqUpdateUserDTO DTO chứa thông tin cập nhật người dùng
      */
-    void updateUserById(Long userId, ReqUpdateUserDTO reqUpdateUserDTO);
+    void updateUser(ReqUpdateUserDTO reqUpdateUserDTO);
 
     /**
      * Xoá người dùng theo ID.
@@ -64,8 +63,7 @@ public interface UserService {
     /**
      * Lấy thông tin người dùng hiện tại theo ID.
      *
-     * @param userId ID của người dùng
      * @return Thông tin người dùng hiện tại
      */
-    ResInfoUserDTO getCurrentUserById(Long userId);
+    ResInfoUserDTO getCurrentUser();
 }

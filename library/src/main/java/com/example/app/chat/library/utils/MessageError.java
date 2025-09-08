@@ -41,4 +41,8 @@ public final class MessageError {
     public static final String NICKNAME_NOT_BLANK = "nickname.not.blank";
     public static final String FORBIDDEN = "forbidden";
     public static final String BAD_REQUEST = "bad.request";
+    public static final String ACCOUNT_DISABLED = "account.disabled";
+    public static final String ROLE_NOT_FOUND = "role.not.found";
+    public static final String INVALID_GENDER = "invalid.gender";
+    public static final String INVALID_DATE_OF_BIRTH = "invalid.date.of.birth";
 }

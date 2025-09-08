@@ -11,7 +11,10 @@ public class RoleFormatValidator implements ConstraintValidator<RoleFormat, Role
 
     @Override
     public boolean isValid(Role role, ConstraintValidatorContext context) {
-        return role != null && Arrays.asList(Role.values()).contains(role);
+        if(role == null) {
+            return true;
+        }
+        return Arrays.asList(Role.values()).contains(role);
     }
 
 }

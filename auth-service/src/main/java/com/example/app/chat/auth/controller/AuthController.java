@@ -48,7 +48,7 @@ public class AuthController {
      * @return Trả về thành công
      */
     @PatchMapping()
-    public ResponseEntity<BaseResponse<Void>> updateStatus(@Valid @RequestBody ReqUpdateAccountDTO reqUpdateAccountDTO) {
+    public ResponseEntity<BaseResponse<Void>> updateAccount(@Valid @RequestBody ReqUpdateAccountDTO reqUpdateAccountDTO) {
         authService.updateAccount(reqUpdateAccountDTO);
         return ResponseEntity
                 .status(HttpStatus.OK)

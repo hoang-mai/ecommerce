@@ -1,5 +1,7 @@
 package com.example.app.chat.library.component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -15,14 +17,17 @@ import java.util.Arrays;
 @Aspect
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class LoggingAspect {
+
+    private final ObjectMapper objectMapper;
 
     @Around("within(com.example.app.chat.*.controller.*)")
     public Object logBefore(ProceedingJoinPoint pjp) throws Throwable {
         Object[] args = pjp.getArgs();
         String methodName = pjp.getSignature().getName();
         LocalDateTime startTime = LocalDateTime.now();
-        log.info("Method {} called with args: {}. Start time: {}", methodName, Arrays.toString(args), startTime);
+        log.info("Method {} called with args: {}. Start time: {}", methodName, objectMapper.writeValueAsString(args), startTime);
         Object object;
         try {
             object = pjp.proceed();
@@ -34,7 +39,7 @@ public class LoggingAspect {
         LocalDateTime endTime = LocalDateTime.now();
         long duration = Duration.between(startTime, endTime).toMillis();
         log.info("Method {} completed with result: {}. End time: {}. Duration: {} ms",
-                 methodName, object, endTime, duration);
+                 methodName, objectMapper.writeValueAsString(object), endTime, duration);
         return object;
     }
 

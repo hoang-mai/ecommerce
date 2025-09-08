@@ -22,11 +22,9 @@ public class UserInfoHeaderFilter implements GlobalFilter  {
                     if(authentication.getPrincipal() instanceof Jwt jwt){
                         String userId = jwt.getClaimAsString("user-id");
                         String role = jwt.getClaimAsString("role");
-                        String email = jwt.getClaimAsString("email");
                         ServerHttpRequest request = exchange.getRequest().mutate()
                                 .header("user-id", userId)
                                 .header("role", role)
-                                .header("email", email)
                                 .build();
                         return chain.filter(exchange.mutate().request(request).build());
                     }

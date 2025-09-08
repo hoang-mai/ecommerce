@@ -50,7 +50,6 @@ public class UserServiceImpl implements UserService {
         WorkflowOptions options = WorkflowOptions.newBuilder().setTaskQueue(Constant.CREATE_USER_QUEUE).build();
         CreateUserWorkFlow createUserWorkFlow = workflowClient.newWorkflowStub(CreateUserWorkFlow.class, options);
         WorkflowClient.start(createUserWorkFlow::createUser, CreateUserData.builder()
-                .token(((JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication()).getToken().getTokenValue())
                 .username(reqCreateUserDTO.getUsername())
                 .password(reqCreateUserDTO.getPassword())
                 .email(reqCreateUserDTO.getEmail())
@@ -85,12 +84,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResInfoUserDTO getCurrentUserById(Long userId) {
+    public ResInfoUserDTO getCurrentUser() {
         Long currentUserId = userHelper.getCurrentUserId();
-        if (!Objects.equals(currentUserId, userId)) {
-            throw new NotFoundException(MessageError.USER_NOT_FOUND);
-        }
-        return getUserById(userId);
+        return getUserById(currentUserId);
     }
 
     @Override
@@ -113,11 +109,8 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public void updateUserById(Long userId, ReqUpdateUserDTO reqUpdateUserDTO) {
-        Long currentUserId = userHelper.getCurrentUserId();
-        if (!Objects.equals(currentUserId, userId)) {
-            throw new NotFoundException(MessageError.USER_NOT_FOUND);
-        }
+    public void updateUser(ReqUpdateUserDTO reqUpdateUserDTO) {
+        Long userId = userHelper.getCurrentUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
 

@@ -1,5 +1,6 @@
 package com.example.app.chat.library.component;
 
+import com.example.app.chat.library.enumeration.Role;
 import com.example.app.chat.library.utils.MessageError;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,7 +25,7 @@ public class UserHelper {
     public String getAccountId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication.getPrincipal() instanceof Jwt jwt){
-            String accountId = jwt.getClaimAsString("account-id");
+            String accountId = jwt.getClaimAsString("sub");
             if (accountId != null) {
                 return accountId;
             } else {
@@ -32,6 +33,20 @@ public class UserHelper {
             }
         } else {
             throw new IllegalStateException(MessageError.ACCOUNT_ID_NOT_FOUND);
+        }
+    }
+
+    public Role getRole(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication.getPrincipal() instanceof Jwt jwt){
+            String role = jwt.getClaimAsString("role");
+            if (role != null) {
+                return Role.valueOf(role);
+            } else {
+                throw new IllegalStateException(MessageError.ROLE_NOT_FOUND);
+            }
+        } else {
+            throw new IllegalStateException(MessageError.ROLE_NOT_FOUND);
         }
     }
 

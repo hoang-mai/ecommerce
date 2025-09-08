@@ -32,9 +32,8 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
     @Override
     public CreateUserData createAccount(CreateUserData createUserData) {
 
-        AccountServiceGrpc.AccountServiceBlockingStub stubWithToken = accountServiceBlockingStub.withInterceptors(new BearerTokenAuthenticationInterceptor(createUserData.getToken()));
         try {
-            BaseResponse baseResponse = stubWithToken.createAccount(ReqCreateAccountDTO.newBuilder()
+            BaseResponse baseResponse = accountServiceBlockingStub.createAccount(ReqCreateAccountDTO.newBuilder()
                     .setUsername(createUserData.getUsername())
                     .setPassword(createUserData.getPassword())
                     .setUserId(createUserData.getUserId())
@@ -66,9 +65,8 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
 
     @Override
     public void deleteAccount(CreateUserData createUserData) {
-        AccountServiceGrpc.AccountServiceBlockingStub stubWithToken = accountServiceBlockingStub.withInterceptors(new BearerTokenAuthenticationInterceptor(createUserData.getToken()));
         try {
-            BaseResponse baseResponse = stubWithToken.deleteAccount(ReqDeleteAccountDTO.newBuilder().setAccountId(createUserData.getAccountId()).build());
+            BaseResponse baseResponse = accountServiceBlockingStub.deleteAccount(ReqDeleteAccountDTO.newBuilder().setAccountId(createUserData.getAccountId()).build());
             if (baseResponse.getStatusCode() != HttpStatus.OK.value()) {
                 throw new HttpRequestException(MessageError.CANNOT_DELETE_ACCOUNT, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
             }

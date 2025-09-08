@@ -44,10 +44,10 @@ public class AuthServiceImpl implements AuthService {
                     .build();
         } catch (HttpClientErrorException e) {
             String errorJson = e.getResponseBodyAsString();
-            if (errorJson.contains("User is graduate")) {
-                throw new HttpRequestException(messageService.getMessage(MessageError.USER_IS_GRADUATE), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
-            } else if (errorJson.contains("Invalid user credentials")) {
+            if (errorJson.contains("Invalid user credentials")) {
                 throw new HttpRequestException(messageService.getMessage(MessageError.INVALID_USER_CREDENTIALS), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
+            } else if (errorJson.contains("Account disabled")) {
+                throw new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_DISABLED), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
             } else {
                 throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_PARSE_ERROR_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
             }

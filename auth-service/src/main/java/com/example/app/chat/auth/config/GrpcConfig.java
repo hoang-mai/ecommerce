@@ -14,7 +14,11 @@ public class GrpcConfig {
     @Bean
     public AuthenticationProcessInterceptor jwtSecurityFilterChain(GrpcSecurity grpc) throws Exception {
         return grpc.authorizeRequests(requestMapperConfigurer ->
-                        requestMapperConfigurer.allRequests().authenticated())
+                        requestMapperConfigurer
+                                .methods("auth.AccountService/CreateAccount").permitAll()
+                                .methods("auth.AccountService/DeleteAccount").permitAll()
+                                .allRequests().authenticated()
+                                )
                 .oauth2ResourceServer(oAuth2ResourceServerConfigurer ->
                         oAuth2ResourceServerConfigurer.jwt(Customizer.withDefaults())).build();
     }

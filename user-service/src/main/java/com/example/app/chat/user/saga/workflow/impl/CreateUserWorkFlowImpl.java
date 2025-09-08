@@ -9,10 +9,12 @@ import com.example.app.chat.user.saga.workflow.CreateUserWorkFlow;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.failure.ActivityFailure;
+import io.temporal.failure.ApplicationFailure;
 import io.temporal.workflow.Saga;
 import io.temporal.workflow.Workflow;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
     private final ActivityOptions options =
@@ -36,8 +38,8 @@ public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
             saga.addCompensation(activities::deleteAccount, createUserData);
         } catch (ActivityFailure e) {
             saga.compensate();
-            if (e.getCause() instanceof HttpRequestException httpRequestException) {
-                throw new HttpRequestException(httpRequestException.getMessage(), httpRequestException.getStatusCode(), httpRequestException.getTimestamp());
+            if (e.getCause() instanceof ApplicationFailure applicationFailure && applicationFailure.getType().equals(HttpRequestException.class.getName())) {
+                throw new HttpRequestException(applicationFailure.getMessage(), 500, LocalDateTime.now());
             } else {
                 throw new RuntimeException(MessageError.SYSTEM_ERROR);
             }
