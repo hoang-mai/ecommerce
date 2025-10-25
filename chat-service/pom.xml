@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.example.app.chat</groupId>
-		<artifactId>app-chat</artifactId>
+		<groupId>com.ecommerce</groupId>
+		<artifactId>ecommerce</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>chat-service</artifactId>

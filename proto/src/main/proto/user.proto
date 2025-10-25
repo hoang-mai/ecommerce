@@ -5,7 +5,7 @@ package user;
 import "utils/base_response.proto";
 
 option java_multiple_files = true;
-option java_package = "com.example.app.chat.user";
+option java_package = "com.ecommerce.user";
 
 service UserService {
   rpc GetUserChatById (ReqGetUserChatDTO) returns (utils.base_response.BaseResponse);

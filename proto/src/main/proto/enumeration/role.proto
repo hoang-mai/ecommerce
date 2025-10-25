@@ -2,11 +2,13 @@ syntax = "proto3";
 
 package enumeration;
 
-option java_package = "com.example.app.chat.enumeration";
+option java_package = "com.ecommerce.enumeration";
 option java_multiple_files = true;
 
 enum Role {
   ROLE_UNSPECIFIED = 0;
   ADMIN = 1;
-  USER = 2;
+  OWNER = 2;
+  CASHIER = 3;
+  USER = 4;
 }
