@@ -23,6 +23,7 @@ public class WebSecurityConfig {
                                 "/v3/api-docs/**",
                                 "/api-docs-json/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/user").permitAll()
                         .anyRequest().authenticated()
                 )

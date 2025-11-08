@@ -1,9 +1,9 @@
 package com.ecommerce.user.saga.activities.impl;
 
-import com.example.app.chat.auth.AccountServiceGrpc;
-import com.example.app.chat.auth.ReqCreateAccountDTO;
-import com.example.app.chat.auth.ReqDeleteAccountDTO;
-import com.example.app.chat.auth.ResCreateAccountDTO;
+import com.ecommerce.auth.AccountServiceGrpc;
+import com.ecommerce.auth.ReqCreateAccountDTO;
+import com.ecommerce.auth.ReqDeleteAccountDTO;
+import com.ecommerce.auth.ResCreateAccountDTO;
 import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.HttpRequestException;
 import com.ecommerce.library.utils.FnCommon;
@@ -11,7 +11,7 @@ import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.user.saga.activities.CreateUserActivities;
 import com.ecommerce.user.saga.data.CreateUserData;
 import com.ecommerce.user.saga.service.UserServiceSaga;
-import com.example.app.chat.utils.base_response.BaseResponse;
+import com.ecommerce.utils.base_response.BaseResponse;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;

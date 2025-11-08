@@ -1,6 +1,6 @@
 eureka:
   instance:
-    hostname: ${HOSTNAME}
+    hostname: ${HOSTNAME:discovery-service}
   client:
     register-with-eureka: false
     fetch-registry: false
@@ -10,4 +10,4 @@ spring:
     name: discovery-service
 
 server:
-  port: ${SERVER_PORT}
+  port: ${SERVER_PORT:8761}

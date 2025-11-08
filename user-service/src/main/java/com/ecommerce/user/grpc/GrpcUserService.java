@@ -2,12 +2,12 @@ package com.ecommerce.user.grpc;
 
 import com.ecommerce.library.component.MessageService;
 import com.ecommerce.library.utils.MessageSuccess;
-import com.example.app.chat.user.ReqGetUserChatDTO;
-import com.example.app.chat.user.ResGetUserChatDTO;
-import com.example.app.chat.user.UserServiceGrpc;
+import com.ecommerce.user.ReqGetUserChatDTO;
+import com.ecommerce.user.ResGetUserChatDTO;
+import com.ecommerce.user.UserServiceGrpc;
 import com.ecommerce.user.dto.ResInfoUserDTO;
 import com.ecommerce.user.service.UserService;
-import com.example.app.chat.utils.base_response.BaseResponse;
+import com.ecommerce.utils.base_response.BaseResponse;
 import com.google.protobuf.Any;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;

@@ -17,12 +17,12 @@ public class ResInfoUserDTO {
     private String firstName;
     private String middleName;
     private String lastName;
-    private String address;
+    private LocalDate dateOfBirth;
     private String phoneNumber;
     private String avatarUrl;
-    private LocalDate dateOfBirth;
     private Role role;
     private Gender gender;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Boolean isVerification;
 }

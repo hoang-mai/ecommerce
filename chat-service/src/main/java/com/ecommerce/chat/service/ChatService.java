@@ -1,7 +1,6 @@
 package com.ecommerce.chat.service;
 
 import com.ecommerce.chat.dto.*;
-import com.example.app.chat.chat.dto.*;
 import com.ecommerce.library.utils.PageResponse;
 
 public interface ChatService {

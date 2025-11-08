@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: user-service
+  grpc:
+    server:
+      port: 9093
+    client:
+      channels:
+        auth-service:
+          address: localhost:9092
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/auth/realms/ecommerce
+  datasource:
+    url: jdbc:mysql://localhost:3306/user_service
+    username: user_service
+    password: user_service
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  temporal:
+    connection:
+      target: localhost:7233
+    workers:
+      - task-queue: createUserQueue
+        workflow-classes:
+          - com.ecommerce.user.saga.workflow.impl.CreateUserWorkFlowImpl
+        activity-beans:
+          - createUserActivitiesImpl
+minio:
+  url: http://localhost:9000
+  access-key: root
+  secret-key: password
+  bucket-name: ecommerce
+
+server:
+  port: 8083
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+openapi:
+  service:
+    api-docs: User-Service-API-docs
+    serverUrl: http://localhost:${server.port}
+    serverName: server dev
+    title: User Service API
+    version: 1.0.0
+    description: API document

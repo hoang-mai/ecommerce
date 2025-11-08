@@ -15,4 +15,14 @@ CREATE DATABASE IF NOT EXISTS user_service;
 CREATE USER IF NOT EXISTS 'user_service'@'%' IDENTIFIED BY 'user_service';
 GRANT ALL PRIVILEGES ON user_service.* TO 'user_service'@'%';
 
+-- Tạo database cho auth-service
+CREATE DATABASE IF NOT EXISTS auth_service;
+CREATE USER IF NOT EXISTS 'auth_service'@'%' IDENTIFIED BY 'auth_service';
+GRANT ALL PRIVILEGES ON auth_service.* TO 'auth_service'@'%';
+
+-- Tạo database cho product-service
+CREATE DATABASE IF NOT EXISTS product_service;
+CREATE USER IF NOT EXISTS 'product_service'@'%' IDENTIFIED BY 'product_service';
+GRANT ALL PRIVILEGES ON product_service.* TO 'product_service'@'%';
+
 FLUSH PRIVILEGES;

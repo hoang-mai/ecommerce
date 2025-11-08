@@ -1,7 +1,6 @@
 package com.ecommerce.chat.service.impl;
 
 import com.ecommerce.chat.dto.*;
-import com.example.app.chat.chat.dto.*;
 import com.ecommerce.chat.entity.Chat;
 import com.ecommerce.chat.entity.ChatMember;
 import com.ecommerce.chat.entity.Message;
@@ -17,10 +16,10 @@ import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
-import com.example.app.chat.user.ReqGetUserChatDTO;
-import com.example.app.chat.user.ResGetUserChatDTO;
-import com.example.app.chat.user.UserServiceGrpc;
-import com.example.app.chat.utils.base_response.BaseResponse;
+import com.ecommerce.user.ReqGetUserChatDTO;
+import com.ecommerce.user.ResGetUserChatDTO;
+import com.ecommerce.user.UserServiceGrpc;
+import com.ecommerce.utils.base_response.BaseResponse;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;

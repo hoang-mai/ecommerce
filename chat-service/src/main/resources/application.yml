@@ -10,7 +10,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081/auth/realms/app-chat
+          issuer-uri: http://localhost:8081/auth/realms/ecommerce
   data:
     mongodb:
         uri: mongodb://root:rootpassword@localhost:27017/chatdb

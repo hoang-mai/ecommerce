@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum AccountStatus {
 
     ACTIVE(1L,"ACTIVE"),
-    BAN(2L, "BAN");
+    INACTIVE(2L, "INACTIVE"),
+    SUSPENDED(3L, "SUSPENDED");
 
     private final Long statusId;
 

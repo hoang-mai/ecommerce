@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: user-service
+  grpc:
+    server:
+      port: ${GRPC_SERVER_PORT:9093}
+    client:
+      channels:
+        auth-service:
+          address: ${AUTH_SERVICE_GRPC_HOST:auth-service}:${AUTH_SERVICE_GRPC_PORT:9092}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql8}:${MYSQL_PORT:3306}/user_service
+    username: user_service
+    password: user_service
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  temporal:
+    connection:
+      target: ${TEMPORAL_HOST:temporal}:${TEMPORAL_PORT:7233}
+    workers:
+      - task-queue: createUserQueue
+        workflow-classes:
+          - com.ecommerce.user.saga.workflow.impl.CreateUserWorkFlowImpl
+        activity-beans:
+          - createUserActivitiesImpl
+
+
+server:
+  port: ${SERVER_PORT:8083}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${DISCOVERY_SERVICE_HOST:discovery-service}:${DISCOVERY_SERVICE_PORT:8761}/eureka/

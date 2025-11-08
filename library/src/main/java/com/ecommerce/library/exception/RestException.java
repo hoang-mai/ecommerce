@@ -77,9 +77,9 @@ public class RestException {
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<BaseResponse<Void>> handleIllegalStateException(IllegalStateException e) {
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(HttpStatus.BAD_REQUEST)
                 .body(BaseResponse.<Void>builder()
-                        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .statusCode(HttpStatus.BAD_REQUEST.value())
                         .message(messageService.getMessage(e.getMessage()))
                         .timestamp(LocalDateTime.now())
                         .build());

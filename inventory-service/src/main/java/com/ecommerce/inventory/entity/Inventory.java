@@ -3,10 +3,6 @@ package com.ecommerce.inventory.entity;
 import com.ecommerce.library.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "inventory")
@@ -23,8 +19,6 @@ public class Inventory extends BaseEntity {
 
     @Column(name = "product_variant_id", nullable = false)
     private Long productVariantId;
-
-
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;

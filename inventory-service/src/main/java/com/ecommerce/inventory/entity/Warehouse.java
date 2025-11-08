@@ -20,6 +20,12 @@ public class Warehouse extends BaseEntity {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(name = "location", length = 255)
-    private String location;
+    @Column(name = "province")
+    private String province;
+
+    @Column(name = "ward")
+    private String ward;
+
+    @Column(name = "detail")
+    private String detail;
 }

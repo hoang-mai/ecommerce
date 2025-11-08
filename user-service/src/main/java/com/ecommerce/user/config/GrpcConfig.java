@@ -1,6 +1,6 @@
 package com.ecommerce.user.config;
 
-import com.example.app.chat.auth.AccountServiceGrpc;
+import com.ecommerce.auth.AccountServiceGrpc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.client.GrpcChannelFactory;

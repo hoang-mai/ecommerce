@@ -15,12 +15,13 @@ public class CreateUserData {
     private Long userId;
     private String username;
     private String password;
-    private String email;
     private String firstName;
     private String middleName;
     private String lastName;
     private String phoneNumber;
-    private String address;
     private Gender gender;
-    private LocalDate dateOfBirth;
+    private String receiverName;
+    private String province;
+    private String ward;
+    private String detail;
 }

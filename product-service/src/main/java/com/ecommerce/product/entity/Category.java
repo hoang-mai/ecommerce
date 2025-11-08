@@ -1,10 +1,10 @@
 package com.ecommerce.product.entity;
 
 import com.ecommerce.library.entity.BaseEntity;
+import com.ecommerce.library.enumeration.CategoryStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -21,11 +21,15 @@ public class Category extends BaseEntity {
     @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
+    @Column(name = "category_name", nullable = false, unique = true)
+    private String categoryName;
 
-    @Column(name = "description")
+    @Column(name = "description", length = 500)
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name= "category_status", nullable = false)
+    private CategoryStatus categoryStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")

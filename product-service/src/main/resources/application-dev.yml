@@ -1,0 +1,52 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: product-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/auth/realms/ecommerce
+  datasource:
+    url: jdbc:mysql://localhost:3306/product_service
+    username: product_service
+    password: product_service
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+openapi:
+  service:
+    api-docs: Product-Service-API-docs
+    serverUrl: http://localhost:${server.port}
+    serverName: server dev
+    title: Product Service API
+    version: 1.0.0
+    description: API document
+
+

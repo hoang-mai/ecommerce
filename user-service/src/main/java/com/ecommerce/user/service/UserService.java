@@ -1,11 +1,10 @@
 package com.ecommerce.user.service;
 
-import com.ecommerce.user.dto.ReqUpdateUserDTO;
-import com.ecommerce.user.dto.ResInfoPreviewUserDTO;
-import com.ecommerce.user.dto.ReqCreateUserDTO;
+import com.ecommerce.user.dto.*;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.user.dto.ResInfoUserDTO;
 import com.ecommerce.user.saga.data.CreateUserData;
+import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 
 public interface UserService {
@@ -64,4 +63,6 @@ public interface UserService {
      * @return Thông tin người dùng hiện tại
      */
     ResInfoUserDTO getCurrentUser();
+
+    void uploadAvatar(MultipartFile file);
 }

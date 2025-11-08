@@ -9,6 +9,7 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -22,12 +23,23 @@ public class LoggingAspect {
 
     private final ObjectMapper objectMapper;
 
-    @Around("within(com.example.app.chat.*.controller.*)")
+    @Around("within(com.ecommerce.*.controller.*)")
     public Object logBefore(ProceedingJoinPoint pjp) throws Throwable {
         Object[] args = pjp.getArgs();
         String methodName = pjp.getSignature().getName();
         LocalDateTime startTime = LocalDateTime.now();
-        log.info("Method {} called with args: {}. Start time: {}", methodName, objectMapper.writeValueAsString(args), startTime);
+        Object[] loggableArgs = Arrays.stream(args)
+                .map(arg -> {
+                    if (arg instanceof MultipartFile file) {
+                        return String.format("MultipartFile[name=%s, size=%d, contentType=%s]",
+                                file.getOriginalFilename(), file.getSize(), file.getContentType());
+                    }
+                    return arg;
+                })
+                .toArray();
+
+        log.info("Method {} called with args: {}. Start time: {}", methodName, objectMapper.writeValueAsString(loggableArgs), startTime);
+
         Object object;
         try {
             object = pjp.proceed();
@@ -43,7 +55,7 @@ public class LoggingAspect {
         return object;
     }
 
-    @AfterReturning(value = "within(com.example.app.chat.*.exception.RestException)", returning = "result")
+    @AfterReturning(value = "within(com.ecommerce.*.exception.RestException)", returning = "result")
     public void logAfterReturning(JoinPoint joinPoint,Object result) {
         String methodName = joinPoint.getSignature().getName();
         LocalDateTime endTime = LocalDateTime.now();

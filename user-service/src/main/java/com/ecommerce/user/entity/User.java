@@ -2,6 +2,7 @@ package com.ecommerce.user.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 import com.ecommerce.library.entity.BaseEntity;
@@ -25,7 +26,7 @@ public class User extends BaseEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "email", unique = true, nullable = false)
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "description")
@@ -40,11 +41,11 @@ public class User extends BaseEntity {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "phone_number")
-    private String phoneNumber;
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
 
-    @Column(name = "address")
-    private String address;
+    @Column(name = "phone_number", unique = true)
+    private String phoneNumber;
 
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -54,22 +55,12 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(name = "avatar_url")
+    @Column(name = "avatar_url", length = 1000)
     private String avatarUrl;
 
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Address> addresses;
 
-
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserVerification> userVerifications;
 }

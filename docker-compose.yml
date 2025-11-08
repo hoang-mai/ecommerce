@@ -5,7 +5,7 @@ services:
     image: mysql:8
     container_name: mysql8
     ports:
-      - "3307:3306"
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: password
     volumes:
@@ -64,10 +64,11 @@ services:
       - mysql
     networks:
       - service-network
+    volumes:
+      - keycloak_data:/opt/keycloak/data
   mongo:
     image: mongo:6.0
     container_name: mongo_db
-    restart: always
     ports:
       - "27017:27017"
     environment:
@@ -79,7 +80,6 @@ services:
   mongo-express:
     image: mongo-express:latest
     container_name: mongo_express
-    restart: always
     ports:
       - "8089:8081"
     environment:
@@ -105,12 +105,88 @@ services:
       - redis
     volumes:
       - redisinsight_data:/db
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - service-network
+    command: server /data --console-address ":9001"
+
+  discovery-service:
+    image: discovery-service:latest
+    container_name: discovery-service
+    build:
+        context: ./discovery-service
+        dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    env_file:
+      - ./discovery-service/.env
+    networks:
+      - service-network
+  api-gateway:
+    image: api-gateway:latest
+    container_name: api-gateway
+    build:
+        context: ./api-gateway
+        dockerfile: Dockerfile
+    env_file:
+      - ./api-gateway/.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-service
+    networks:
+      - service-network
+  auth-service:
+    image: auth-service:latest
+    container_name: auth-service
+    build:
+        context: ./auth-service
+        dockerfile: Dockerfile
+    env_file:
+      - ./auth-service/.env
+    ports:
+      - "8082:8082"
+      - "9092:9092"
+    depends_on:
+      - keycloak
+      - discovery-service
+    networks:
+      - service-network
+  user-service:
+    image: user-service:latest
+    container_name: user-service
+    build:
+        context: ./user-service
+        dockerfile: Dockerfile
+    env_file:
+      - ./user-service/.env
+    ports:
+      - "8083:8083"
+      - "9093:9093"
+    depends_on:
+      - mysql
+      - temporal
+      - redis
+      - discovery-service
+    networks:
+      - service-network
 volumes:
   mysql-data:
   mongo_data:
   redis_data:
   redisinsight_data:
-
+  keycloak_data:
+  minio_data:
 networks:
   service-network:
     driver: bridge

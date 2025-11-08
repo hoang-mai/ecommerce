@@ -8,8 +8,8 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @EnableDiscoveryClient
 @ComponentScan({
-		"com.example.app.chat.chat",
-		"com.example.app.chat.library"
+		"ecommerce.chat",
+		"ecommerce.library"
 })
 public class ChatServiceApplication {
 

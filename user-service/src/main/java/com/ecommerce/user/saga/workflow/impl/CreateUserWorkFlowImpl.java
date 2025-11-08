@@ -1,20 +1,15 @@
 package com.ecommerce.user.saga.workflow.impl;
 
 
-import com.ecommerce.library.exception.HttpRequestException;
-import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.user.saga.activities.CreateUserActivities;
 import com.ecommerce.user.saga.data.CreateUserData;
 import com.ecommerce.user.saga.workflow.CreateUserWorkFlow;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
-import io.temporal.failure.ActivityFailure;
-import io.temporal.failure.ApplicationFailure;
 import io.temporal.workflow.Saga;
 import io.temporal.workflow.Workflow;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 
 public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
     private final ActivityOptions options =
@@ -36,13 +31,9 @@ public class CreateUserWorkFlowImpl implements CreateUserWorkFlow {
 
             createUserData = activities.createAccount(createUserData);
             saga.addCompensation(activities::deleteAccount, createUserData);
-        } catch (ActivityFailure e) {
+        } catch (Exception e) {
             saga.compensate();
-            if (e.getCause() instanceof ApplicationFailure applicationFailure && applicationFailure.getType().equals(HttpRequestException.class.getName())) {
-                throw new HttpRequestException(applicationFailure.getMessage(), 500, LocalDateTime.now());
-            } else {
-                throw new RuntimeException(MessageError.SYSTEM_ERROR);
-            }
+            throw e;
         }
     }
 }

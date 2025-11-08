@@ -1,6 +1,6 @@
 package com.ecommerce.auth.service.impl;
 
-import com.example.app.chat.auth.ReqCreateAccountDTO;
+import com.ecommerce.auth.ReqCreateAccountDTO;
 import com.ecommerce.auth.dto.auth.ReqLoginDTO;
 import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
 import com.ecommerce.auth.dto.keycloak.ResKeycloakLoginDTO;
@@ -48,7 +48,6 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     private final Keycloak keycloak;
 
     private final UserHelper userHelper;
-    ;
 
     @Override
     public ResKeycloakLoginDTO login(ReqLoginDTO reqLoginDTO) {
@@ -74,20 +73,17 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     @Override
     public String register(ReqCreateAccountDTO reqCreateAccountDTO) {
         UserRepresentation user = mapperToUserRepresentation(reqCreateAccountDTO);
-        try (Response response = keycloak.realm(realm).users().create(user)) {
-            int status = response.getStatus();
+        Response response = keycloak.realm(realm).users().create(user);
+        int status = response.getStatus();
 
-            if (status == Response.Status.CONFLICT.getStatusCode()) {
-                throw new DuplicateException(MessageError.ACCOUNT_DUPLICATE);
-            }
-            if (status != Response.Status.CREATED.getStatusCode()) {
-                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
-            }
-            return response.getLocation().getPath().replaceAll(".*/users/", "");
-
-        } catch (Exception e) {
+        if (status == Response.Status.CONFLICT.getStatusCode()) {
+            throw new DuplicateException(MessageError.ACCOUNT_DUPLICATE);
+        }
+        if (status != Response.Status.CREATED.getStatusCode()) {
             throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         }
+        return response.getLocation().getPath().replaceAll(".*/users/", "");
+
 
     }
 
@@ -106,28 +102,53 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     @Override
     public void updateAccount(ReqUpdateAccountDTO reqUpdateAccountDTO) {
         if (FnCommon.isNotNull(reqUpdateAccountDTO.getAccountStatus())) {
-            updateAccountStatus(reqUpdateAccountDTO.getAccountStatus().getStatus());
-        } else if (FnCommon.isNotNullOrEmpty(reqUpdateAccountDTO.getPassword())) {
-            updatePassword(reqUpdateAccountDTO.getPassword());
+            updateAccountStatus(reqUpdateAccountDTO.getAccountStatus());
+        } else if (FnCommon.isNotNullOrEmpty(reqUpdateAccountDTO.getCurrentPassword()) && FnCommon.isNotNullOrEmpty(reqUpdateAccountDTO.getNewPassword())) {
+            updatePassword(reqUpdateAccountDTO.getNewPassword());
+        }
+    }
+
+    @Override
+    public void logout() {
+        String accountId = userHelper.getAccountId();
+        keycloak.realm(realm).users().get(accountId).logout();
+    }
+
+    @Override
+    public void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, String accountId) {
+        UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
+        if (user == null) {
+            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
+        }
+        if (FnCommon.isNotNull(reqUpdateAccountDTO.getAccountStatus())) {
+            user.setEnabled(AccountStatus.ACTIVE.equals(reqUpdateAccountDTO.getAccountStatus()));
+        }
+        try {
+            keycloak.realm(realm).users().get(accountId).update(user);
+        } catch (Exception e) {
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         }
     }
 
     /**
      * Cập nhật mật khẩu tài khoản trong Keycloak
      *
-     * @param password mật khẩu mới
+     * @param newPassword mật khẩu mới
      */
-    private void updatePassword(String password) {
+    private void updatePassword(String newPassword) {
         String accountId = userHelper.getAccountId();
+
         UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
         if (user == null) {
             throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
         }
+
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType(CredentialRepresentation.PASSWORD);
-        credential.setValue(password);
+        credential.setValue(newPassword);
         credential.setTemporary(false);
         user.setCredentials(List.of(credential));
+
         try {
             keycloak.realm(realm).users().get(accountId).update(user);
         } catch (Exception e) {
@@ -140,13 +161,13 @@ public class KeyCloakServiceImpl implements KeyCloakService {
      *
      * @param accountStatus trạng thái tài khoản mới
      */
-    private void updateAccountStatus(String accountStatus) {
+    private void updateAccountStatus(AccountStatus accountStatus) {
         String accountId = userHelper.getAccountId();
         UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
         if (user == null) {
             throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
         }
-        user.setEnabled(AccountStatus.ACTIVE.getStatus().equals(accountStatus));
+        user.setEnabled(AccountStatus.ACTIVE.equals(accountStatus));
         try {
             keycloak.realm(realm).users().get(accountId).update(user);
         } catch (Exception e) {

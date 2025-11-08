@@ -3,7 +3,7 @@ package com.ecommerce.auth.dto.auth;
 import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.validate.AccountStatusFormat;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,9 +13,9 @@ public class ReqUpdateAccountDTO {
     @AccountStatusFormat
     private AccountStatus accountStatus;
 
-    @Pattern(
-            regexp = "^.{6,20}$",
-            message = MessageError.PASSWORD_SIZE
-    )
-    private String password;
+    @Size(min = 6, max = 20 , message = MessageError.PASSWORD_SIZE)
+    private String currentPassword;
+
+    @Size(min = 6, max = 20 , message = MessageError.PASSWORD_SIZE)
+    private String newPassword;
 }

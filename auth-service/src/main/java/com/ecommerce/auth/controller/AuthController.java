@@ -11,6 +11,7 @@ import com.ecommerce.library.utils.MessageSuccess;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,14 +31,50 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<BaseResponse<ResLoginDTO>> login(@Valid @RequestBody ReqLoginDTO reqLoginDTO) {
-        ResLoginDTO loginDTO= authService.login(reqLoginDTO);
+        ResLoginDTO loginDTO = authService.login(reqLoginDTO);
+
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", loginDTO.getAccessToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(loginDTO.getExpiresIn())
+                .sameSite("Lax")
+                .build();
+
+
         return ResponseEntity
                 .status(HttpStatus.OK)
+                .header("Set-Cookie", accessTokenCookie.toString())
                 .body(BaseResponse
                         .<ResLoginDTO>builder()
                         .statusCode(HttpStatus.OK.value())
                         .message(messageService.getMessage(MessageSuccess.LOGIN_SUCCESS))
                         .data(loginDTO)
+                        .build());
+    }
+
+    /**
+     * Đăng xuất
+     *
+     * @return Trả về thành công và xóa cookies
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<BaseResponse<Void>> logout() {
+        ResponseCookie deleteAccessTokenCookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        authService.logout();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .header("Set-Cookie", deleteAccessTokenCookie.toString())
+                .body(BaseResponse
+                        .<Void>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message(messageService.getMessage(MessageSuccess.LOGOUT_SUCCESS))
                         .build());
     }
 
@@ -50,6 +87,27 @@ public class AuthController {
     @PatchMapping()
     public ResponseEntity<BaseResponse<Void>> updateAccount(@Valid @RequestBody ReqUpdateAccountDTO reqUpdateAccountDTO) {
         authService.updateAccount(reqUpdateAccountDTO);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(BaseResponse
+                        .<Void>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message(messageService.getMessage(MessageSuccess.UPDATE_ACCOUNT_SUCCESS))
+                        .build());
+    }
+
+    /**
+     * Admin cập nhật trạng thái tài khoản
+     *
+     * @param reqUpdateAccountDTO thông tin cập nhật tài khoản
+     * @param accountId ID của người dùng
+     * @return Trả về thành công
+     */
+    @PatchMapping("{accountId}")
+    public ResponseEntity<BaseResponse<Void>> adminUpdateAccountStatus(
+            @RequestBody ReqUpdateAccountDTO reqUpdateAccountDTO,
+            @PathVariable String accountId) {
+        authService.adminUpdateAccountStatus(reqUpdateAccountDTO, accountId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(BaseResponse

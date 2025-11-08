@@ -1,7 +1,6 @@
 package com.ecommerce.chat.controller;
 
 import com.ecommerce.chat.dto.*;
-import com.example.app.chat.chat.dto.*;
 import com.ecommerce.chat.service.ChatService;
 import com.ecommerce.library.component.MessageService;
 import com.ecommerce.library.utils.BaseResponse;

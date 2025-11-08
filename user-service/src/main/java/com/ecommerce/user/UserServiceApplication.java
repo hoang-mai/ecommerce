@@ -9,8 +9,8 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @EnableDiscoveryClient
 @ComponentScan({
-		"com.example.app.chat.user",
-		"com.example.app.chat.library"
+		"com.ecommerce.user",
+		"com.ecommerce.library"
 })
 public class UserServiceApplication {
 

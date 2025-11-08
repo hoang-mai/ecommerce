@@ -6,7 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
@@ -19,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsEmailAlreadyUsedByAnotherUser(Long userId, String email);
 
     @Query("""
-            SELECT new com.example.app.chat.user.dto.ResInfoPreviewUserDTO(
+            SELECT new com.ecommerce.user.dto.ResInfoPreviewUserDTO(
                 u.userId,
                 u.firstName,
                 u.middleName,

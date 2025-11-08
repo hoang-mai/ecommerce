@@ -4,6 +4,9 @@ package com.ecommerce.library.utils;
 import com.ecommerce.library.enumeration.Role;
 import io.grpc.Status;
 
+import java.util.List;
+import java.util.Map;
+
 public final class FnCommon {
 
     /**
@@ -24,6 +27,26 @@ public final class FnCommon {
      */
     public static boolean isNotNull(Object obj) {
         return obj != null;
+    }
+
+    /**
+     * Kiểm tra xem danh sách có null hoặc rỗng hay không
+     *
+     * @param list danh sách cần kiểm tra
+     * @return false nếu danh sách là null hoặc rỗng, true nếu không
+     */
+    public static boolean isNotNullOrEmptyList(List<?> list) {
+        return list != null && !list.isEmpty();
+    }
+
+    /**
+     * Kiểm tra xem map có null hoặc rỗng hay không
+     *
+     * @param map map cần kiểm tra
+     * @return false nếu map là null hoặc rỗng, true nếu không
+     */
+    public static boolean isNotNullOrEmptyMap(Map<?, ?> map) {
+        return map != null && !map.isEmpty();
     }
 
     /**
@@ -60,7 +83,7 @@ public final class FnCommon {
         return switch (role) {
             case ADMIN -> com.ecommerce.enumeration.Role.ADMIN;
             case OWNER -> com.ecommerce.enumeration.Role.OWNER;
-            case CASHIER -> com.ecommerce.enumeration.Role.CASHIER;
+            case EMPLOYEE -> com.ecommerce.enumeration.Role.EMPLOYEE;
             case USER -> com.ecommerce.enumeration.Role.USER;
         };
     }
@@ -75,7 +98,7 @@ public final class FnCommon {
         return switch (role) {
             case ADMIN -> Role.ADMIN;
             case OWNER -> Role.OWNER;
-            case CASHIER -> Role.CASHIER;
+            case EMPLOYEE -> Role.EMPLOYEE;
             case USER -> Role.USER;
             default -> throw new IllegalArgumentException(MessageError.INVALID_ROLE);
         };

@@ -1,13 +1,11 @@
 package com.ecommerce.user.dto;
 
-import java.time.LocalDate;
 
 import com.ecommerce.library.enumeration.Gender;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.validate.PhoneNumberFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -25,16 +23,11 @@ public class ReqCreateUserDTO {
     @Schema(description = "Password must be between 6 and 20 characters", example = "password123")
     private String password;
 
-    @Email
-    @NotBlank(message = MessageError.EMAIL_NOT_BLANK)
-    @Schema(description = "Email must be a valid email address", example = "john.d@gmail.com")
-    private String email;
 
     @Size(min = 1, max = 10, message = MessageError.NAME_SIZE)
     @Schema(description = "First name must be between 1 and 10 characters", example = "John")
     private String firstName;
 
-    @Size(min = 1, max = 10, message = MessageError.NAME_SIZE)
     @Schema(description = "Middle name is optional and can be up to 10 characters", example = "A")
     private String middleName;
 
@@ -43,16 +36,27 @@ public class ReqCreateUserDTO {
     @Schema(description = "Last name must be between 1 and 10 characters", example = "Doe")
     private String lastName;
 
-    @PhoneNumberFormat
-    @Schema(description = "Phone number must be in the format 0123456789", example = "0123456789")
-    private String phoneNumber;
-
     @Schema(description = "Gender must be one of the following: MALE, FEMALE, OTHER", example = "MALE")
     private Gender gender;
 
-    @Schema(description = "Date of birth in the format YYYY-MM-DD", example = "2000-01-01")
-    private LocalDate dateOfBirth;
+    @NotBlank(message = MessageError.RECEIVER_NAME_NOT_BLANK)
+    @Schema(description = "Receiver's name for the address", example = "John Doe")
+    private String receiverName;
 
-    @Schema(description = "Address is optional and can be up to 100 characters", example = "123 Main St, City, Country")
-    private String address;
+    @NotBlank(message = MessageError.PROVINCE_NOT_BLANK)
+    @Schema(description = "Province for the address", example = "California")
+    private String province;
+
+    @NotBlank(message = MessageError.WARD_NOT_BLANK)
+    @Schema(description = "Ward for the address", example = "Los Angeles")
+    private String ward;
+
+    @NotBlank(message = MessageError.DETAIL_NOT_BLANK)
+    @Schema(description = "Detailed address information", example = "1234 Elm Street, Apt 56")
+    private String detail;
+
+    @NotBlank(message = MessageError.PHONE_NUMBER_NOT_BLANK)
+    @PhoneNumberFormat
+    @Schema(description = "Phone number in valid format", example = "+1234567890")
+    private String phoneNumber;
 }

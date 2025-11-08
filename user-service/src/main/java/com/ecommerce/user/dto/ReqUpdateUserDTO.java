@@ -24,7 +24,6 @@ public class ReqUpdateUserDTO {
 
     @Size(min = 1, max = 10, message = MessageError.NAME_SIZE)
     private String lastName;
-    private String address;
 
     @PhoneNumberFormat
     private String phoneNumber;

@@ -2,9 +2,9 @@ spring:
   application:
     name: inventory-service
   datasource:
-    url: jdbc:mysql://localhost:3306/inventory_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-    username: root
-    password: root
+    url: jdbc:mysql://localhost:3306/inventory_service
+    username: inventory_service
+    password: inventory_service
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

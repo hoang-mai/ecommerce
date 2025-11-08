@@ -1,10 +1,8 @@
-FROM openjdk:17
-
+FROM eclipse-temurin:17-jdk-alpine AS build
+WORKDIR /app
 ARG JAR_FILE=target/*.jar
-
-ADD ${JAR_FILE} discovery-service.jar
-
+COPY ${JAR_FILE} discovery-service.jar
 
 EXPOSE 8761
 
-ENTRYPOINT ["java", "-jar", "/discovery-service.jar"]
+ENTRYPOINT ["java", "-jar", "discovery-service.jar"]

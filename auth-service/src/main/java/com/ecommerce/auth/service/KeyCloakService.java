@@ -1,6 +1,6 @@
 package com.ecommerce.auth.service;
 
-import com.example.app.chat.auth.ReqCreateAccountDTO;
+import com.ecommerce.auth.ReqCreateAccountDTO;
 import com.ecommerce.auth.dto.auth.ReqLoginDTO;
 import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
 import com.ecommerce.auth.dto.keycloak.ResKeycloakLoginDTO;
@@ -37,4 +37,17 @@ public interface KeyCloakService {
      * @param reqUpdateStatusAccountDTO DTO chứa thông tin cập nhật trạng thái tài khoản
      */
     void updateAccount(ReqUpdateAccountDTO reqUpdateStatusAccountDTO);
+
+    /**
+     * Đăng xuất khỏi Keycloak
+     */
+    void logout();
+
+    /**
+     * Cập nhật trạng thái tài khoản người dùng bởi admin
+     *
+     * @param reqUpdateAccountDTO DTO chứa thông tin cập nhật trạng thái tài khoản
+     * @param accountId ID của người dùng cần cập nhật
+     */
+    void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, String accountId);
 }

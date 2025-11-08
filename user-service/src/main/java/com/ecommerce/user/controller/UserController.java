@@ -4,12 +4,9 @@ import com.ecommerce.library.component.MessageService;
 import com.ecommerce.library.exception.DuplicateException;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.user.dto.ReqUpdateUserDTO;
-import com.ecommerce.user.dto.ReqCreateUserDTO;
+import com.ecommerce.user.dto.*;
 import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.MessageSuccess;
-import com.ecommerce.user.dto.ResInfoPreviewUserDTO;
-import com.ecommerce.user.dto.ResInfoUserDTO;
 import com.ecommerce.user.service.UserService;
 import com.ecommerce.library.utils.Constant;
 
@@ -18,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(Constant.USER)
@@ -33,9 +31,9 @@ public class UserController {
      * @return Trả về thành công
      */
     @PostMapping()
-    public ResponseEntity<BaseResponse<String>> register(@Valid @RequestBody ReqCreateUserDTO reqCreateUserDTO) {
+    public ResponseEntity<BaseResponse<Void>> register(@Valid @RequestBody ReqCreateUserDTO reqCreateUserDTO) {
         userService.createUser(reqCreateUserDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<String>builder()
+        return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message(messageService.getMessage(MessageSuccess.USER_CREATED_SUCCESS))
                 .build());
@@ -51,6 +49,21 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<BaseResponse<ResInfoUserDTO>> getUserById(@PathVariable Long userId) throws NotFoundException {
         ResInfoUserDTO userResponse = userService.getUserById(userId);
+        return ResponseEntity.ok(BaseResponse.<ResInfoUserDTO>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_INFO_USER_SUCCESS))
+                .data(userResponse)
+                .build());
+    }
+
+    /**
+     * Lấy thông tin người dùng hiện tại
+     *
+     * @return Thông tin người dùng hiện tại
+     */
+    @GetMapping()
+    public ResponseEntity<BaseResponse<ResInfoUserDTO>> getCurrentUser() {
+        ResInfoUserDTO userResponse = userService.getCurrentUser();
         return ResponseEntity.ok(BaseResponse.<ResInfoUserDTO>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.GET_INFO_USER_SUCCESS))
@@ -76,17 +89,17 @@ public class UserController {
     }
 
     /**
-     * Lấy thông tin người dùng hiện tại
+     * Upload ảnh đại diện cho người dùng hiện tại
      *
-     * @return Thông tin người dùng hiện tại
+     * @param file Ảnh đại diện dưới dạng MultipartFile
+     * @return Trả về thành công
      */
-    @GetMapping()
-    public ResponseEntity<BaseResponse<ResInfoUserDTO>> getCurrentUser() {
-        ResInfoUserDTO userResponse = userService.getCurrentUser();
-        return ResponseEntity.ok(BaseResponse.<ResInfoUserDTO>builder()
+    @PostMapping(value = "/avatar", consumes = "multipart/form-data")
+    public ResponseEntity<BaseResponse<Void>> uploadAvatar(@RequestPart("file") MultipartFile file) {
+        userService.uploadAvatar(file);
+        return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message(messageService.getMessage(MessageSuccess.GET_INFO_USER_SUCCESS))
-                .data(userResponse)
+                .message(messageService.getMessage(MessageSuccess.UPLOAD_AVATAR_SUCCESS))
                 .build());
     }
 

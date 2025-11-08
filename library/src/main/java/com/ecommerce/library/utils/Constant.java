@@ -18,4 +18,12 @@ public final class Constant {
     public static final String MESSAGE = REQUEST_MAPPING + "/message";
 
     public static final String CHAT_MEMBER = REQUEST_MAPPING + "/chat-member";
+
+    public static final String ADDRESS = REQUEST_MAPPING + "/address";
+    public static final String USER_VERIFICATION = REQUEST_MAPPING + "/user-verification";
+    public static final String SHOP = REQUEST_MAPPING + "/shop";
+    public static final String CATEGORY = REQUEST_MAPPING + "/category";
+    public static final String PRODUCT = REQUEST_MAPPING + "/product";
+    public static final String PRODUCT_IMAGE = REQUEST_MAPPING + "/product-image";
+    public static final String PRODUCT_ATTRIBUTE = REQUEST_MAPPING + "/product-attribute";
 }

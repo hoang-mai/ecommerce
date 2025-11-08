@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum Role {
     ADMIN(1L, "ADMIN"),
     OWNER(2L, "OWNER"),
-    CASHIER(3L, "CASHIER"),
+    EMPLOYEE(3L, "EMPLOYEE"),
     USER(4L, "USER");
 
     private final Long roleId;

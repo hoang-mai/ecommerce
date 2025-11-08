@@ -14,6 +14,7 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
+@Profile("!prod")
 public class OpenAPIConfig {
 
     @Bean
@@ -38,7 +39,7 @@ public class OpenAPIConfig {
             @Value("${openapi.service.api-docs}") String apiDocs){
         return GroupedOpenApi.builder()
                 .group(apiDocs)
-                .packagesToScan("com.example.app.chat.user.controller")
+                .packagesToScan("com.ecommerce.user.controller")
                 .build();
     }
 }

@@ -59,7 +59,7 @@
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.example.app.chat</groupId>
+			<groupId>com.ecommerce</groupId>
 			<artifactId>library</artifactId>
 		</dependency>
 		<dependency>

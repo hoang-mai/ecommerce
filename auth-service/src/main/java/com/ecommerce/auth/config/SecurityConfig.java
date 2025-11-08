@@ -28,4 +28,9 @@ public class SecurityConfig {
                 .grantType(OAuth2Constants.PASSWORD)
                 .build();
     }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: auth-service
+  grpc:
+    server:
+      port: 9092
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/auth/realms/ecommerce
+  datasource:
+    url: jdbc:mysql://localhost:3306/auth_service
+    username: auth_service
+    password: auth_service
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+keycloak:
+  auth-server-url: http://localhost:8081/auth
+  realm: ecommerce
+  client-id-register: admin-cli
+  client-id-login: auth-service
+  client-secret: vmx7F1YpWv5kxYYhVkVvnimRD1cD1dlj
+  username: admin
+  password: 123456
+
+server:
+  port: 8082
+
+openapi:
+  service:
+    api-docs: Auth-Service-API-docs
+    serverUrl: http://localhost:${server.port}
+    serverName: server dev
+    title: Keycloak Admin API
+    version: 1.0.0
+    description: API Documentation for Keycloak Admin Service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

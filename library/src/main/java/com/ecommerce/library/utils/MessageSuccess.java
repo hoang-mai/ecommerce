@@ -2,6 +2,7 @@ package com.ecommerce.library.utils;
 
 public final class MessageSuccess {
     public static final String LOGIN_SUCCESS = "login.success";
+    public static final String LOGOUT_SUCCESS = "logout.success";
     public static final String ACCOUNT_CREATED_SUCCESS = "account.created.success";
     public static final String USER_CREATED_SUCCESS = "user.created.success";
     public static final String ACCOUNT_DELETED_SUCCESS = "account.deleted.success";
@@ -16,4 +17,44 @@ public final class MessageSuccess {
     public static final String ADD_MEMBER_TO_GROUP_CHAT_SUCCESS = "add.member.to.group.chat.success";
     public static final String UPDATE_NICKNAME_SUCCESS = "update.nickname.success";
     public static final String UPDATE_CHAT_SUCCESS = "update.chat.success";
+    public static final String ADDRESS_CREATED_SUCCESS = "address.created.success";
+    public static final String GET_USER_ADDRESSES_SUCCESS = "get.user.addresses.success";
+    public static final String ADDRESS_UPDATED_SUCCESS = "address.updated.success";
+    public static final String ADDRESS_DELETED_SUCCESS= "address.deleted.success";
+    public static final String ADDRESS_SET_DEFAULT_SUCCESS = "address.set.default.success";
+    public static final String REGISTER_OWNER_REQUEST_SUCCESS = "register.owner.request.success";
+    public static final String UPDATE_OWNER_REQUEST_SUCCESS = "update.owner.request.success";
+    public static final String REJECT_OWNER_REQUEST_SUCCESS = "reject.owner.request.success";
+    public static final String SEARCH_USER_VERIFICATION_SUCCESS = "search.user.verification.success";
+    public static final String GET_USER_VERIFICATION_SUCCESS = "get.user.verification.success";
+    public static final String CREATE_SHOP_SUCCESS = "create.shop.success";
+    public static final String UPDATE_SHOP_SUCCESS = "update.shop.success";
+    public static final String UPDATE_SHOP_STATUS_SUCCESS = "update.shop.status.success";
+    public static final String GET_SHOP_SUCCESS = "get.shop.success";
+
+    public static final String PRODUCT_CREATED_SUCCESS = "product.created.success";
+    public static final String PRODUCT_RETRIEVED_SUCCESS = "product.retrieved.success";
+    public static final String PRODUCT_UPDATED_SUCCESS = "product.updated.success";
+    public static final String PRODUCT_DELETED_SUCCESS = "product.deleted.success";
+    public static final String PRODUCTS_RETRIEVED_SUCCESS = "products.retrieved.success";
+    public static final String PRODUCT_STATUS_UPDATED_SUCCESS = "product.status.updated.success";
+    public static final String CATEGORY_CREATED_SUCCESS = "category.created.success";
+    public static final String CATEGORY_RETRIEVED_SUCCESS = "category.retrieved.success";
+    public static final String CATEGORY_UPDATED_SUCCESS = "category.updated.success";
+    public static final String CATEGORY_STATUS_UPDATED_SUCCESS = "category.status.updated.success";
+    public static final String CATEGORY_DELETED_SUCCESS = "category.deleted.success";
+    public static final String CATEGORIES_RETRIEVED_SUCCESS = "categories.retrieved.success";
+    public static final String VARIANT_RETRIEVED_SUCCESS = "variant.retrieved.success";
+    public static final String VARIANT_UPDATED_SUCCESS = "variant.updated.success";
+    public static final String VARIANT_DELETED_SUCCESS = "variant.deleted.success";
+    public static final String VARIANTS_RETRIEVED_SUCCESS = "variants.retrieved.success";
+    public static final String STOCK_UPDATED_SUCCESS = "stock.updated.success";
+    public static final String PRODUCT_ATTRIBUTE_CREATED_SUCCESS = "";
+
+    public static final String PRODUCT_IMAGE_CREATED_SUCCESS = "product.image.created.success";
+    public static final String PRODUCT_IMAGE_RETRIEVED_SUCCESS = "product.image.retrieved.success";
+    public static final String PRODUCT_IMAGE_UPDATED_SUCCESS = "product.image.updated.success";
+    public static final String PRODUCT_IMAGE_DELETED_SUCCESS = "product.image.deleted.success";
+    public static final String PRODUCT_IMAGES_RETRIEVED_SUCCESS = "product.images.retrieved.success";
+    public static final String UPLOAD_AVATAR_SUCCESS = "";
 }
