@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(Constant.SHOP)
@@ -30,9 +31,12 @@ public class ShopController {
      * @param reqCreateShopDTO Dữ liệu tạo shop
      * @return Tạo mới thành công
      */
-    @PostMapping()
-    public ResponseEntity<BaseResponse<Void>> createShop(@Valid @RequestBody ReqCreateShopDTO reqCreateShopDTO) {
-        shopService.createShop(reqCreateShopDTO);
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<BaseResponse<Void>> createShop(
+            @RequestParam(value = "bannerUrl", required = false) MultipartFile bannerUrl,
+            @RequestParam(value = "logoUrl", required = false) MultipartFile logoUrl,
+            @Valid @RequestPart("data") ReqCreateShopDTO reqCreateShopDTO) {
+        shopService.createShop(reqCreateShopDTO, logoUrl, bannerUrl);
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message(messageService.getMessage(MessageSuccess.CREATE_SHOP_SUCCESS))
@@ -45,12 +49,14 @@ public class ShopController {
      * @param reqUpdateShopDTO Dữ liệu cập nhật shop
      * @return Cập nhật thành công
      */
-    @PatchMapping("/{shopId}")
+    @PatchMapping(value = "/{shopId}",consumes = "multipart/form-data")
     public ResponseEntity<BaseResponse<Void>> updateShop(
             @PathVariable Long shopId,
-            @Valid @RequestBody ReqUpdateShopDTO reqUpdateShopDTO)
+            @RequestParam(value = "bannerUrl", required = false) MultipartFile bannerUrl,
+            @RequestParam(value = "logoUrl", required = false) MultipartFile logoUrl,
+            @Valid @RequestPart("data") ReqUpdateShopDTO reqUpdateShopDTO)
     {
-        shopService.updateShop(shopId, reqUpdateShopDTO);
+        shopService.updateShop(shopId, reqUpdateShopDTO, logoUrl, bannerUrl);
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(200)
                 .message(messageService.getMessage(MessageSuccess.UPDATE_SHOP_SUCCESS))
@@ -133,6 +139,23 @@ public class ShopController {
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.GET_SHOP_SUCCESS))
                 .data(pageResponse)
+                .build());
+    }
+
+    /**
+     * Lấy chi tiết shop theo ID
+     *
+     * @param shopId ID của shop
+     * @return Chi tiết shop
+     */
+    @GetMapping("/{shopId}")
+    public ResponseEntity<BaseResponse<ResShopDTO>> getShopById(@PathVariable Long shopId) {
+        ResShopDTO shopDTO = shopService.getShopById(shopId);
+        
+        return ResponseEntity.ok(BaseResponse.<ResShopDTO>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_SHOP_SUCCESS))
+                .data(shopDTO)
                 .build());
     }
 

@@ -4,6 +4,7 @@ import com.ecommerce.auth.ReqCreateAccountDTO;
 import com.ecommerce.auth.dto.auth.ReqLoginDTO;
 import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
 import com.ecommerce.auth.dto.keycloak.ResKeycloakLoginDTO;
+import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.DuplicateException;
 
 public interface KeyCloakService {
@@ -50,4 +51,11 @@ public interface KeyCloakService {
      * @param accountId ID của người dùng cần cập nhật
      */
     void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, String accountId);
+
+    /**
+     * Cập nhật role của tài khoản
+     *
+     * @param role Role mới cần cập nhật
+     */
+    void updateRole(Role role);
 }

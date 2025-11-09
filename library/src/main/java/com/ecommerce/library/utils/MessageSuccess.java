@@ -57,4 +57,5 @@ public final class MessageSuccess {
     public static final String PRODUCT_IMAGE_DELETED_SUCCESS = "product.image.deleted.success";
     public static final String PRODUCT_IMAGES_RETRIEVED_SUCCESS = "product.images.retrieved.success";
     public static final String UPLOAD_AVATAR_SUCCESS = "";
+    public static final String ACCOUNT_UPDATED_SUCCESS = "";
 }

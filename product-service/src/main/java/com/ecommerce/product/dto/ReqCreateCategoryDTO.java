@@ -10,7 +10,7 @@ public class ReqCreateCategoryDTO {
 
     @NotBlank(message = MessageError.CATEGORY_NAME_NOT_BLANK)
     @Schema(description = "Name of the category", example = "Electronics")
-    private String name;
+    private String categoryName;
 
     @Schema(description = "Description of the category", example = "Electronic devices and accessories")
     private String description;

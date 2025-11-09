@@ -23,6 +23,11 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
+minio:
+  url: http://localhost:9000
+  access-key: root
+  secret-key: password
+  bucket-name: ecommerce
 
 eureka:
   client:

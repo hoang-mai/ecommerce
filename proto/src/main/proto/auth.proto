@@ -10,6 +10,7 @@ option java_package = "com.ecommerce.auth";
 service AccountService {
   rpc CreateAccount (ReqCreateAccountDTO) returns (utils.base_response.BaseResponse);
   rpc DeleteAccount (ReqDeleteAccountDTO) returns (utils.base_response.BaseResponse);
+  rpc UpdateRole (ReqUpdateRoleDTO) returns (utils.base_response.BaseResponse);
 }
 
 message ReqCreateAccountDTO {
@@ -26,3 +27,8 @@ message ReqDeleteAccountDTO {
 message ResCreateAccountDTO {
   string account_id = 1;
 }
+
+message ReqUpdateRoleDTO {
+  enumeration.Role role = 2;
+}
+

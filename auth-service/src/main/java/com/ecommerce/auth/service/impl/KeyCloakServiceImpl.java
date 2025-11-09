@@ -6,6 +6,7 @@ import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
 import com.ecommerce.auth.dto.keycloak.ResKeycloakLoginDTO;
 import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.AccountStatus;
+import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.DuplicateException;
 import com.ecommerce.auth.service.KeyCloakService;
 
@@ -123,6 +124,29 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         if (FnCommon.isNotNull(reqUpdateAccountDTO.getAccountStatus())) {
             user.setEnabled(AccountStatus.ACTIVE.equals(reqUpdateAccountDTO.getAccountStatus()));
         }
+        try {
+            keycloak.realm(realm).users().get(accountId).update(user);
+        } catch (Exception e) {
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+        }
+    }
+
+    @Override
+    public void updateRole( Role role) {
+        String accountId = userHelper.getAccountId();
+        UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
+        if (user == null) {
+            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
+        }
+
+        Map<String, List<String>> attributes = user.getAttributes();
+        if (attributes != null) {
+            attributes.put("role", List.of(role.getRole()));
+            user.setAttributes(attributes);
+        } else {
+            user.setAttributes(Map.of("role", List.of(role.getRole())));
+        }
+
         try {
             keycloak.realm(realm).users().get(accountId).update(user);
         } catch (Exception e) {

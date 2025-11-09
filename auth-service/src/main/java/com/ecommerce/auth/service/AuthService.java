@@ -4,6 +4,7 @@ import com.ecommerce.auth.ReqCreateAccountDTO;
 import com.ecommerce.auth.dto.auth.ReqLoginDTO;
 import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
 import com.ecommerce.auth.dto.auth.ResLoginDTO;
+import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.HttpRequestException;
 
 public interface AuthService {

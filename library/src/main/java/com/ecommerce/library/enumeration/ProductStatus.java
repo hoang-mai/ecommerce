@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public enum ProductStatus {
     ACTIVE("ACTIVE"),
-    INACTIVE("INACTIVE");
+    INACTIVE("INACTIVE"),
+    OUT_OF_STOCK("OUT_OF_STOCK");
     private final String value;
 }

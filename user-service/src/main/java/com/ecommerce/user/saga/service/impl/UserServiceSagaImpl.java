@@ -1,5 +1,7 @@
 package com.ecommerce.user.saga.service.impl;
 
+import com.ecommerce.library.enumeration.Role;
+import com.ecommerce.user.saga.data.ApproveOwnerData;
 import com.ecommerce.user.saga.data.CreateUserData;
 import com.ecommerce.user.saga.service.UserServiceSaga;
 import com.ecommerce.user.service.UserService;
@@ -20,5 +22,15 @@ public class UserServiceSagaImpl implements UserServiceSaga {
     @Override
     public void deleteUser(Long userId) {
         userService.deleteUser(userId);
+    }
+
+    @Override
+    public Role updateUserRole(ApproveOwnerData approveOwnerData) {
+        return userService.updateUserRole(approveOwnerData);
+    }
+
+    @Override
+    public void rollbackUserRole(ApproveOwnerData approveOwnerData) {
+        userService.rollbackUserRole(approveOwnerData);
     }
 }

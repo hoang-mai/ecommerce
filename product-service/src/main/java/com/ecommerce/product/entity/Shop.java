@@ -21,7 +21,7 @@ public class Shop extends BaseEntity {
     @Column(name = "shop_id", unique = true)
     private Long shopId;
 
-    @Column(name = "owner_id", unique = true)
+    @Column(name = "owner_id")
     private Long ownerId;
 
     @Column(name = "shop_name")
@@ -55,11 +55,4 @@ public class Shop extends BaseEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "category_ids")
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "shop_category_ids",
-            joinColumns = @JoinColumn(name = "shop_id")
-    )
-    private Set<Long> categoryIds;
 }

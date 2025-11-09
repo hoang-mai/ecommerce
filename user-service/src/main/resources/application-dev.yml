@@ -32,6 +32,11 @@ spring:
           - com.ecommerce.user.saga.workflow.impl.CreateUserWorkFlowImpl
         activity-beans:
           - createUserActivitiesImpl
+      - task-queue: approveOwnerQueue
+        workflow-classes:
+          - com.ecommerce.user.saga.workflow.impl.ApproveOwnerWorkFlowImpl
+        activity-beans:
+          - approveOwnerActivitiesImpl
 minio:
   url: http://localhost:9000
   access-key: root

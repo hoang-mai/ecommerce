@@ -1,7 +1,9 @@
 package com.ecommerce.user.service;
 
+import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.user.dto.*;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.user.saga.data.ApproveOwnerData;
 import com.ecommerce.user.saga.data.CreateUserData;
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,9 +52,9 @@ public interface UserService {
     /**
      * Tìm kiếm người dùng theo tên  hoặc email.
      *
-     * @param pageNo  Số trang
+     * @param pageNo   Số trang
      * @param pageSize Kích thước trang
-     * @param query   Chuỗi tìm kiếm (tên  hoặc email)
+     * @param query    Chuỗi tìm kiếm (tên  hoặc email)
      * @return Danh sách người dùng phù hợp với trang và kích thước trang
      */
     PageResponse<ResInfoPreviewUserDTO> searchUsers(int pageNo, int pageSize, String query);
@@ -64,5 +66,24 @@ public interface UserService {
      */
     ResInfoUserDTO getCurrentUser();
 
-    void uploadAvatar(MultipartFile file);
+    /**
+     * Tải lên avatar cho người dùng hiện tại.
+     *
+     * @param file Tệp avatar cần tải lên
+     */
+    void uploadAvatar(MultipartFile file, Boolean isDelete);
+
+    /**
+     * Cập nhật role của người dùng khi duyệt chủ cửa hàng
+     * @param approveOwnerData DTO chứa thông tin duyệt chủ cửa hàng
+     * @return Vai trò người dùng đã được cập nhật
+     */
+    Role updateUserRole(ApproveOwnerData approveOwnerData);
+
+    /**
+     * Hoàn tác việc cập nhật vai trò người dùng
+     *
+     * @param approveOwnerData DTO chứa thông tin duyệt chủ cửa hàng
+     */
+    void rollbackUserRole(ApproveOwnerData approveOwnerData);
 }

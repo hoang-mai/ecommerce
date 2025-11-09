@@ -95,8 +95,11 @@ public class UserController {
      * @return Trả về thành công
      */
     @PostMapping(value = "/avatar", consumes = "multipart/form-data")
-    public ResponseEntity<BaseResponse<Void>> uploadAvatar(@RequestPart("file") MultipartFile file) {
-        userService.uploadAvatar(file);
+    public ResponseEntity<BaseResponse<Void>> uploadAvatar(
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "isDelete", required = false) Boolean isDelete
+    ) {
+        userService.uploadAvatar(file, isDelete);
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.UPLOAD_AVATAR_SUCCESS))

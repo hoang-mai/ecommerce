@@ -88,4 +88,7 @@ public final class MessageError {
     public static final String INTERNAL_SERVER_ERROR = "";
     public static final String FILE_SIZE_EXCEEDED = "";
     public static final String STATUS_NOT_NULL = "";
+    public static final String CANNOT_UPDATE_ACCOUNT = "";
+    public static final String PRODUCT_ATTRIBUTES_NOT_NULL = "";
+    public static final String PRODUCT_VARIANTS_NOT_NULL = "";
 }

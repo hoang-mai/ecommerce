@@ -61,4 +61,6 @@ public interface UserVerificationService {
             int pageSize,
             String sortBy,
             String sortDir);
+
+    void updateUserVerificationStatus(Long userVerificationId, UserVerificationStatus userVerificationStatus);
 }

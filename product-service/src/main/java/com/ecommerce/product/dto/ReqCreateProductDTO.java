@@ -27,12 +27,11 @@ public class ReqCreateProductDTO {
     @Schema(description = "Category ID for the product", example = "1")
     private Long categoryId;
 
-    @Schema(description = "List of image URLs for the product")
-    private List<String> imageUrls;
-
+    @NotNull(message = MessageError.PRODUCT_ATTRIBUTES_NOT_NULL)
     @Schema(description = "List of product attributes (e.g., Color, Size)")
     private List<ReqProductAttributeDTO> productAttributes;
 
+    @NotNull(message = MessageError.PRODUCT_VARIANTS_NOT_NULL)
     @Schema(description = "List of product variants with pricing and stock")
     private List<ReqProductVariantDTO> productVariants;
 }

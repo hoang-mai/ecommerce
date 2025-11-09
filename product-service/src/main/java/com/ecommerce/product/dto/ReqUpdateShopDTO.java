@@ -30,5 +30,4 @@ public class ReqUpdateShopDTO {
     @NotBlank(message = MessageError.PHONE_NUMBER_NOT_BLANK)
     private String phoneNumber;
 
-    private Set<Long> categoryIds;
 }

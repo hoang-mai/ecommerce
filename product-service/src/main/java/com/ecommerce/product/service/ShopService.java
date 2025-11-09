@@ -6,11 +6,14 @@ import com.ecommerce.product.dto.ReqCreateShopDTO;
 import com.ecommerce.product.dto.ReqUpdateShopDTO;
 import com.ecommerce.product.dto.ReqUpdateShopStatusDTO;
 import com.ecommerce.product.dto.ResShopDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ShopService {
-    void createShop(ReqCreateShopDTO reqCreateShopDTO);
+    void createShop(ReqCreateShopDTO reqCreateShopDTO,
+                    MultipartFile bannerUrl,
+                    MultipartFile logoUrl);
 
-    void updateShop(Long shopId, ReqUpdateShopDTO reqUpdateShopDTO);
+    void updateShop(Long shopId, ReqUpdateShopDTO reqUpdateShopDTO, MultipartFile logoFile, MultipartFile bannerFile);
 
     void updateShopStatus(Long shopId, ReqUpdateShopStatusDTO reqUpdateShopStatusDTO);
 
@@ -21,4 +24,6 @@ public interface ShopService {
     PageResponse<ResShopDTO> getShopsByCurrentOwner(ShopStatus status,
                                                      String keyword, int pageNo, int pageSize,
                                                      String sortBy, String sortDir);
+
+    ResShopDTO getShopById(Long shopId);
 }

@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 
 @Aspect
 @Component
@@ -33,6 +34,34 @@ public class LoggingAspect {
                     if (arg instanceof MultipartFile file) {
                         return String.format("MultipartFile[name=%s, size=%d, contentType=%s]",
                                 file.getOriginalFilename(), file.getSize(), file.getContentType());
+                    }
+                    if (arg instanceof MultipartFile[] files) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("MultipartFile[");
+                        for (int i = 0; i < files.length; i++) {
+                            MultipartFile f = files[i];
+                            sb.append(String.format("{name=%s, size=%d, contentType=%s}",
+                                    f.getOriginalFilename(), f.getSize(), f.getContentType()));
+                            if (i < files.length - 1) {
+                                sb.append(", ");
+                            }
+                        }
+                        sb.append("]");
+                        return sb.toString();
+                    }
+                    if (arg instanceof List<?> list && !list.isEmpty() && list.get(0) instanceof MultipartFile) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("List<MultipartFile>[");
+                        for (int i = 0; i < list.size(); i++) {
+                            MultipartFile f = (MultipartFile) list.get(i);
+                            sb.append(String.format("{name=%s, size=%d, contentType=%s}",
+                                    f.getOriginalFilename(), f.getSize(), f.getContentType()));
+                            if (i < list.size() - 1) {
+                                sb.append(", ");
+                            }
+                        }
+                        sb.append("]");
+                        return sb.toString();
                     }
                     return arg;
                 })
@@ -56,7 +85,7 @@ public class LoggingAspect {
     }
 
     @AfterReturning(value = "within(com.ecommerce.*.exception.RestException)", returning = "result")
-    public void logAfterReturning(JoinPoint joinPoint,Object result) {
+    public void logAfterReturning(JoinPoint joinPoint, Object result) {
         String methodName = joinPoint.getSignature().getName();
         LocalDateTime endTime = LocalDateTime.now();
         log.info("Method {} returned successfully with result: {}. End time: {}", methodName, result, endTime);

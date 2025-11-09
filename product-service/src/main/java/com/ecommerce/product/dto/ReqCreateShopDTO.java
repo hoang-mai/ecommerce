@@ -15,8 +15,7 @@ public class ReqCreateShopDTO {
     private String shopName;
 
     private String description;
-    private String logoUrl;
-    private String bannerUrl;
+
     @NotBlank(message = MessageError.PROVINCE_NOT_BLANK)
     private String province;
     @NotBlank(message = MessageError.WARD_NOT_BLANK)

@@ -23,7 +23,6 @@ public class ResShopDTO {
     private String ward;
     private String detail;
     private String phoneNumber;
-    private Set<Long> categoryIds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

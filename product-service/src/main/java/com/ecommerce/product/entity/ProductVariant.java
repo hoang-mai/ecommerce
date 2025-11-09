@@ -27,6 +27,9 @@ public class ProductVariant extends BaseEntity {
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity;
 
+    @Column(name = "is_default", nullable = false)
+    private Boolean isDefault = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;

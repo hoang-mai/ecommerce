@@ -8,6 +8,7 @@ import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.product.dto.ReqCreateProductDTO;
 import com.ecommerce.product.dto.ReqUpdateProductDTO;
+import com.ecommerce.product.dto.ReqUpdateProductStatusDTO;
 import com.ecommerce.product.dto.ResProductDTO;
 import com.ecommerce.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(Constant.PRODUCT)
@@ -30,13 +34,15 @@ public class ProductController {
     /**
      * Tạo sản phẩm mới
      *
+     * @param files Danh sách ảnh sản phẩm
      * @param request Thông tin sản phẩm cần tạo
      */
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     @Operation(summary = "Create a new product", description = "Create a new product with details")
     public ResponseEntity<BaseResponse<Void>> createProduct(
-            @Valid @RequestBody ReqCreateProductDTO request) {
-        productService.createProduct(request);
+            @RequestParam(value = "imageUrls") List<MultipartFile> files,
+            @Valid @RequestPart(value = "data") ReqCreateProductDTO request) {
+        productService.createProduct(request, files);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.CREATED.value())
@@ -66,19 +72,41 @@ public class ProductController {
      * Cập nhật thông tin sản phẩm
      *
      * @param productId ID của sản phẩm cần cập nhật
+     * @param files Danh sách ảnh sản phẩm mới (optional)
      * @param request Thông tin cập nhật
      * @return Thông tin sản phẩm đã được cập nhật
      */
-    @PatchMapping("/{productId}")
-    @Operation(summary = "Update product", description = "Update product information")
+    @PatchMapping(value = "/{productId}", consumes = "multipart/form-data")
+    @Operation(summary = "Update product", description = "Update product information with optional new images")
     public ResponseEntity<BaseResponse<Void>> updateProduct(
             @PathVariable Long productId,
-            @Valid @RequestBody ReqUpdateProductDTO request) {
-        productService.updateProduct(productId, request);
+            @RequestParam(value = "imageUrls", required = false) List<MultipartFile> files,
+            @Valid @RequestPart(value = "data") ReqUpdateProductDTO request) {
+        productService.updateProduct(productId, request, files);
 
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.PRODUCT_UPDATED_SUCCESS))
+                .build());
+    }
+
+    /**
+     * Cập nhật trạng thái sản phẩm
+     *
+     * @param productId ID của sản phẩm cần cập nhật trạng thái
+     * @param request Trạng thái mới
+     * @return Kết quả cập nhật
+     */
+    @PatchMapping("/{productId}/status")
+    @Operation(summary = "Update product status", description = "Update product status (ACTIVE, INACTIVE, OUT_OF_STOCK)")
+    public ResponseEntity<BaseResponse<Void>> updateProductStatus(
+            @PathVariable Long productId,
+            @Valid @RequestBody ReqUpdateProductStatusDTO request) {
+        productService.updateProductStatus(productId, request);
+
+        return ResponseEntity.ok(BaseResponse.<Void>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.PRODUCT_STATUS_UPDATED_SUCCESS))
                 .build());
     }
 

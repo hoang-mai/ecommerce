@@ -33,13 +33,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void createCategory(ReqCreateCategoryDTO request) {
-        categoryRepository.findByCategoryName(request.getName())
+        categoryRepository.findByCategoryName(request.getCategoryName())
                 .ifPresent(category -> {
                     throw new DuplicateException(MessageError.CATEGORY_NAME_EXISTS);
                 });
 
         Category category = Category.builder()
-                .categoryName(request.getName())
+                .categoryName(request.getCategoryName())
                 .description(request.getDescription())
                 .categoryStatus(CategoryStatus.ACTIVE)
                 .build();

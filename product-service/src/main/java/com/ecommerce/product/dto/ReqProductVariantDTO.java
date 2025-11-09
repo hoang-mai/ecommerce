@@ -21,6 +21,9 @@ public class ReqProductVariantDTO {
     @Schema(description = "Available stock quantity", example = "100")
     private Integer stockQuantity;
 
+    @Schema(description = "Whether this is the default variant to display", example = "true")
+    private Boolean isDefault ;
+
     @Schema(description = "Map of attribute name to value", example = "{\"Color\": \"Red\", \"Size\": \"128GB\"}")
     private Map<String, String> attributeValues;
 }

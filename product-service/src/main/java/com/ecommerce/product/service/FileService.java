@@ -1,9 +1,20 @@
-package com.ecommerce.user.service;
+package com.ecommerce.product.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 public interface FileService {
     String uploadFile(MultipartFile file, String directory);
+
+    /**
+     * Upload nhiều file cùng lúc
+     *
+     * @param files danh sách file cần upload
+     * @param directory thư mục đích trong MinIO
+     * @return danh sách đường dẫn của các file đã upload
+     */
+    List<String> uploadFiles(List<MultipartFile> files, String directory);
 
     /**
      * Lấy presigned URL từ object path
@@ -19,4 +30,11 @@ public interface FileService {
      * @param directory đường dẫn thư mục trong MinIO
      */
     void deleteFilesInDirectory(String directory);
+
+    /**
+     * Xóa một file cụ thể
+     *
+     * @param objectPath đường dẫn file cần xóa trong MinIO
+     */
+    void deleteFile(String objectPath);
 }

@@ -11,6 +11,6 @@ public class ReqUpdateShopStatusDTO {
 
     @NotNull(message = MessageError.STATUS_NOT_NULL)
     @StatusFormat(acceptedValues = {ShopStatus.ACTIVE, ShopStatus.INACTIVE, ShopStatus.SUSPENDED})
-    private ShopStatus status;
+    private ShopStatus shopStatus;
 }
 

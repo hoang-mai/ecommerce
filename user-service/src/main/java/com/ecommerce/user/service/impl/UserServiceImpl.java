@@ -12,6 +12,7 @@ import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.user.enumeration.UserVerificationStatus;
 import com.ecommerce.user.repository.AddressRepository;
 import com.ecommerce.user.repository.UserVerificationRepository;
+import com.ecommerce.user.saga.data.ApproveOwnerData;
 import com.ecommerce.user.saga.data.CreateUserData;
 import com.ecommerce.user.saga.workflow.CreateUserWorkFlow;
 import com.ecommerce.user.service.FileService;
@@ -103,16 +104,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void uploadAvatar(MultipartFile file) {
+    public void uploadAvatar(MultipartFile file, Boolean isDelete) {
         Long currentUserId = userHelper.getCurrentUserId();
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
-
+        if(FnCommon.isNotNull(isDelete) && isDelete && file == null){
+            user.setAvatarUrl(null);
+            fileService.deleteFilesInDirectory("avatars/" + currentUserId);
+            userRepository.save(user);
+            return;
+        }
         if (file.getSize() > 3 * 1024 * 1024) {
             throw new IllegalArgumentException(MessageError.FILE_SIZE_EXCEEDED);
         }
         String avatarUrl = fileService.uploadFile(file, "avatars/" + currentUserId);
         user.setAvatarUrl(avatarUrl);
+        userRepository.save(user);
+    }
+
+    @Override
+    public Role updateUserRole(ApproveOwnerData approveOwnerData) {
+        User user = userRepository.findById(approveOwnerData.getUserId())
+                .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
+        Role oldRole = user.getRole();
+        user.setRole(Role.OWNER);
+        userRepository.save(user);
+        return oldRole;
+    }
+
+    @Override
+    public void rollbackUserRole(ApproveOwnerData approveOwnerData) {
+        User user = userRepository.findById(approveOwnerData.getUserId())
+                .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
+        user.setRole(approveOwnerData.getOldRole());
         userRepository.save(user);
     }
 
