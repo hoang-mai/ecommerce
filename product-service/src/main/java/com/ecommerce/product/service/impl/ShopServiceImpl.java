@@ -32,10 +32,9 @@ import java.util.stream.Collectors;
 public class ShopServiceImpl implements ShopService {
 
     private final ShopRepository shopRepository;
-    private final CategoryRepository categoryRepository;
     private final UserHelper userHelper;
     private final FileService fileService;
-
+    @Transactional
     @Override
     public void createShop(ReqCreateShopDTO reqCreateShopDTO, MultipartFile logoFile, MultipartFile bannerFile) {
 
@@ -68,7 +67,7 @@ public class ShopServiceImpl implements ShopService {
         }
         shopRepository.save(shop);
     }
-
+    @Transactional
     @Override
     public void updateShop(Long shopId, ReqUpdateShopDTO reqUpdateShopDTO, MultipartFile logoFile, MultipartFile bannerFile) {
         Shop shop = shopRepository.findById(shopId)

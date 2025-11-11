@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package auth;
 import "enumeration/role.proto";
+import "enumeration/account_status.proto";
 import "utils/base_response.proto";
 
 option java_multiple_files = true;
@@ -18,6 +19,7 @@ message ReqCreateAccountDTO {
   string password = 2;
   int64 userId = 3;
   enumeration.Role role = 4;
+  enumeration.AccountStatus accountStatus = 5;
 }
 
 message ReqDeleteAccountDTO {
@@ -29,6 +31,7 @@ message ResCreateAccountDTO {
 }
 
 message ReqUpdateRoleDTO {
+  int64 user_id = 1;
   enumeration.Role role = 2;
 }
 

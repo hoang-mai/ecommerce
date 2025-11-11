@@ -32,8 +32,16 @@ spring:
         - id: product-service
           uri: lb://product-service
           predicates:
-            - Path=/api/v1/product/**,/api/v1/category/**,/api/v1/product-image/**,/api/v1/shop/**,/api/v1/product-attribute/**
+            - Path=/api/v1/product/**,/api/v1/category/**,/api/v1/shop/**
         - id: chat-service
           uri: lb://chat-service
           predicates:
             - Path=/api/v1/chat/**
+        - id: saga-service
+          uri: lb://saga-service
+          predicates:
+            - Path=/api/v1/saga/**
+        - id: read-service
+          uri: lb://read-service
+          predicates:
+            - Path=/api/v1/user-view/**

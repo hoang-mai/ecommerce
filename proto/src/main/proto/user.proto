@@ -3,22 +3,56 @@ syntax = "proto3";
 package user;
 
 import "utils/base_response.proto";
-
+import "enumeration/role.proto";
+import "enumeration/gender.proto";
+import "enumeration/use_verification_status.proto";
 option java_multiple_files = true;
 option java_package = "com.ecommerce.user";
 
 service UserService {
-  rpc GetUserChatById (ReqGetUserChatDTO) returns (utils.base_response.BaseResponse);
+  rpc CreateUser (ReqCreateUserDTO) returns (utils.base_response.BaseResponse);
+  rpc DeleteUser (ReqDeleteUserDTO) returns (utils.base_response.BaseResponse);
+
+  rpc UpdateUserRoleAndVerificationStatus (ReqUpdateUserRoleAndVerificationStatusDTO) returns (utils.base_response.BaseResponse);
+  rpc RollbackUpdateUserRoleAndVerificationStatus (ReqRollbackUpdateUserRoleAndVerificationStatusDTO) returns (utils.base_response.BaseResponse);
 }
 
-message ReqGetUserChatDTO {
+message ReqCreateUserDTO {
+  string first_name = 1;
+  string middle_name = 2;
+  string last_name = 3;
+  enumeration.Role role = 4;
+  enumeration.Gender gender = 5;
+  string province = 6;
+  string ward = 7;
+  string detail = 8;
+  string receiver_name = 9;
+  string phone_number = 10;
+  bool is_default = 11;
+}
+
+message ResCreateUserDTO {
   int64 user_id = 1;
 }
 
-message ResGetUserChatDTO {
+message ReqDeleteUserDTO {
   int64 user_id = 1;
-  string avatar_url = 2;
-  string first_name = 3;
-  string middle_name = 4;
-  string last_name = 5;
+}
+
+message ReqUpdateUserRoleAndVerificationStatusDTO {
+  int64 user_verification_id = 1;
+  enumeration.Role new_role = 2;
+  enumeration.UserVerificationStatus new_verification_status = 3;
+}
+
+message ResUpdateUserRoleAndVerificationStatusDTO {
+  int64 user_id = 1;
+  enumeration.Role old_role = 2;
+  enumeration.UserVerificationStatus old_verification_status = 3;
+}
+
+message ReqRollbackUpdateUserRoleAndVerificationStatusDTO {
+  int64 user_verification_id = 2;
+  enumeration.Role old_role = 3;
+  enumeration.UserVerificationStatus old_verification_status = 4;
 }

@@ -1,11 +1,8 @@
 package com.ecommerce.user.service.impl;
 
 import com.ecommerce.library.component.UserHelper;
-import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.DuplicateException;
-import com.ecommerce.library.exception.HttpRequestException;
 import com.ecommerce.library.exception.NotFoundException;
-import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
@@ -14,40 +11,32 @@ import com.ecommerce.user.dto.ReqRejectOwnerDTO;
 import com.ecommerce.user.dto.ResUserVerificationDTO;
 import com.ecommerce.user.entity.User;
 import com.ecommerce.user.entity.UserVerification;
-import com.ecommerce.user.enumeration.UserVerificationStatus;
+import com.ecommerce.library.enumeration.UserVerificationStatus;
 import com.ecommerce.user.repository.UserRepository;
 import com.ecommerce.user.repository.UserVerificationRepository;
-import com.ecommerce.user.saga.data.ApproveOwnerData;
-import com.ecommerce.user.saga.workflow.ApproveOwnerWorkFlow;
 import com.ecommerce.user.service.FileService;
 import com.ecommerce.user.service.UserVerificationService;
-import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowFailedException;
-import io.temporal.client.WorkflowOptions;
-import io.temporal.failure.ApplicationFailure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserVerificationServiceImpl implements UserVerificationService {
-    private final WorkflowClient workflowClient;
     private final UserRepository userRepository;
     private final UserHelper userHelper;
     private final UserVerificationRepository userVerificationRepository;
     private final FileService fileService;
     @Override
+    @Transactional
     public void registerOwner(MultipartFile frontImage, MultipartFile backImage, MultipartFile avatar, ReqRegisterOwnerDTO reqRegisterOwnerDTO) {
         if(userVerificationRepository.existsByVerificationCode(reqRegisterOwnerDTO.getVerificationCode())) {
             throw new DuplicateException(MessageError.VERIFICATION_CODE_ALREADY_USED);
@@ -72,42 +61,7 @@ public class UserVerificationServiceImpl implements UserVerificationService {
         userVerificationRepository.save(userVerification);
     }
 
-    @Override
-    public void approveOwnerRequest(Long userVerificationId) {
 
-        try {
-            WorkflowOptions options = WorkflowOptions.newBuilder()
-                    .setTaskQueue(Constant.APPROVE_OWNER_QUEUE)
-                    .build();
-
-            ApproveOwnerWorkFlow approveOwnerWorkFlow = workflowClient.newWorkflowStub(
-                    ApproveOwnerWorkFlow.class,
-                    options
-            );
-
-            ApproveOwnerData approveOwnerData = ApproveOwnerData.builder()
-                    .userVerificationId(userVerificationId)
-                    .userId(userHelper.getCurrentUserId())
-                    .token(userHelper.getToken())
-                    .build();
-
-            approveOwnerWorkFlow.approveOwner(approveOwnerData);
-
-        } catch (WorkflowFailedException e) {
-            if (e.getCause().getCause() instanceof ApplicationFailure failure) {
-                throw new HttpRequestException(
-                        failure.getOriginalMessage(),
-                        HttpStatus.BAD_REQUEST.value(),
-                        LocalDateTime.now()
-                );
-            }
-            throw new HttpRequestException(
-                    e.getCause().getCause().getLocalizedMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    LocalDateTime.now()
-            );
-        }
-    }
 
     @Override
     public void rejectOwnerRequest(Long userVerificationId, ReqRejectOwnerDTO reason) {
@@ -217,13 +171,5 @@ public class UserVerificationServiceImpl implements UserVerificationService {
                 currentUserId, status, keyword, pageable);
 
         return buildPageResponse(verificationsPage);
-    }
-
-    @Override
-    public void updateUserVerificationStatus(Long userVerificationId, UserVerificationStatus userVerificationStatus) {
-        UserVerification userVerification = userVerificationRepository.findById(userVerificationId)
-                .orElseThrow(() -> new NotFoundException(MessageError.USER_VERIFICATION_NOT_FOUND));
-        userVerification.setUserVerificationStatus(userVerificationStatus);
-        userVerificationRepository.save(userVerification);
     }
 }

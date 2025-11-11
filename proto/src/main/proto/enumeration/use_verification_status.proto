@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package enumeration;
+
+option java_package = "com.ecommerce.enumeration";
+option java_multiple_files = true;
+
+enum UserVerificationStatus {
+  USER_VERIFICATION_STATUS_UNSPECIFIED = 0;
+  PENDING = 1;
+  APPROVED = 2;
+  REJECTED = 3;
+}

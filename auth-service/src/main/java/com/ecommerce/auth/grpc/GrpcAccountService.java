@@ -44,6 +44,7 @@ public class GrpcAccountService extends AccountServiceGrpc.AccountServiceImplBas
     @Override
     public void deleteAccount(ReqDeleteAccountDTO reqDeleteAccountDTO, StreamObserver<BaseResponse> baseResponseStreamObserver) {
         keyCloakService.delete(reqDeleteAccountDTO.getAccountId());
+        authService.deleteAccount(reqDeleteAccountDTO.getAccountId());
         BaseResponse baseResponse = BaseResponse.newBuilder()
                 .setStatusCode(200)
                 .setMessage(messageService.getMessage(MessageSuccess.ACCOUNT_DELETED_SUCCESS))
@@ -54,7 +55,7 @@ public class GrpcAccountService extends AccountServiceGrpc.AccountServiceImplBas
 
     @Override
     public void updateRole(ReqUpdateRoleDTO reqUpdateRoleDTO, StreamObserver<BaseResponse> baseResponseStreamObserver) {
-        keyCloakService.updateRole( FnCommon.convertRoleProtoToRole(reqUpdateRoleDTO.getRole()));
+        authService.updateRole(reqUpdateRoleDTO.getUserId(), FnCommon.convertRoleProtoToRole(reqUpdateRoleDTO.getRole()));
         BaseResponse baseResponse = BaseResponse.newBuilder()
                 .setStatusCode(200)
                 .setMessage(messageService.getMessage(MessageSuccess.ACCOUNT_UPDATED_SUCCESS))

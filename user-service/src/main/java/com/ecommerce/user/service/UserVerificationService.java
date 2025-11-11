@@ -4,7 +4,7 @@ import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.user.dto.ReqRegisterOwnerDTO;
 import com.ecommerce.user.dto.ReqRejectOwnerDTO;
 import com.ecommerce.user.dto.ResUserVerificationDTO;
-import com.ecommerce.user.enumeration.UserVerificationStatus;
+import com.ecommerce.library.enumeration.UserVerificationStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserVerificationService {
@@ -18,8 +18,6 @@ public interface UserVerificationService {
      * @param reqRegisterOwnerDTO DTO chứa thông tin đăng ký người bán
      */
     void registerOwner(MultipartFile frontImage, MultipartFile backImage, MultipartFile avatar, ReqRegisterOwnerDTO reqRegisterOwnerDTO);
-
-    void approveOwnerRequest(Long userVerificationId);
 
     void rejectOwnerRequest(Long userVerificationId, ReqRejectOwnerDTO reason);
 
@@ -62,5 +60,4 @@ public interface UserVerificationService {
             String sortBy,
             String sortDir);
 
-    void updateUserVerificationStatus(Long userVerificationId, UserVerificationStatus userVerificationStatus);
 }

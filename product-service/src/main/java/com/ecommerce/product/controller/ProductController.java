@@ -140,7 +140,7 @@ public class ProductController {
 
         return ResponseEntity.ok(BaseResponse.<PageResponse<ResProductDTO>>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Products retrieved successfully")
+                .message(messageService.getMessage(MessageSuccess.PRODUCTS_RETRIEVED_SUCCESS))
                 .data(pageResponse)
                 .build());
     }

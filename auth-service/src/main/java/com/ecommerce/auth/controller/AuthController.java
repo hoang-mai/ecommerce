@@ -1,9 +1,7 @@
 package com.ecommerce.auth.controller;
 
-import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
+import com.ecommerce.auth.dto.auth.*;
 import com.ecommerce.library.component.MessageService;
-import com.ecommerce.auth.dto.auth.ReqLoginDTO;
-import com.ecommerce.auth.dto.auth.ResLoginDTO;
 import com.ecommerce.auth.service.AuthService;
 import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
@@ -100,20 +98,43 @@ public class AuthController {
      * Admin cập nhật trạng thái tài khoản
      *
      * @param reqUpdateAccountDTO thông tin cập nhật tài khoản
-     * @param accountId ID của người dùng
+     * @param userId              ID của người dùng
      * @return Trả về thành công
      */
-    @PatchMapping("{accountId}")
+    @PatchMapping("{userId}")
     public ResponseEntity<BaseResponse<Void>> adminUpdateAccountStatus(
             @RequestBody ReqUpdateAccountDTO reqUpdateAccountDTO,
-            @PathVariable String accountId) {
-        authService.adminUpdateAccountStatus(reqUpdateAccountDTO, accountId);
+            @PathVariable Long userId) {
+        authService.adminUpdateAccountStatus(reqUpdateAccountDTO, userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(BaseResponse
                         .<Void>builder()
                         .statusCode(HttpStatus.OK.value())
                         .message(messageService.getMessage(MessageSuccess.UPDATE_ACCOUNT_SUCCESS))
+                        .build());
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<BaseResponse<ResRefreshTokenDTO>> refreshToken(@Valid @RequestBody ReqRefreshTokenDTO reqRefreshTokenDTO) {
+        ResRefreshTokenDTO resRefreshTokenDTO = authService.refreshToken(reqRefreshTokenDTO);
+
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", resRefreshTokenDTO.getAccessToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(resRefreshTokenDTO.getExpiresIn())
+                .sameSite("Lax")
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .header("Set-Cookie", accessTokenCookie.toString())
+                .body(BaseResponse
+                        .<ResRefreshTokenDTO>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message(messageService.getMessage(MessageSuccess.REFRESH_TOKEN_SUCCESS))
+                        .data(resRefreshTokenDTO)
                         .build());
     }
 

@@ -2,7 +2,7 @@ package com.ecommerce.user.repository;
 
 import com.ecommerce.user.entity.User;
 import com.ecommerce.user.entity.UserVerification;
-import com.ecommerce.user.enumeration.UserVerificationStatus;
+import com.ecommerce.library.enumeration.UserVerificationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

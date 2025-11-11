@@ -1,9 +1,7 @@
 package com.ecommerce.auth.service;
 
 import com.ecommerce.auth.ReqCreateAccountDTO;
-import com.ecommerce.auth.dto.auth.ReqLoginDTO;
-import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
-import com.ecommerce.auth.dto.auth.ResLoginDTO;
+import com.ecommerce.auth.dto.auth.*;
 import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.HttpRequestException;
 
@@ -33,9 +31,9 @@ public interface AuthService {
      * Cập nhật trạng thái tài khoản người dùng bởi admin
      *
      * @param reqUpdateAccountDTO DTO chứa thông tin cập nhật trạng thái tài khoản
-     * @param accountId ID của người dùng cần cập nhật
+     * @param userId ID của người dùng cần cập nhật
      */
-    void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, String accountId);
+    void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, Long userId);
 
     /**
      * Tạo tài khoản trong hệ thống
@@ -44,4 +42,15 @@ public interface AuthService {
      * @param accountId ID của tài khoản cần tạo
      */
     void createAccount(ReqCreateAccountDTO reqCreateAccountDTO, String accountId);
+
+    void deleteAccount(String accountId);
+
+    void updateRole(long userId, Role role);
+
+    /**
+     * Làm mới token truy cập
+     * @param reqRefreshTokenDTO DTO chứa thông tin làm mới token
+     * @return ResLoginDTO chứa token truy cập mới
+     */
+    ResRefreshTokenDTO refreshToken(ReqRefreshTokenDTO reqRefreshTokenDTO);
 }

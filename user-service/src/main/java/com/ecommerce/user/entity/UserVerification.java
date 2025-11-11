@@ -1,7 +1,7 @@
 package com.ecommerce.user.entity;
 
 import com.ecommerce.library.entity.BaseEntity;
-import com.ecommerce.user.enumeration.UserVerificationStatus;
+import com.ecommerce.library.enumeration.UserVerificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

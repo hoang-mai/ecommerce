@@ -4,10 +4,11 @@ spring:
   grpc:
     server:
       port: 9093
-    client:
-      channels:
-        auth-service:
-          address: localhost:9092
+  kafka:
+    bootstrap-servers: localhost:19092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   security:
     oauth2:
       resourceserver:
@@ -23,20 +24,6 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-  temporal:
-    connection:
-      target: localhost:7233
-    workers:
-      - task-queue: createUserQueue
-        workflow-classes:
-          - com.ecommerce.user.saga.workflow.impl.CreateUserWorkFlowImpl
-        activity-beans:
-          - createUserActivitiesImpl
-      - task-queue: approveOwnerQueue
-        workflow-classes:
-          - com.ecommerce.user.saga.workflow.impl.ApproveOwnerWorkFlowImpl
-        activity-beans:
-          - approveOwnerActivitiesImpl
 minio:
   url: http://localhost:9000
   access-key: root

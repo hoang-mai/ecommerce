@@ -8,7 +8,7 @@ import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.user.dto.ReqRegisterOwnerDTO;
 import com.ecommerce.user.dto.ReqRejectOwnerDTO;
 import com.ecommerce.user.dto.ResUserVerificationDTO;
-import com.ecommerce.user.enumeration.UserVerificationStatus;
+import com.ecommerce.library.enumeration.UserVerificationStatus;
 import com.ecommerce.user.service.UserVerificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,20 +46,6 @@ public class UserVerificationController {
                 .build());
     }
 
-    /**
-     * Chấp nhận yêu cầu làm chủ của hàng
-     *
-     * @param userVerificationId ID của yêu cầu xác minh người dùng
-     * @return Trả về thành công
-     */
-    @PatchMapping("{userVerificationId}/approve")
-    public ResponseEntity<BaseResponse<Void>> updateOwner(@PathVariable Long userVerificationId) {
-        userVerificationService.approveOwnerRequest(userVerificationId);
-        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.<Void>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message(messageService.getMessage(MessageSuccess.UPDATE_OWNER_REQUEST_SUCCESS))
-                .build());
-    }
 
     /**
      * Từ chối yêu cầu làm chủ của hàng

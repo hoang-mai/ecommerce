@@ -17,13 +17,12 @@ public class GrpcConfig {
     @Bean
     public AuthenticationProcessInterceptor jwtSecurityFilterChain(GrpcSecurity grpc) throws Exception {
         return grpc.authorizeRequests(requestMapperConfigurer ->
-                        requestMapperConfigurer.allRequests().authenticated())
+                        requestMapperConfigurer
+                                .methods("user.UserService/CreateUser").permitAll()
+                                .methods("user.UserService/DeleteUser").permitAll()
+                                .allRequests().authenticated())
                 .oauth2ResourceServer(oAuth2ResourceServerConfigurer ->
                         oAuth2ResourceServerConfigurer.jwt(Customizer.withDefaults())).build();
     }
 
-    @Bean
-    public AccountServiceGrpc.AccountServiceBlockingStub stub(GrpcChannelFactory channels) {
-        return AccountServiceGrpc.newBlockingStub(channels.createChannel("auth-service"));
-    }
 }

@@ -2,7 +2,9 @@ package com.ecommerce.auth.service;
 
 import com.ecommerce.auth.ReqCreateAccountDTO;
 import com.ecommerce.auth.dto.auth.ReqLoginDTO;
+import com.ecommerce.auth.dto.auth.ReqRefreshTokenDTO;
 import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
+import com.ecommerce.auth.dto.keycloak.ResKeyCloakRefreshTokenDTO;
 import com.ecommerce.auth.dto.keycloak.ResKeycloakLoginDTO;
 import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.DuplicateException;
@@ -48,14 +50,17 @@ public interface KeyCloakService {
      * Cập nhật trạng thái tài khoản người dùng bởi admin
      *
      * @param reqUpdateAccountDTO DTO chứa thông tin cập nhật trạng thái tài khoản
-     * @param accountId ID của người dùng cần cập nhật
+     * @param accountId           ID của người dùng cần cập nhật
      */
     void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, String accountId);
 
     /**
      * Cập nhật role của tài khoản
      *
-     * @param role Role mới cần cập nhật
+     * @param role      Role mới cần cập nhật
+     * @param accountId ID của tài khoản cần cập nhật
      */
-    void updateRole(Role role);
+    void updateRole(Role role, String accountId);
+
+    ResKeyCloakRefreshTokenDTO refreshToken(ReqRefreshTokenDTO reqRefreshTokenDTO);
 }

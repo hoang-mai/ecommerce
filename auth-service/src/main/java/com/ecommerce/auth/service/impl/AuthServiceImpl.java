@@ -1,18 +1,19 @@
 package com.ecommerce.auth.service.impl;
 
 import com.ecommerce.auth.ReqCreateAccountDTO;
-import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
+import com.ecommerce.auth.dto.auth.*;
+import com.ecommerce.auth.dto.keycloak.ResKeyCloakRefreshTokenDTO;
 import com.ecommerce.auth.entity.Account;
+import com.ecommerce.auth.producer.UserEventProducer;
 import com.ecommerce.auth.repository.AccountRepository;
 import com.ecommerce.library.component.MessageService;
-import com.ecommerce.auth.dto.auth.ReqLoginDTO;
-import com.ecommerce.auth.dto.auth.ResLoginDTO;
 import com.ecommerce.auth.dto.keycloak.ResKeycloakLoginDTO;
 import com.ecommerce.library.component.UserHelper;
-import com.ecommerce.library.enumeration.AccountStatus;
+import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.HttpRequestException;
 import com.ecommerce.auth.service.AuthService;
 import com.ecommerce.auth.service.KeyCloakService;
+import com.ecommerce.library.kafka.event.UpdateAccountStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final KeyCloakService keyCloakService;
     private final PasswordEncoder passwordEncoder;
     private final UserHelper userHelper;
+    private final UserEventProducer userEventProducer;
 
 
     @Override
@@ -72,8 +74,12 @@ public class AuthServiceImpl implements AuthService {
     public void updateAccount(ReqUpdateAccountDTO reqUpdateStatusAccountDTO) {
         Account account = accountRepository.findById(userHelper.getCurrentUserId())
                 .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), LocalDateTime.now()));
-        if(FnCommon.isNotNull(reqUpdateStatusAccountDTO.getAccountStatus())){
+        if (FnCommon.isNotNull(reqUpdateStatusAccountDTO.getAccountStatus())) {
             account.setAccountStatus(reqUpdateStatusAccountDTO.getAccountStatus());
+            userEventProducer.send(UpdateAccountStatusEvent.builder()
+                    .userId(account.getUserId())
+                    .accountStatus(reqUpdateStatusAccountDTO.getAccountStatus())
+                    .build());
         }
         if (FnCommon.isNotNullOrEmpty(reqUpdateStatusAccountDTO.getCurrentPassword()) && FnCommon.isNotNullOrEmpty(reqUpdateStatusAccountDTO.getNewPassword())) {
             if (!passwordEncoder.matches(reqUpdateStatusAccountDTO.getCurrentPassword(), account.getPassword())) {
@@ -92,14 +98,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, String accountId) {
-        Account account = accountRepository.findByAccountId(accountId)
+    public void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, Long userId) {
+        Account account = accountRepository.findById(userId)
                 .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), LocalDateTime.now()));
-        if(FnCommon.isNotNull(reqUpdateAccountDTO.getAccountStatus())){
+        if (FnCommon.isNotNull(reqUpdateAccountDTO.getAccountStatus())) {
             account.setAccountStatus(reqUpdateAccountDTO.getAccountStatus());
         }
         accountRepository.save(account);
-        keyCloakService.adminUpdateAccountStatus(reqUpdateAccountDTO, accountId);
+        keyCloakService.adminUpdateAccountStatus(reqUpdateAccountDTO, account.getAccountId());
+        userEventProducer.send(UpdateAccountStatusEvent.builder()
+                .userId(userId)
+                .accountStatus(reqUpdateAccountDTO.getAccountStatus())
+                .build());
     }
 
     @Override
@@ -108,9 +118,45 @@ public class AuthServiceImpl implements AuthService {
                 .userId(reqCreateAccountDTO.getUserId())
                 .accountId(accountId)
                 .username(reqCreateAccountDTO.getUsername())
-                .accountStatus(AccountStatus.ACTIVE)
+                .accountStatus(FnCommon.convertAccountStatusProtoToAccountStatus(reqCreateAccountDTO.getAccountStatus()))
                 .password(passwordEncoder.encode(reqCreateAccountDTO.getPassword()))
                 .build();
         accountRepository.save(account);
+    }
+
+    @Override
+    public void deleteAccount(String accountId) {
+        Account account = accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), LocalDateTime.now()));
+        accountRepository.delete(account);
+    }
+
+    @Override
+    public void updateRole(long userId, Role role) {
+        Account account = accountRepository.findById(userId)
+                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), LocalDateTime.now()));
+        keyCloakService.updateRole(role, account.getAccountId());
+    }
+
+    @Override
+    public ResRefreshTokenDTO refreshToken(ReqRefreshTokenDTO reqRefreshTokenDTO) {
+        try {
+            ResKeyCloakRefreshTokenDTO resKeyCloakRefreshTokenDTO = keyCloakService.refreshToken(reqRefreshTokenDTO);
+            if (resKeyCloakRefreshTokenDTO == null) {
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            }
+            return ResRefreshTokenDTO.builder()
+                    .accessToken(resKeyCloakRefreshTokenDTO.getAccessToken())
+                    .expiresIn(resKeyCloakRefreshTokenDTO.getExpiresIn())
+                    .refreshExpiresIn(resKeyCloakRefreshTokenDTO.getRefreshExpiresIn())
+                    .refreshToken(resKeyCloakRefreshTokenDTO.getRefreshToken())
+                    .tokenType(resKeyCloakRefreshTokenDTO.getTokenType())
+                    .refreshExpiresIn(resKeyCloakRefreshTokenDTO.getRefreshExpiresIn())
+                    .notBeforePolicy(resKeyCloakRefreshTokenDTO.getNotBeforePolicy())
+                    .scope(resKeyCloakRefreshTokenDTO.getScope())
+                    .build();
+        } catch (Exception e) {
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+        }
     }
 }

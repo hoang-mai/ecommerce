@@ -1,0 +1,40 @@
+
+server:
+  port: 8087
+
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql8}:${MYSQL_PORT:3306}/order_service?createDatabaseIfNotExist=true
+    username: order_service
+    password: order_service
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${DISCOVERY_SERVICE_HOST:discovery-service}:${DISCOVERY_SERVICE_PORT:8761}/eureka/
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    com.ecommerce.order: DEBUG
+    org.springframework.security: DEBUG
+

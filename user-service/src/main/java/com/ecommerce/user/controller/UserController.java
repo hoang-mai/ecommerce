@@ -24,20 +24,7 @@ public class UserController {
     private final UserService userService;
     private final MessageService messageService;
 
-    /**
-     * Tạo người dùng mới
-     * 
-     * @param reqCreateUserDTO Thông tin tạo người dùng mới
-     * @return Trả về thành công
-     */
-    @PostMapping()
-    public ResponseEntity<BaseResponse<Void>> register(@Valid @RequestBody ReqCreateUserDTO reqCreateUserDTO) {
-        userService.createUser(reqCreateUserDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.<Void>builder()
-                .statusCode(HttpStatus.CREATED.value())
-                .message(messageService.getMessage(MessageSuccess.USER_CREATED_SUCCESS))
-                .build());
-    }
+
 
     /**
      * Lấy thông tin người dùng theo ID

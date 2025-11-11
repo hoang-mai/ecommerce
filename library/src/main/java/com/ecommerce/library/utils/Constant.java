@@ -28,4 +28,6 @@ public final class Constant {
     public static final String PRODUCT = REQUEST_MAPPING + "/product";
     public static final String PRODUCT_IMAGE = REQUEST_MAPPING + "/product-image";
     public static final String PRODUCT_ATTRIBUTE = REQUEST_MAPPING + "/product-attribute";
+    public static final String SAGA = REQUEST_MAPPING + "/saga";
+    public static final String USER_VIEW = REQUEST_MAPPING + "/user-view";
 }

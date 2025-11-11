@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package enumeration;
+
+option java_package = "com.ecommerce.enumeration";
+option java_multiple_files = true;
+
+enum AccountStatus {
+  ACCOUNT_STATUS_UNSPECIFIED = 0;
+  ACTIVE = 1;
+  INACTIVE = 2;
+  SUSPENDED = 3;
+}

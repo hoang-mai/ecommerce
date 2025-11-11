@@ -2,7 +2,9 @@ package com.ecommerce.auth.service.impl;
 
 import com.ecommerce.auth.ReqCreateAccountDTO;
 import com.ecommerce.auth.dto.auth.ReqLoginDTO;
+import com.ecommerce.auth.dto.auth.ReqRefreshTokenDTO;
 import com.ecommerce.auth.dto.auth.ReqUpdateAccountDTO;
+import com.ecommerce.auth.dto.keycloak.ResKeyCloakRefreshTokenDTO;
 import com.ecommerce.auth.dto.keycloak.ResKeycloakLoginDTO;
 import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.AccountStatus;
@@ -132,8 +134,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     }
 
     @Override
-    public void updateRole( Role role) {
-        String accountId = userHelper.getAccountId();
+    public void updateRole( Role role, String accountId) {
         UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
         if (user == null) {
             throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
@@ -152,6 +153,25 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         } catch (Exception e) {
             throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         }
+    }
+
+    @Override
+    public ResKeyCloakRefreshTokenDTO refreshToken(ReqRefreshTokenDTO reqRefreshTokenDTO) {
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", OAuth2Constants.REFRESH_TOKEN);
+        formData.add("client_id", clientIdLogin);
+        formData.add("client_secret", clientSecret);
+        formData.add("refresh_token", reqRefreshTokenDTO.getRefreshToken());
+        return RestClient.builder()
+                .baseUrl(authServerUrl)
+                .defaultHeader("Content-Type", "application/x-www-form-urlencoded")
+                .defaultHeader("Accept", "application/json")
+                .build()
+                .post()
+                .uri("/realms/" + realm + "/protocol/openid-connect/token")
+                .body(formData)
+                .retrieve()
+                .body(ResKeyCloakRefreshTokenDTO.class);
     }
 
     /**

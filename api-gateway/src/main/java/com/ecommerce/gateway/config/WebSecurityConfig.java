@@ -30,7 +30,8 @@ public class WebSecurityConfig {
                                 "/api-docs-json/**"
                         ).permitAll()
                         .pathMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
-                        .pathMatchers(HttpMethod.POST,"/api/v1/user").permitAll()
+                        .pathMatchers(HttpMethod.POST,"/api/v1/saga/register").permitAll()
+                        .pathMatchers(HttpMethod.POST,"/api/v1/auth/refresh-token").permitAll()
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyExchange().authenticated()
                 )

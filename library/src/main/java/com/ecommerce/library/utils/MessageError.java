@@ -91,4 +91,8 @@ public final class MessageError {
     public static final String CANNOT_UPDATE_ACCOUNT = "";
     public static final String PRODUCT_ATTRIBUTES_NOT_NULL = "";
     public static final String PRODUCT_VARIANTS_NOT_NULL = "";
+    public static final String CANNOT_DELETE_USER = "";
+    public static final String INVALID_USER_VERIFICATION_STATUS = "";
+    public static final String CANNOT_UPDATE_USER = "";
+    public static final String REFRESH_TOKEN_NOT_BLANK = "";
 }

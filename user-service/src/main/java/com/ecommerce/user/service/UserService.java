@@ -1,29 +1,25 @@
 package com.ecommerce.user.service;
 
 import com.ecommerce.library.enumeration.Role;
+import com.ecommerce.user.ReqCreateUserDTO;
+import com.ecommerce.user.ReqRollbackUpdateUserRoleAndVerificationStatusDTO;
+import com.ecommerce.user.ReqUpdateUserRoleAndVerificationStatusDTO;
+import com.ecommerce.user.ResUpdateUserRoleAndVerificationStatusDTO;
 import com.ecommerce.user.dto.*;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.user.saga.data.ApproveOwnerData;
-import com.ecommerce.user.saga.data.CreateUserData;
-import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
 
 public interface UserService {
-    /**
-     * Tạo người dùng mới.
-     *
-     * @param reqCreateUserDTO DTO chứa thông tin người dùng mới
-     */
-    void createUser(ReqCreateUserDTO reqCreateUserDTO);
+
 
     /**
      * Tạo người dùng mới với thông tin từ CreateUserData.
      *
-     * @param createUserData DTO chứa thông tin người dùng mới
-     * @return CreateUserData chứa thông tin người dùng mới đã được tạo
+     * @param reqCreateUserDTO DTO chứa thông tin người dùng mới
+     * @return userId của người dùng đã được tạo
      */
-    CreateUserData saveUser(CreateUserData createUserData);
+    Long createUser(ReqCreateUserDTO reqCreateUserDTO);
 
     /**
      * Lấy thông tin người dùng theo ID.
@@ -73,17 +69,7 @@ public interface UserService {
      */
     void uploadAvatar(MultipartFile file, Boolean isDelete);
 
-    /**
-     * Cập nhật role của người dùng khi duyệt chủ cửa hàng
-     * @param approveOwnerData DTO chứa thông tin duyệt chủ cửa hàng
-     * @return Vai trò người dùng đã được cập nhật
-     */
-    Role updateUserRole(ApproveOwnerData approveOwnerData);
+    void rollbackUpdateUserRoleAndVerificationStatus(ReqRollbackUpdateUserRoleAndVerificationStatusDTO reqRollbackUpdateUserRoleAndVerificationStatusDTO);
 
-    /**
-     * Hoàn tác việc cập nhật vai trò người dùng
-     *
-     * @param approveOwnerData DTO chứa thông tin duyệt chủ cửa hàng
-     */
-    void rollbackUserRole(ApproveOwnerData approveOwnerData);
+    ResUpdateUserRoleAndVerificationStatusDTO updateUserRoleAndVerificationStatus(ReqUpdateUserRoleAndVerificationStatusDTO reqUpdateUserRoleAndVerificationStatusDTO);
 }

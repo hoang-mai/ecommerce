@@ -1,6 +1,6 @@
 package com.ecommerce.user.dto;
 
-import com.ecommerce.user.enumeration.UserVerificationStatus;
+import com.ecommerce.library.enumeration.UserVerificationStatus;
 import lombok.Builder;
 import lombok.Getter;
 
