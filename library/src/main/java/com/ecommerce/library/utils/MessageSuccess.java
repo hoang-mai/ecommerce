@@ -61,4 +61,8 @@ public final class MessageSuccess {
     public static final String ROLLBACK_UPDATE_USER_ROLE_SUCCESS = "";
     public static final String UPDATE_USER_ROLE_SUCCESS = "";
     public static final String REFRESH_TOKEN_SUCCESS = "";
+    public static final String ADD_TO_CART_SUCCESS = "";
+    public static final String UPDATE_CART_ITEM_SUCCESS = "";
+    public static final String REMOVE_CART_ITEM_SUCCESS = "";
+    public static final String CLEAR_CART_SUCCESS = "";
 }

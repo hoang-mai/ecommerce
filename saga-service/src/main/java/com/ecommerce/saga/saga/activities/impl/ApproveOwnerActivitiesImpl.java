@@ -2,11 +2,8 @@ package com.ecommerce.saga.saga.activities.impl;
 
 import com.ecommerce.auth.AccountServiceGrpc;
 import com.ecommerce.auth.ReqUpdateRoleDTO;
-import com.ecommerce.auth.ResCreateAccountDTO;
-import com.ecommerce.library.component.UserHelper;
-import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.HttpRequestException;
-import com.ecommerce.library.kafka.event.UpdateRoleEvent;
+import com.ecommerce.library.kafka.event.user.UpdateRoleEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.saga.producer.UserEventProducer;

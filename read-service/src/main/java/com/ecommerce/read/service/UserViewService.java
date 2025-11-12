@@ -2,7 +2,7 @@ package com.ecommerce.read.service;
 
 import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;
-import com.ecommerce.library.kafka.event.*;
+import com.ecommerce.library.kafka.event.user.*;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.UserViewDto;
 

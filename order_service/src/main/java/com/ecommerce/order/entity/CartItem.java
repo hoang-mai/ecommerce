@@ -33,10 +33,5 @@ public class CartItem extends BaseEntity {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "price", precision = 15, scale = 2, nullable = false)
-    private BigDecimal price;
-
-    @Column(name = "shop_id", nullable = false)
-    private Long shopId;
 }
 

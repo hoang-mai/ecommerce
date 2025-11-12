@@ -1,6 +1,5 @@
-package com.ecommerce.library.kafka.event;
+package com.ecommerce.library.kafka.event.user;
 
-import com.ecommerce.library.enumeration.AccountStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateAccountStatusEvent {
+public class UpdateAvatarUserEvent {
     private Long userId;
-    private AccountStatus accountStatus;
+    private String avatarUrl;
 }

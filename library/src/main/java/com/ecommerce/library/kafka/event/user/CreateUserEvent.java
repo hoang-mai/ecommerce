@@ -1,4 +1,4 @@
-package com.ecommerce.library.kafka.event;
+package com.ecommerce.library.kafka.event.user;
 
 import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;

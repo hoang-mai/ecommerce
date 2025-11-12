@@ -95,4 +95,9 @@ public final class MessageError {
     public static final String INVALID_USER_VERIFICATION_STATUS = "";
     public static final String CANNOT_UPDATE_USER = "";
     public static final String REFRESH_TOKEN_NOT_BLANK = "";
+    public static final String PRODUCT_VARIANT_NOT_NULL = "";
+    public static final String QUANTITY_NOT_NULL = "";
+    public static final String QUANTITY_POSITIVE = "";
+    public static final String CART_ITEM_NOT_FOUND = "";
+    public static final String CART_NOT_FOUND = "";
 }

@@ -5,7 +5,7 @@ import com.ecommerce.auth.ReqCreateAccountDTO;
 import com.ecommerce.auth.ReqDeleteAccountDTO;
 import com.ecommerce.auth.ResCreateAccountDTO;
 import com.ecommerce.library.exception.HttpRequestException;
-import com.ecommerce.library.kafka.event.CreateUserEvent;
+import com.ecommerce.library.kafka.event.user.CreateUserEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.saga.producer.UserEventProducer;

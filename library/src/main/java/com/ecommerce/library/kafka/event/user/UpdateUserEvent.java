@@ -1,11 +1,5 @@
-package com.ecommerce.library.kafka.event;
+package com.ecommerce.library.kafka.event.user;
 
-import com.ecommerce.library.enumeration.AccountStatus;
-import com.ecommerce.library.enumeration.Role;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

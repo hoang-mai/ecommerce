@@ -4,9 +4,8 @@ import com.ecommerce.library.component.MessageService;
 import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
-import com.ecommerce.order.dto.AddToCartRequest;
-import com.ecommerce.order.dto.CartDTO;
-import com.ecommerce.order.dto.UpdateCartItemRequest;
+import com.ecommerce.order.dto.ReqAddToCartDTO;
+import com.ecommerce.order.dto.ReqUpdateCartItemDTO;
 import com.ecommerce.order.service.CartService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,76 +25,48 @@ public class CartController {
     private final MessageService messageService;
 
     /**
-     * Get current user's cart
+     * Thêm sản phẩm vào giỏ hàng
      */
-    @GetMapping
-    @Operation(summary = "Get cart", description = "Get current user's shopping cart")
-    public ResponseEntity<BaseResponse<CartDTO>> getCart() {
-
-        CartDTO cart = cartService.getCart();
-
-        return ResponseEntity.ok(BaseResponse.<CartDTO>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message(messageService.getMessage(MessageSuccess.GET_CART_SUCCESS))
-                .data(cart)
-                .build());
-    }
-
-    /**
-     * Add item to cart
-     */
-    @PostMapping("/items")
+    @PostMapping("")
     @Operation(summary = "Add to cart", description = "Add item to shopping cart")
-    public ResponseEntity<BaseResponse<CartDTO>> addToCart(
-            ,
-            @Valid @RequestBody AddToCartRequest request) {
+    public ResponseEntity<BaseResponse<Void>> addToCart(@Valid @RequestBody ReqAddToCartDTO request) {
 
-        Long userId = Long.valueOf(authentication.getName());
-        CartDTO cart = cartService.addToCart(userId, request);
-
+        cartService.addToCart(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(BaseResponse.<CartDTO>builder()
+                .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.CREATED.value())
-                        .message("Item added to cart successfully")
-                        .data(cart)
+                        .message(messageService.getMessage(MessageSuccess.ADD_TO_CART_SUCCESS))
                         .build());
     }
 
     /**
      * Update cart item quantity
      */
-    @PatchMapping("/items/{cartItemId}")
+    @PatchMapping("/{cartItemId}")
     @Operation(summary = "Update cart item", description = "Update cart item quantity")
-    public ResponseEntity<BaseResponse<CartDTO>> updateCartItem(
-            ,
+    public ResponseEntity<BaseResponse<Void>> updateCartItem(
             @PathVariable Long cartItemId,
-            @Valid @RequestBody UpdateCartItemRequest request) {
+            @Valid @RequestBody ReqUpdateCartItemDTO request) {
+        cartService.updateCartItem(cartItemId, request);
 
-        Long userId = Long.valueOf(authentication.getName());
-        CartDTO cart = cartService.updateCartItem(userId, cartItemId, request);
-
-        return ResponseEntity.ok(BaseResponse.<CartDTO>builder()
+        return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Cart item updated successfully")
-                .data(cart)
+                .message(messageService.getMessage(MessageSuccess.UPDATE_CART_ITEM_SUCCESS))
                 .build());
     }
 
     /**
      * Remove item from cart
      */
-    @DeleteMapping("/items/{cartItemId}")
+    @DeleteMapping("/{cartItemId}")
     @Operation(summary = "Remove cart item", description = "Remove item from shopping cart")
     public ResponseEntity<BaseResponse<Void>> removeCartItem(
-            ,
             @PathVariable Long cartItemId) {
-
-        Long userId = Long.valueOf(authentication.getName());
-        cartService.removeCartItem(userId, cartItemId);
+        cartService.removeCartItem(cartItemId);
 
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Cart item removed successfully")
+                .message(messageService.getMessage(MessageSuccess.REMOVE_CART_ITEM_SUCCESS))
                 .build());
     }
 
@@ -105,12 +76,11 @@ public class CartController {
     @DeleteMapping
     @Operation(summary = "Clear cart", description = "Remove all items from shopping cart")
     public ResponseEntity<BaseResponse<Void>> clearCart() {
-        Long userId = Long.valueOf(authentication.getName());
-        cartService.clearCart(userId);
+        cartService.clearCart();
 
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Cart cleared successfully")
+                .message(messageService.getMessage(MessageSuccess.CLEAR_CART_SUCCESS))
                 .build());
     }
 }

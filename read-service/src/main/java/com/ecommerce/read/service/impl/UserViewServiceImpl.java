@@ -3,7 +3,7 @@ package com.ecommerce.read.service.impl;
 import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.NotFoundException;
-import com.ecommerce.library.kafka.event.*;
+import com.ecommerce.library.kafka.event.user.*;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.UserViewDto;

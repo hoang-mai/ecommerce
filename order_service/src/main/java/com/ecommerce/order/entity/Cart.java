@@ -33,10 +33,6 @@ public class Cart extends BaseEntity {
         cartItem.setCart(this);
     }
 
-    public void removeCartItem(CartItem cartItem) {
-        cartItems.remove(cartItem);
-        cartItem.setCart(null);
-    }
 
     public void clearCart() {
         cartItems.clear();

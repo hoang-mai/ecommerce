@@ -1,7 +1,7 @@
 package com.ecommerce.saga.producer;
 
-import com.ecommerce.library.kafka.event.CreateUserEvent;
-import com.ecommerce.library.kafka.event.UpdateRoleEvent;
+import com.ecommerce.library.kafka.event.user.CreateUserEvent;
+import com.ecommerce.library.kafka.event.user.UpdateRoleEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;

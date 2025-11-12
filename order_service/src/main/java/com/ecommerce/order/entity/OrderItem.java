@@ -25,6 +25,9 @@ public class OrderItem {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
+    @Column(name = "product_variant_id", nullable = false)
+    private Long productVariantId;
+
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 

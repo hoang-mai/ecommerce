@@ -13,7 +13,7 @@ import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.exception.HttpRequestException;
 import com.ecommerce.auth.service.AuthService;
 import com.ecommerce.auth.service.KeyCloakService;
-import com.ecommerce.library.kafka.event.UpdateAccountStatusEvent;
+import com.ecommerce.library.kafka.event.user.UpdateAccountStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import lombok.RequiredArgsConstructor;

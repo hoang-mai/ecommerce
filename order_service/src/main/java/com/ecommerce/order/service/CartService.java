@@ -1,8 +1,7 @@
 package com.ecommerce.order.service;
 
-import com.ecommerce.order.dto.AddToCartRequest;
-import com.ecommerce.order.dto.CartDTO;
-import com.ecommerce.order.dto.UpdateCartItemRequest;
+import com.ecommerce.order.dto.ReqAddToCartDTO;
+import com.ecommerce.order.dto.ReqUpdateCartItemDTO;
 
 public interface CartService {
 
@@ -10,23 +9,22 @@ public interface CartService {
     /**
      * Add item to cart
      */
-    CartDTO addToCart(Long userId, AddToCartRequest request);
+    void addToCart(ReqAddToCartDTO request);
 
     /**
      * Update cart item quantity
      */
-    CartDTO updateCartItem(Long userId, Long cartItemId, UpdateCartItemRequest request);
+    void updateCartItem(Long cartItemId, ReqUpdateCartItemDTO request);
 
     /**
      * Remove item from cart
      */
-    void removeCartItem(Long userId, Long cartItemId);
+    void removeCartItem( Long cartItemId);
 
     /**
      * Clear entire cart
      */
-    void clearCart(Long userId);
+    void clearCart();
 
-    CartDTO getCart();
 }
 

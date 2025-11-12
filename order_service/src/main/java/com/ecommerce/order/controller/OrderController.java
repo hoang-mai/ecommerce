@@ -1,7 +1,9 @@
 package com.ecommerce.order.controller;
 
+import com.ecommerce.library.component.MessageService;
 import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.enumeration.OrderStatus;
+import com.ecommerce.library.utils.Constant;
 import com.ecommerce.order.dto.CreateOrderRequest;
 import com.ecommerce.order.dto.OrderResponse;
 import com.ecommerce.order.service.OrderService;
@@ -17,12 +19,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping(value = Constant.ORDER)
 @RequiredArgsConstructor
 @Tag(name = "Order Management", description = "APIs for managing orders")
 public class OrderController {
 
     private final OrderService orderService;
+    private final MessageService messageService;
 
     /**
      * Create a new order

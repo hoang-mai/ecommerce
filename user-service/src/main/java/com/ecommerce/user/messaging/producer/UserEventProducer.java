@@ -1,7 +1,7 @@
 package com.ecommerce.user.messaging.producer;
 
-import com.ecommerce.library.kafka.event.UpdateAvatarUserEvent;
-import com.ecommerce.library.kafka.event.UpdateUserEvent;
+import com.ecommerce.library.kafka.event.user.UpdateAvatarUserEvent;
+import com.ecommerce.library.kafka.event.user.UpdateUserEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;

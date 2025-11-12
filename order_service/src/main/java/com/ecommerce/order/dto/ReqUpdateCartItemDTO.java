@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UpdateCartItemRequest {
+public class ReqUpdateCartItemDTO {
 
     @Positive(message = "Quantity must be positive")
     @Schema(description = "New quantity", example = "3")

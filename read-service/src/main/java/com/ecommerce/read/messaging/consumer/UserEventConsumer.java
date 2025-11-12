@@ -1,9 +1,8 @@
 package com.ecommerce.read.messaging.consumer;
 
-import com.ecommerce.library.kafka.event.*;
+import com.ecommerce.library.kafka.event.user.*;
 import com.ecommerce.read.service.UserViewService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +10,6 @@ import static com.ecommerce.library.kafka.Constant.*;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserEventConsumer {
 
     private final UserViewService userViewService;

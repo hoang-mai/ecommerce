@@ -1,7 +1,7 @@
 package com.ecommerce.user.service.impl;
 
-import com.ecommerce.library.kafka.event.UpdateAvatarUserEvent;
-import com.ecommerce.library.kafka.event.UpdateUserEvent;
+import com.ecommerce.library.kafka.event.user.UpdateAvatarUserEvent;
+import com.ecommerce.library.kafka.event.user.UpdateUserEvent;
 import com.ecommerce.user.ReqCreateUserDTO;
 import com.ecommerce.user.ReqRollbackUpdateUserRoleAndVerificationStatusDTO;
 import com.ecommerce.user.ReqUpdateUserRoleAndVerificationStatusDTO;
@@ -22,7 +22,6 @@ import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.user.entity.*;
 import com.ecommerce.user.repository.UserRepository;
-import com.ecommerce.user.service.UserVerificationService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
