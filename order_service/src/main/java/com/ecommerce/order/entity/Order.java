@@ -29,7 +29,7 @@ public class Order extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private OrderStatus status;
+    private OrderStatus orderStatus;
 
     @Column(name = "total_price", precision = 15, scale = 2, nullable = false)
     private BigDecimal totalPrice;
@@ -37,8 +37,8 @@ public class Order extends BaseEntity {
     @Column(name = "payment_id")
     private Long paymentId;
 
-    @Column(name = "shipping_address_id", nullable = false)
-    private UUID shippingAddressId;
+    @Column(name = "address_id", nullable = false)
+    private Long addressId;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items;

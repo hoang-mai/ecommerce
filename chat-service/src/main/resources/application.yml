@@ -1,11 +1,6 @@
 spring:
   application:
     name: chat-service
-  gprc:
-    client:
-      channels:
-        user-service:
-          address: localhost:9093
   security:
     oauth2:
       resourceserver:

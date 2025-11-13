@@ -6,7 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "product_caches")
@@ -21,5 +21,5 @@ public class ProductCache {
     private Long productId;
 
     @Column(name = "product_variant_ids")
-    private Set<Long> productVariantIds;
+    private List<Long> productVariantIds;
 }

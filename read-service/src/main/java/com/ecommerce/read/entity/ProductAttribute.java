@@ -1,4 +1,4 @@
-package com.ecommerce.product.entity;
+package com.ecommerce.read.entity;
 
 
 import com.ecommerce.library.entity.BaseEntity;
@@ -18,7 +18,6 @@ import java.util.List;
 public class ProductAttribute extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "attribute_id")
     private Long attributeId;
 

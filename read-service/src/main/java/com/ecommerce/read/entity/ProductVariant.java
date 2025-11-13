@@ -1,7 +1,6 @@
-package com.ecommerce.product.entity;
+package com.ecommerce.read.entity;
 
 import com.ecommerce.library.entity.BaseEntity;
-import com.ecommerce.library.enumeration.ProductVariantStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,13 +18,8 @@ import java.util.List;
 public class ProductVariant extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "product_variant_id")
     private Long productVariantId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "product_variant_status", nullable = false)
-    private ProductVariantStatus productVariantStatus;
 
     @Column(name = "price", nullable = false)
     private BigDecimal price;

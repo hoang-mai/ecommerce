@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Builder
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProductCacheEvent {
-    private Long productId;
-    private List<Long> productVariantId;
+public class CreateProductVariantValueEvent {
+
+    private Long productVariantValueId;
+    private Long variantId;
+    private Long attributeValueId;
+
 }

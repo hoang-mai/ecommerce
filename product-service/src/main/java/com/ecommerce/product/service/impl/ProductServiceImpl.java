@@ -1,13 +1,16 @@
 package com.ecommerce.product.service.impl;
 
 import com.ecommerce.library.enumeration.ProductStatus;
+import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.exception.NotFoundException;
+import com.ecommerce.library.kafka.event.product.*;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.product.dto.*;
 import com.ecommerce.product.entity.*;
 import com.ecommerce.product.entity.ProductVariantAttributeValue;
+import com.ecommerce.product.messaging.producer.ProductEventProducer;
 import com.ecommerce.product.repository.*;
 import com.ecommerce.product.service.FileService;
 import com.ecommerce.product.service.ProductService;
@@ -35,7 +38,8 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ShopRepository shopRepository;
     private final FileService fileService;
-    private final ProductImageRepository productImageRepository;
+    private final ProductEventProducer productEventProducer;
+    private final ProductVariantRepository productVariantRepository;
 
     @Override
     @Transactional
@@ -55,78 +59,105 @@ public class ProductServiceImpl implements ProductService {
                 .build();
 
         if (FnCommon.isNotNullOrEmptyList(request.getProductAttributes())) {
-            List<ProductAttribute> attributes = new ArrayList<>();
-            for (ReqProductAttributeDTO attrReq : request.getProductAttributes()) {
-                ProductAttribute attribute = ProductAttribute.builder()
-                        .product(product)
-                        .attributeName(attrReq.getAttributeName())
+            request.getProductAttributes().forEach(reqProductAttributeDTO -> {
+                ProductAttribute productAttribute = ProductAttribute.builder()
+                        .attributeName(reqProductAttributeDTO.getAttributeName())
                         .build();
 
-                List<ProductAttributeValue> attributeValues = attrReq.getAttributeValues().stream()
-                        .map(val -> ProductAttributeValue.builder()
-                                .productAttribute(attribute)
-                                .value(val)
-                                .build())
-                        .collect(Collectors.toList());
-                attribute.setProductAttributeValues(attributeValues);
-                attributes.add(attribute);
-            }
-            product.setProductAttributes(attributes);
+                if (FnCommon.isNotNullOrEmptyList(reqProductAttributeDTO.getAttributeValues())) {
+                    reqProductAttributeDTO.getAttributeValues().forEach(reqProductAttributeValueDTO -> {
+                        ProductAttributeValue attributeValue = ProductAttributeValue.builder()
+                                .value(reqProductAttributeValueDTO)
+                                .build();
+                        productAttribute.addAttributeValue(attributeValue);
+                    });
+                }
+                product.addProductAttribute(productAttribute);
+            });
         }
 
         if (FnCommon.isNotNullOrEmptyList(request.getProductVariants())) {
-            List<ProductVariant> variants = new ArrayList<>();
-            for (ReqProductVariantDTO variantReq : request.getProductVariants()) {
-                ProductVariant variant = ProductVariant.builder()
-                        .product(product)
-                        .price(variantReq.getPrice())
-                        .stockQuantity(variantReq.getStockQuantity())
-                        .isDefault(variantReq.getIsDefault() != null ? variantReq.getIsDefault() : false)
+            request.getProductVariants().forEach(reqProductVariantDTO -> {
+                ProductVariant productVariant = ProductVariant.builder()
+                        .price(reqProductVariantDTO.getPrice())
+                        .stockQuantity(reqProductVariantDTO.getStockQuantity())
+                        .productVariantStatus(reqProductVariantDTO.getStockQuantity() > 0 ? ProductVariantStatus.ACTIVE : ProductVariantStatus.OUT_OF_STOCK)
+                        .isDefault(reqProductVariantDTO.getIsDefault() != null ? reqProductVariantDTO.getIsDefault() : false)
                         .build();
-
-                if (FnCommon.isNotNullOrEmptyMap(variantReq.getAttributeValues())) {
-                    List<ProductVariantAttributeValue> variantAttrValues = new ArrayList<>();
-
-                    for (Map.Entry<String, String> entry : variantReq.getAttributeValues().entrySet()) {
-                        String attributeName = entry.getKey();
-                        String attributeValue = entry.getValue();
-
-                        ProductAttributeValue matchingValue = product.getProductAttributes().stream()
-                                .filter(attr -> attr.getAttributeName().equals(attributeName))
-                                .flatMap(attr -> attr.getProductAttributeValues().stream())
-                                .filter(val -> val.getValue().equals(attributeValue))
-                                .findFirst()
-                                .orElse(null);
-
-                        if (matchingValue != null) {
-                            ProductVariantAttributeValue variantAttrValue = ProductVariantAttributeValue.builder()
-                                    .productVariant(variant)
-                                    .productAttributeValue(matchingValue)
-                                    .build();
-                            variantAttrValues.add(variantAttrValue);
-                        }
-                    }
-                    variant.setProductVariantAttributeValues(variantAttrValues);
+                if (FnCommon.isNotNullOrEmptyMap(reqProductVariantDTO.getAttributeValues())) {
+                    reqProductVariantDTO.getAttributeValues().forEach((attributeName, attributeValue) -> product.getProductAttributes().stream()
+                            .filter(attr -> attr.getAttributeName().equals(attributeName))
+                            .flatMap(attr -> attr.getProductAttributeValues().stream())
+                            .filter(val -> val.getValue().equals(attributeValue))
+                            .findFirst()
+                            .ifPresent(productAttributeValue -> {
+                                ProductVariantAttributeValue variantAttrValue = ProductVariantAttributeValue.builder()
+                                        .productAttributeValue(productAttributeValue)
+                                        .build();
+                                productVariant.addProductVariantAttributeValue(variantAttrValue);
+                            }));
                 }
-                variants.add(variant);
-            }
-            product.setProductVariants(variants);
+                product.addProductVariant(productVariant);
+            });
         }
         productRepository.save(product);
 
         if (FnCommon.isNotNullOrEmptyList(files)) {
-            List<ProductImage> productImages = new ArrayList<>();
-            fileService.uploadFiles(files, "shop/"+ product.getShopId() + "/product-images/" + product.getProductId())
+            fileService.uploadFiles(files, "shop/" + product.getShopId() + "/product-images/" + product.getProductId())
                     .forEach(filePath -> {
                         ProductImage productImage = ProductImage.builder()
-                                .product(product)
                                 .imageUrl(filePath)
                                 .build();
-                        productImages.add(productImage);
+                        product.addProductImage(productImage);
                     });
-            product.setProductImages(productImages);
             productRepository.save(product);
         }
+        productEventProducer.send(
+                CreateProductCacheEvent.builder()
+                        .productId(product.getProductId())
+                        .productVariantId(product.getProductVariants().stream().map(ProductVariant::getProductVariantId).toList())
+                        .build()
+        );
+        productEventProducer.send(
+                CreateProductEvent.builder()
+                        .productName(product.getName())
+                        .productId(product.getProductId())
+                        .description(product.getDescription())
+                        .productImages(product.getProductImages().stream()
+                                .map(productImage -> CreateProductImageEvent.builder()
+                                        .productId(product.getProductId())
+                                        .productImageId(productImage.getProductImageId())
+                                        .imageUrl(productImage.getImageUrl())
+                                        .build()
+                                ).toList())
+                        .productAttributes(product.getProductAttributes().stream().map(
+                                productAttribute -> CreateProductAttributeEvent.builder()
+                                        .productId(product.getProductId())
+                                        .productAttributeId(productAttribute.getAttributeId())
+                                        .productAttributeName(productAttribute.getAttributeName())
+                                        .productAttributeValues(productAttribute.getProductAttributeValues().stream().map(attributeValue -> CreateProductAttributeValueEvent.builder()
+                                                .attributeValueId(attributeValue.getAttributeValueId())
+                                                .attributeId(productAttribute.getAttributeId())
+                                                .value(attributeValue.getValue())
+                                                .build()).toList())
+                                        .build()).toList())
+                        .productVariants(product.getProductVariants().stream().map(
+                                productVariant -> CreateProductVariantEvent.builder()
+                                        .productVariantId(productVariant.getProductVariantId())
+                                        .productId(product.getProductId())
+                                        .price(productVariant.getPrice())
+                                        .productVariantStatus(productVariant.getProductVariantStatus())
+                                        .stockQuantity(productVariant.getStockQuantity())
+                                        .isDefault(productVariant.getIsDefault())
+                                        .productVariantAttributeValues(
+                                                productVariant.getProductVariantAttributeValues().stream().map(
+                                                        variantAttrValue -> CreateProductVariantValueEvent.builder()
+                                                                .variantId(productVariant.getProductVariantId())
+                                                                .productVariantValueId(variantAttrValue.getProductVariantAttributeValueId())
+                                                                .attributeValueId(variantAttrValue.getProductAttributeValue().getAttributeValueId())
+                                                                .build()).toList())
+                                        .build()).toList())
+                        .build());
     }
 
     @Override
@@ -139,13 +170,272 @@ public class ProductServiceImpl implements ProductService {
                 .name(product.getName())
                 .description(product.getDescription())
                 .shopId(product.getShopId())
-                .productStatus(product.getProductStatus())
                 .category(buildCategoryResponse(product.getCategory()))
                 .productImages(buildProductImagesResponse(product.getProductImages()))
                 .productAttributes(buildProductAttributesResponse(product.getProductAttributes()))
                 .productVariants(buildProductVariantsResponse(product.getProductVariants()))
                 .build();
     }
+
+    @Override
+    @Transactional
+    public void updateProduct(Long productId, ReqUpdateProductDTO request, List<MultipartFile> files) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+
+        if (FnCommon.isNotNull(request.getCategoryId())) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new NotFoundException(MessageError.CATEGORY_NOT_FOUND));
+            product.setCategory(category);
+        } else {
+            throw new NotFoundException(MessageError.CATEGORY_NOT_FOUND);
+        }
+
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+
+        // Xóa ảnh đã được chỉ định
+        if (FnCommon.isNotNullOrEmptyList(request.getDeletedImageIds()) && FnCommon.isNotNullOrEmptyList(product.getProductImages())) {
+            request.getDeletedImageIds().forEach(imageId -> product.getProductImages().stream()
+                    .filter(img -> img.getProductImageId().equals(imageId))
+                    .findFirst().ifPresent(productImage -> {
+                        fileService.deleteFile(productImage.getImageUrl());
+                        product.deleteProductImage(productImage);
+                    }));
+        }
+
+        // Xử lý upload ảnh mới nếu có
+        if (FnCommon.isNotNullOrEmptyList(files)) {
+            fileService.uploadFiles(files, "shop/" + product.getShopId() + "/product-images/" + product.getProductId())
+                    .forEach(filePath -> {
+                        ProductImage productImage = ProductImage.builder()
+                                .imageUrl(filePath)
+                                .build();
+                        product.addProductImage(productImage);
+                    });
+        }
+
+
+        // Xử lý product attributes: nếu có ID thì update, không có ID thì thêm mới
+        if (FnCommon.isNotNullOrEmptyList(request.getProductAttributes())) {
+
+            request.getProductAttributes().forEach(attrReq -> {
+                if (FnCommon.isNotNull(attrReq.getProductAttributeId())) {
+                    // CÓ ID -> CẬP NHẬT attribute hiện có
+                    ProductAttribute existingAttr = product.getProductAttributes().stream()
+                            .filter(attr -> attr.getAttributeId().equals(attrReq.getProductAttributeId()))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (existingAttr != null && FnCommon.isNotNullOrEmptyList(attrReq.getAttributeValues())) {
+
+                        // Xử lý attribute values: nếu có ID thì bỏ qua (không cập nhật), không có ID thì thêm mới
+                        attrReq.getAttributeValues().forEach(valReq -> {
+                            if (valReq.getAttributeValueId() == null && valReq.getAttributeValue() != null) {
+                                ProductAttributeValue newValue = ProductAttributeValue.builder()
+                                        .value(valReq.getAttributeValue())
+                                        .build();
+                                existingAttr.addAttributeValue(newValue);
+                            }
+                        });
+                    }
+                } else {
+                    // KHÔNG CÓ ID -> THÊM MỚI attribute
+                    ProductAttribute newAttribute = ProductAttribute.builder()
+                            .attributeName(attrReq.getAttributeName())
+                            .build();
+
+                    if (FnCommon.isNotNullOrEmptyList(attrReq.getAttributeValues())) {
+                        attrReq.getAttributeValues().forEach(valReq -> {
+                            ProductAttributeValue newValue = ProductAttributeValue.builder()
+                                    .value(valReq.getAttributeValue())
+                                    .build();
+                            newAttribute.addAttributeValue(newValue);
+                        });
+                    }
+                    product.addProductAttribute(newAttribute);
+                }
+            });
+        }
+
+        // Xử lý product variants: nếu có ID thì update, không có ID thì thêm mới
+        if (FnCommon.isNotNullOrEmptyList(request.getProductVariants())) {
+
+            request.getProductVariants().forEach(variantReq -> {
+                if (FnCommon.isNotNull(variantReq.getProductVariantId())) {
+                    // CÓ ID -> CẬP NHẬT variant hiện có
+                    product.getProductVariants().stream()
+                            .filter(variant -> variant.getProductVariantId().equals(variantReq.getProductVariantId()))
+                            .findFirst()
+                            .ifPresent(variant -> {
+                                variant.setPrice(variantReq.getPrice());
+                                if (variant.getProductVariantStatus() != ProductVariantStatus.INACTIVE) {
+                                    variant.setProductVariantStatus(variant.getStockQuantity() > 0 ? ProductVariantStatus.ACTIVE : ProductVariantStatus.OUT_OF_STOCK);
+                                }
+                                variant.setStockQuantity(variantReq.getStockQuantity());
+                                if (variantReq.getIsDefault() != null) {
+                                    variant.setIsDefault(variantReq.getIsDefault());
+                                }
+                            });
+                } else {
+                    // KHÔNG CÓ ID -> THÊM MỚI variant
+
+                    ProductVariant newVariant = ProductVariant.builder()
+                            .product(product)
+                            .price(variantReq.getPrice())
+                            .stockQuantity(variantReq.getStockQuantity())
+                            .productVariantStatus(variantReq.getStockQuantity() > 0 ? ProductVariantStatus.ACTIVE : ProductVariantStatus.OUT_OF_STOCK)
+                            .isDefault(variantReq.getIsDefault() != null ? variantReq.getIsDefault() : false)
+                            .build();
+
+                    if (FnCommon.isNotNullOrEmptyMap(variantReq.getAttributeValues())) {
+                        variantReq.getAttributeValues().forEach((attributeName, attributeValue) -> product.getProductAttributes().stream()
+                                .filter(attr -> attr.getAttributeName().equals(attributeName))
+                                .flatMap(attr -> attr.getProductAttributeValues().stream())
+                                .filter(val -> val.getValue().equals(attributeValue))
+                                .findFirst()
+                                .ifPresent(productAttributeValue -> {
+                                    ProductVariantAttributeValue variantAttrValue = ProductVariantAttributeValue.builder()
+                                            .productAttributeValue(productAttributeValue)
+                                            .build();
+                                    newVariant.addProductVariantAttributeValue(variantAttrValue);
+                                }));
+                    }
+                    product.addProductVariant(newVariant);
+                }
+            });
+        }
+        productRepository.save(product);
+
+        productEventProducer.send(
+                CreateProductCacheEvent.builder()
+                        .productId(product.getProductId())
+                        .productVariantId(product.getProductVariants().stream().map(ProductVariant::getProductVariantId).toList())
+                        .build()
+        );
+        productEventProducer.send(
+                CreateProductEvent.builder()
+                        .productName(product.getName())
+                        .productId(product.getProductId())
+                        .description(product.getDescription())
+                        .productImages(product.getProductImages().stream()
+                                .map(productImage -> CreateProductImageEvent.builder()
+                                        .productId(product.getProductId())
+                                        .productImageId(productImage.getProductImageId())
+                                        .imageUrl(productImage.getImageUrl())
+                                        .build()
+                                ).toList())
+                        .productAttributes(product.getProductAttributes().stream().map(
+                                productAttribute -> CreateProductAttributeEvent.builder()
+                                        .productId(product.getProductId())
+                                        .productAttributeId(productAttribute.getAttributeId())
+                                        .productAttributeName(productAttribute.getAttributeName())
+                                        .productAttributeValues(productAttribute.getProductAttributeValues().stream().map(attributeValue -> CreateProductAttributeValueEvent.builder()
+                                                .attributeValueId(attributeValue.getAttributeValueId())
+                                                .attributeId(productAttribute.getAttributeId())
+                                                .value(attributeValue.getValue())
+                                                .build()).toList())
+                                        .build()).toList())
+                        .productVariants(product.getProductVariants().stream().map(
+                                productVariant -> CreateProductVariantEvent.builder()
+                                        .productVariantId(productVariant.getProductVariantId())
+                                        .productId(product.getProductId())
+                                        .price(productVariant.getPrice())
+                                        .stockQuantity(productVariant.getStockQuantity())
+                                        .isDefault(productVariant.getIsDefault())
+                                        .productVariantStatus(productVariant.getProductVariantStatus())
+                                        .productVariantAttributeValues(
+                                                productVariant.getProductVariantAttributeValues().stream().map(
+                                                        variantAttrValue -> CreateProductVariantValueEvent.builder()
+                                                                .variantId(productVariant.getProductVariantId())
+                                                                .productVariantValueId(variantAttrValue.getProductVariantAttributeValueId())
+                                                                .attributeValueId(variantAttrValue.getProductAttributeValue().getAttributeValueId())
+                                                                .build()).toList())
+                                        .build()).toList())
+                        .build());
+
+    }
+
+    @Override
+    public void updateProductVariantStatus(Long productVariantId, ReqUpdateProductVariantStatusDTO request) {
+        ProductVariant productVariant = productVariantRepository.findById(productVariantId)
+                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
+        productVariant.setProductVariantStatus(request.getProductVariantStatus());
+        productVariantRepository.save(productVariant);
+
+        productEventProducer.send(
+                UpdateProductVariantStatusEvent.builder()
+                        .productVariantId(productVariant.getProductVariantId())
+                        .productVariantStatus(productVariant.getProductVariantStatus())
+                        .build()
+        );
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<ResProductDTO> searchProducts(Long shopId, Long categoryId, ProductVariantStatus status,
+                                                      String keyword, int pageNo, int pageSize,
+                                                      String sortBy, String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        Page<Product> productsPage = productRepository.searchProducts(shopId, categoryId, status, keyword, pageable);
+
+        return buildPageResponse(productsPage);
+    }
+
+    @Override
+    public void updateProductStatusByProductId(Long productId, ReqUpdateProductStatusDTO status) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+        product.setProductStatus(status.getProductStatus());
+        productRepository.save(product);
+
+        productEventProducer.send(
+                UpdateProductStatusEvent.builder()
+                        .productId(product.getProductId())
+                        .productStatus(product.getProductStatus())
+                        .build()
+        );
+    }
+
+    private PageResponse<ResProductDTO> buildPageResponse(Page<Product> productsPage) {
+        List<ResProductDTO> productResponses = productsPage.getContent().stream()
+                .map(this::convertToProductDTO)
+                .collect(Collectors.toList());
+
+        return PageResponse.<ResProductDTO>builder()
+                .pageNo(productsPage.getNumber())
+                .pageSize(productsPage.getSize())
+                .totalElements(productsPage.getTotalElements())
+                .totalPages(productsPage.getTotalPages())
+                .hasNextPage(productsPage.hasNext())
+                .hasPreviousPage(productsPage.hasPrevious())
+                .data(productResponses)
+                .build();
+    }
+
+    private ResProductDTO convertToProductDTO(Product product) {
+        return ResProductDTO.builder()
+                .productId(product.getProductId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .shopId(product.getShopId())
+                .productStatus(product.getProductStatus())
+                .category(buildCategoryResponse(product.getCategory()))
+                .productImages(buildProductImagesResponse(product.getProductImages()))
+                .productAttributes(buildProductAttributesResponse(product.getProductAttributes()))
+                .productVariants(buildProductVariantsResponse(product.getProductVariants()))
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
+                .build();
+    }
+
 
     private ResCategoryDTO buildCategoryResponse(Category category) {
         if (category == null) {
@@ -214,6 +504,7 @@ public class ProductServiceImpl implements ProductService {
                             .productVariantId(productVariant.getProductVariantId())
                             .price(productVariant.getPrice())
                             .stockQuantity(productVariant.getStockQuantity())
+                            .productVariantStatus(productVariant.getProductVariantStatus())
                             .isDefault(productVariant.getIsDefault())
                             .attributeValues(attributeValues)
                             .build();
@@ -221,256 +512,5 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    @Transactional
-    public void updateProduct(Long productId, ReqUpdateProductDTO request, List<MultipartFile> files) {
-
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
-
-        if (FnCommon.isNotNull(request.getCategoryId())) {
-            Category category = categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(() -> new NotFoundException(MessageError.CATEGORY_NOT_FOUND));
-            product.setCategory(category);
-        } else {
-            throw new NotFoundException(MessageError.CATEGORY_NOT_FOUND);
-        }
-
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
-
-        // Xóa ảnh đã được chỉ định
-        if (FnCommon.isNotNullOrEmptyList(request.getDeletedImageIds()) &&
-                FnCommon.isNotNullOrEmptyList(product.getProductImages())) {
-            List<ProductImage> imagesToKeep = product.getProductImages().stream()
-                    .filter(img -> !request.getDeletedImageIds().contains(img.getProductImageId()))
-                    .toList();
-            List<ProductImage> imagesToDelete = product.getProductImages().stream()
-                    .filter(img -> request.getDeletedImageIds().contains(img.getProductImageId()))
-                    .toList();
-            // Xóa file ảnh khỏi hệ thống lưu trữ
-            imagesToDelete.forEach(img -> fileService.deleteFile(img.getImageUrl()));
-            productImageRepository.deleteAll(imagesToDelete);
-            product.setProductImages(new ArrayList<>(imagesToKeep));
-        }
-
-        // Xử lý upload ảnh mới nếu có
-        if (FnCommon.isNotNullOrEmptyList(files)) {
-            List<ProductImage> newProductImages = new ArrayList<>();
-            fileService.uploadFiles(files, "shop/"+ product.getShopId() + "/product-images/" + product.getProductId())
-                    .forEach(filePath -> {
-                        ProductImage productImage = ProductImage.builder()
-                                .product(product)
-                                .imageUrl(filePath)
-                                .build();
-                        newProductImages.add(productImage);
-                    });
-
-            if (product.getProductImages() != null) {
-                List<ProductImage> images = new ArrayList<>(product.getProductImages());
-                images.addAll(newProductImages);
-                product.setProductImages(images);
-            } else {
-                product.setProductImages(new ArrayList<>(newProductImages));
-            }
-        }
-
-
-        // Xử lý product attributes: nếu có ID thì update, không có ID thì thêm mới
-        if (FnCommon.isNotNullOrEmptyList(request.getProductAttributes())) {
-            // Khởi tạo list nếu chưa có
-            if (product.getProductAttributes() == null) {
-                product.setProductAttributes(new ArrayList<>());
-            }
-
-            for (ReqUpdateProductAttributeDTO attrReq : request.getProductAttributes()) {
-                if (attrReq.getProductAttributeId() != null) {
-                    // CÓ ID -> CẬP NHẬT attribute hiện có
-                    ProductAttribute existingAttr = product.getProductAttributes().stream()
-                            .filter(attr -> attr.getAttributeId().equals(attrReq.getProductAttributeId()))
-                            .findFirst()
-                            .orElse(null);
-
-                    if (existingAttr != null) {
-
-                        // Xử lý attribute values
-                        if (FnCommon.isNotNullOrEmptyList(attrReq.getAttributeValues())) {
-                            if (existingAttr.getProductAttributeValues() == null) {
-                                existingAttr.setProductAttributeValues(new ArrayList<>());
-                            }
-
-                            for (ReqUpdateProductAttributeValueDTO valueReq : attrReq.getAttributeValues()) {
-                                if (valueReq.getAttributeValueId() == null) {
-                                    // KHÔNG CÓ ID -> THÊM MỚI value
-                                    if (valueReq.getAttributeValue() != null) {
-                                        ProductAttributeValue newValue = ProductAttributeValue.builder()
-                                                .productAttribute(existingAttr)
-                                                .value(valueReq.getAttributeValue())
-                                                .build();
-                                        existingAttr.getProductAttributeValues().add(newValue);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    // KHÔNG CÓ ID -> THÊM MỚI attribute
-                    ProductAttribute newAttribute = ProductAttribute.builder()
-                            .product(product)
-                            .attributeName(attrReq.getAttributeName())
-                            .build();
-
-                    if (FnCommon.isNotNullOrEmptyList(attrReq.getAttributeValues())) {
-                        List<ProductAttributeValue> attributeValues = attrReq.getAttributeValues().stream()
-                                .filter(val -> val.getAttributeValue() != null)
-                                .map(val -> ProductAttributeValue.builder()
-                                        .productAttribute(newAttribute)
-                                        .value(val.getAttributeValue())
-                                        .build())
-                                .collect(Collectors.toList());
-                        newAttribute.setProductAttributeValues(attributeValues);
-                    }
-                    product.getProductAttributes().add(newAttribute);
-                }
-            }
-        }
-
-        // Xử lý product variants: nếu có ID thì update, không có ID thì thêm mới
-        if (FnCommon.isNotNullOrEmptyList(request.getProductVariants())) {
-            // Khởi tạo list nếu chưa có
-            if (product.getProductVariants() == null) {
-                product.setProductVariants(new ArrayList<>());
-            }
-
-            for (ReqUpdateProductVariantDTO variantReq : request.getProductVariants()) {
-                if (variantReq.getProductVariantId() != null) {
-                    // CÓ ID -> CẬP NHẬT variant hiện có
-                    ProductVariant existingVariant = product.getProductVariants().stream()
-                            .filter(variant -> variant.getProductVariantId().equals(variantReq.getProductVariantId()))
-                            .findFirst()
-                            .orElse(null);
-
-                    if (existingVariant != null) {
-                        // Cập nhật thông tin variant
-                        if (variantReq.getPrice() != null) {
-                            existingVariant.setPrice(variantReq.getPrice());
-                        }
-                        if (variantReq.getStockQuantity() != null) {
-                            existingVariant.setStockQuantity(variantReq.getStockQuantity());
-                        }
-                        if (variantReq.getIsDefault() != null) {
-                            existingVariant.setIsDefault(variantReq.getIsDefault());
-                        }
-                    }
-                } else {
-                    // KHÔNG CÓ ID -> THÊM MỚI variant
-                    // Validate required fields cho variant mới
-                    if (variantReq.getPrice() == null) {
-                        throw new IllegalArgumentException(MessageError.PRICE_NOT_NULL);
-                    }
-                    if (variantReq.getStockQuantity() == null) {
-                        throw new IllegalArgumentException(MessageError.STOCK_QUANTITY_NOT_NULL);
-                    }
-
-                    ProductVariant newVariant = ProductVariant.builder()
-                            .product(product)
-                            .price(variantReq.getPrice())
-                            .stockQuantity(variantReq.getStockQuantity())
-                            .isDefault(variantReq.getIsDefault() != null ? variantReq.getIsDefault() : false)
-                            .build();
-
-                    if (FnCommon.isNotNullOrEmptyMap(variantReq.getAttributeValues())) {
-                        List<ProductVariantAttributeValue> variantAttrValues = new ArrayList<>();
-
-                        for (Map.Entry<String, String> entry : variantReq.getAttributeValues().entrySet()) {
-                            String attributeName = entry.getKey();
-                            String attributeValue = entry.getValue();
-
-                            ProductAttributeValue matchingValue = product.getProductAttributes().stream()
-                                    .filter(attr -> attr.getAttributeName().equals(attributeName))
-                                    .flatMap(attr -> attr.getProductAttributeValues().stream())
-                                    .filter(val -> val.getValue().equals(attributeValue))
-                                    .findFirst()
-                                    .orElse(null);
-
-                            if (matchingValue != null) {
-                                ProductVariantAttributeValue variantAttrValue = ProductVariantAttributeValue.builder()
-                                        .productVariant(newVariant)
-                                        .productAttributeValue(matchingValue)
-                                        .build();
-                                variantAttrValues.add(variantAttrValue);
-                            }
-                        }
-                        newVariant.setProductVariantAttributeValues(variantAttrValues);
-                    }
-                    product.getProductVariants().add(newVariant);
-                }
-            }
-        }
-
-        productRepository.save(product);
-
-
-    }
-
-    @Override
-    public void updateProductStatus(Long productId, ReqUpdateProductStatusDTO request) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
-
-        product.setProductStatus(request.getProductStatus());
-
-        productRepository.save(product);
-
-    }
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public PageResponse<ResProductDTO> searchProducts(Long shopId, Long categoryId, ProductStatus status,
-                                                      String keyword, int pageNo, int pageSize,
-                                                      String sortBy, String sortDir) {
-
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        Page<Product> productsPage = productRepository.searchProducts(shopId, categoryId, status, keyword, pageable);
-
-        return buildPageResponse(productsPage);
-    }
-
-    private PageResponse<ResProductDTO> buildPageResponse(Page<Product> productsPage) {
-        List<ResProductDTO> productResponses = productsPage.getContent().stream()
-                .map(this::convertToProductDTO)
-                .collect(Collectors.toList());
-
-        return PageResponse.<ResProductDTO>builder()
-                .pageNo(productsPage.getNumber())
-                .pageSize(productsPage.getSize())
-                .totalElements(productsPage.getTotalElements())
-                .totalPages(productsPage.getTotalPages())
-                .hasNextPage(productsPage.hasNext())
-                .hasPreviousPage(productsPage.hasPrevious())
-                .data(productResponses)
-                .build();
-    }
-
-    private ResProductDTO convertToProductDTO(Product product) {
-        return ResProductDTO.builder()
-                .productId(product.getProductId())
-                .name(product.getName())
-                .description(product.getDescription())
-                .shopId(product.getShopId())
-                .productStatus(product.getProductStatus())
-                .category(buildCategoryResponse(product.getCategory()))
-                .productImages(buildProductImagesResponse(product.getProductImages()))
-                .productAttributes(buildProductAttributesResponse(product.getProductAttributes()))
-                .productVariants(buildProductVariantsResponse(product.getProductVariants()))
-                .createdAt(product.getCreatedAt())
-                .updatedAt(product.getUpdatedAt())
-                .build();
-    }
 }
 

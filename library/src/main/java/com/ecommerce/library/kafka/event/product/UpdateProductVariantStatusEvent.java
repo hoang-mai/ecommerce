@@ -6,18 +6,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Builder
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProductEvent {
-    private Long productId;
-    private String productName;
-    private String description;
+public class UpdateProductVariantStatusEvent {
+    private Long productVariantId;
     private ProductVariantStatus productVariantStatus;
-    private List<CreateProductImageEvent> productImages;
-    private List<CreateProductAttributeEvent> productAttributes;
-    private List<CreateProductVariantEvent> productVariants;
 }

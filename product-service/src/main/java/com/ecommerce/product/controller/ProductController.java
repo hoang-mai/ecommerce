@@ -1,15 +1,12 @@
 package com.ecommerce.product.controller;
 
 import com.ecommerce.library.component.MessageService;
-import com.ecommerce.library.enumeration.ProductStatus;
+import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.product.dto.ReqCreateProductDTO;
-import com.ecommerce.product.dto.ReqUpdateProductDTO;
-import com.ecommerce.product.dto.ReqUpdateProductStatusDTO;
-import com.ecommerce.product.dto.ResProductDTO;
+import com.ecommerce.product.dto.*;
 import com.ecommerce.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -91,19 +88,38 @@ public class ProductController {
     }
 
     /**
-     * Cập nhật trạng thái sản phẩm
+     * Cập nhật trạng thái biến thể sản phẩm
      *
-     * @param productId ID của sản phẩm cần cập nhật trạng thái
+     * @param productVariantId ID của sản phẩm cần cập nhật trạng thái
      * @param request Trạng thái mới
      * @return Kết quả cập nhật
      */
-    @PatchMapping("/{productId}/status")
+    @PatchMapping("/{productVariantId}/status")
     @Operation(summary = "Update product status", description = "Update product status (ACTIVE, INACTIVE, OUT_OF_STOCK)")
     public ResponseEntity<BaseResponse<Void>> updateProductStatus(
-            @PathVariable Long productId,
-            @Valid @RequestBody ReqUpdateProductStatusDTO request) {
-        productService.updateProductStatus(productId, request);
+            @PathVariable Long productVariantId,
+            @Valid @RequestBody ReqUpdateProductVariantStatusDTO request) {
+        productService.updateProductVariantStatus(productVariantId, request);
 
+        return ResponseEntity.ok(BaseResponse.<Void>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.PRODUCT_STATUS_UPDATED_SUCCESS))
+                .build());
+    }
+
+    /**
+     * Cập nhật trạng thái sản phẩm
+     *
+     * @param productId ID của sản phẩm cần cập nhật trạng thái
+     * @param status Trạng thái mới
+     * @return Kết quả cập nhật
+     */
+    @PatchMapping("/{productId}/product-status")
+    @Operation(summary = "Update product status by product ID", description = "Update product status by product ID")
+    public ResponseEntity<BaseResponse<Void>> updateProductStatusByProductId(
+            @PathVariable Long productId,
+            @RequestParam ReqUpdateProductStatusDTO status) {
+        productService.updateProductStatusByProductId(productId, status);
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.PRODUCT_STATUS_UPDATED_SUCCESS))
@@ -128,7 +144,7 @@ public class ProductController {
     public ResponseEntity<BaseResponse<PageResponse<ResProductDTO>>> searchProducts(
             @RequestParam(required = false) Long shopId,
             @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) ProductStatus status,
+            @RequestParam(required = false) ProductVariantStatus status,
             @RequestParam(required = false) String keyword,
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,

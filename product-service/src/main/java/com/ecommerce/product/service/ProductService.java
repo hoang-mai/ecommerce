@@ -1,11 +1,8 @@
 package com.ecommerce.product.service;
 
-import com.ecommerce.library.enumeration.ProductStatus;
+import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.product.dto.ReqCreateProductDTO;
-import com.ecommerce.product.dto.ReqUpdateProductDTO;
-import com.ecommerce.product.dto.ReqUpdateProductStatusDTO;
-import com.ecommerce.product.dto.ResProductDTO;
+import com.ecommerce.product.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -37,12 +34,12 @@ public interface ProductService {
     void updateProduct(Long productId, ReqUpdateProductDTO request, List<MultipartFile> files);
 
     /**
-     * Cập nhật trạng thái sản phẩm
+     * Cập nhật trạng thái biến thể sản phẩm
      *
-     * @param productId ID của sản phẩm cần cập nhật trạng thái
+     * @param productVariantId ID của sản phẩm cần cập nhật trạng thái
      * @param request Trạng thái mới
      */
-    void updateProductStatus(Long productId, ReqUpdateProductStatusDTO request);
+    void updateProductVariantStatus(Long productVariantId, ReqUpdateProductVariantStatusDTO request);
 
     /**
      * Tìm kiếm sản phẩm với nhiều bộ lọc
@@ -57,9 +54,15 @@ public interface ProductService {
      * @param sortDir Hướng sắp xếp
      * @return Danh sách sản phẩm phù hợp
      */
-    PageResponse<ResProductDTO> searchProducts(Long shopId, Long categoryId, ProductStatus status,
+    PageResponse<ResProductDTO> searchProducts(Long shopId, Long categoryId, ProductVariantStatus status,
                                                 String keyword, int pageNo, int pageSize,
                                                 String sortBy, String sortDir);
 
+    /**
+     * Cập nhật trạng thái sản phẩm theo ID sản phẩm
+     * @param productId ID của sản phẩm
+     * @param status Trạng thái mới
+     */
+    void updateProductStatusByProductId(Long productId, ReqUpdateProductStatusDTO status);
 }
 

@@ -100,4 +100,6 @@ public final class MessageError {
     public static final String QUANTITY_POSITIVE = "";
     public static final String CART_ITEM_NOT_FOUND = "";
     public static final String CART_NOT_FOUND = "";
+    public static final String PRICE_MUST_POSITIVE = "";
+    public static final String PRODUCT_VARIANT_NOT_FOUND = "";
 }
