@@ -1,6 +1,7 @@
 package com.ecommerce.product.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import lombok.Getter;
 
 import java.util.List;
@@ -14,5 +15,6 @@ public class ReqUpdateProductAttributeDTO {
     @Schema(description = "Name of the attribute", example = "Color")
     private String attributeName;
 
+    @Valid
     private List<ReqUpdateProductAttributeValueDTO> attributeValues;
 }

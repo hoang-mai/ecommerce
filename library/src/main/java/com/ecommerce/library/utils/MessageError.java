@@ -102,4 +102,10 @@ public final class MessageError {
     public static final String CART_NOT_FOUND = "";
     public static final String PRICE_MUST_POSITIVE = "";
     public static final String PRODUCT_VARIANT_NOT_FOUND = "";
+    public static final String ADDRESS_NOT_BLANK = "";
+    public static final String ORDER_ITEMS_NOT_EMPTY = "";
+    public static final String PRICE_POSITIVE = "";
+    public static final String STOCK_QUANTITY_POSITIVE_OR_ZERO = "";
+    public static final String ORDER_NOT_FOUND = "";
+    public static final String CANNOT_CANCEL_ORDER = "";
 }

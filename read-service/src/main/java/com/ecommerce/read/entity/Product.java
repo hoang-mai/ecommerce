@@ -34,10 +34,6 @@ public class Product extends BaseEntity {
     @Column(name = "product_status", nullable = false)
     private ProductVariantStatus productVariantStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductImage> productImages = new ArrayList<>();
@@ -49,6 +45,10 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductVariant> productVariants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CartItem> cartItems = new ArrayList<>();
 
     public void addProductImage(ProductImage productImage) {
         productImages.add(productImage);

@@ -34,6 +34,10 @@ public class ProductVariant extends BaseEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cart_item_id")
+    private CartItem cartItem;
+
     @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductVariantAttributeValue> productVariantAttributeValues = new ArrayList<>();

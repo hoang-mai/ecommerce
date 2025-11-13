@@ -65,4 +65,7 @@ public final class MessageSuccess {
     public static final String UPDATE_CART_ITEM_SUCCESS = "";
     public static final String REMOVE_CART_ITEM_SUCCESS = "";
     public static final String CLEAR_CART_SUCCESS = "";
+    public static final String ORDER_CREATED_SUCCESS = "";
+    public static final String UPDATE_ORDER_STATUS_SUCCESS = "";
+    public static final String CANCEL_ORDER_SUCCESS = "";
 }

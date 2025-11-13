@@ -1,6 +1,7 @@
 package com.ecommerce.product.service;
 
 import com.ecommerce.library.enumeration.ProductVariantStatus;
+import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.product.dto.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,5 +65,7 @@ public interface ProductService {
      * @param status Trạng thái mới
      */
     void updateProductStatusByProductId(Long productId, ReqUpdateProductStatusDTO status);
+
+    void handleCreateOrderEvent(CreateOrderEvent createOrderEvent);
 }
 

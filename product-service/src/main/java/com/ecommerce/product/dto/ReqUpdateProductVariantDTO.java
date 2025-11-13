@@ -4,6 +4,7 @@ import com.ecommerce.library.utils.MessageError;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ public class ReqUpdateProductVariantDTO {
     private BigDecimal price;
 
     @NotNull(message = MessageError.STOCK_QUANTITY_NOT_NULL)
+    @PositiveOrZero(message = MessageError.STOCK_QUANTITY_POSITIVE_OR_ZERO)
     @Schema(description = "Available stock quantity", example = "100")
     private Integer stockQuantity;
 

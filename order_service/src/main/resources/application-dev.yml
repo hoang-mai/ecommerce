@@ -5,6 +5,14 @@ server:
 spring:
   application:
     name: order-service
+  kafka:
+    bootstrap-servers: localhost:19092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+        key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
   datasource:
     url: jdbc:mysql://localhost:3306/order_service?createDatabaseIfNotExist=true
     username: order_service

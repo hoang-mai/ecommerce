@@ -1,36 +1,35 @@
 package com.ecommerce.order.service.impl;
 
+import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.OrderStatus;
-import com.ecommerce.order.dto.CreateOrderRequest;
-import com.ecommerce.order.dto.OrderItemRequest;
-import com.ecommerce.order.dto.OrderResponse;
+import com.ecommerce.library.exception.HttpRequestException;
+import com.ecommerce.library.exception.NotFoundException;
+import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
+import com.ecommerce.library.kafka.event.order.CreateOrderItemEvent;
+import com.ecommerce.library.utils.MessageError;
+import com.ecommerce.order.dto.ResCreateOrderDTO;
 import com.ecommerce.order.entity.Order;
 import com.ecommerce.order.entity.OrderItem;
-import com.ecommerce.order.mapper.OrderMapper;
+import com.ecommerce.order.messaging.producer.OrderEventProducer;
 import com.ecommerce.order.repository.OrderRepository;
 import com.ecommerce.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
-@Transactional
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderMapper orderMapper;
+    private final UserHelper userHelper;
+    private final OrderEventProducer orderEventProducer;
 
     @Override
-    public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
-        // Calculate total price
+    public void createOrder(ResCreateOrderDTO request) {
+        Long userId = userHelper.getCurrentUserId();
         BigDecimal totalPrice = request.getItems().stream()
                 .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -38,89 +37,61 @@ public class OrderServiceImpl implements OrderService {
         // Create order
         Order order = Order.builder()
                 .userId(userId)
-                .status(OrderStatus.PENDING)
+                .orderStatus(OrderStatus.PENDING)
                 .totalPrice(totalPrice)
-                .shippingAddressId(request.getShippingAddressId())
-                .items(new ArrayList<>())
+                .address(request.getAddress())
+                .phoneNumber(request.getPhoneNumber())
                 .build();
 
-        // Create order items
-        List<OrderItem> orderItems = request.getItems().stream()
-                .map(itemRequest -> createOrderItem(order, itemRequest))
-                .collect(Collectors.toList());
+        request.getItems().forEach(item -> {
+            OrderItem orderItem = OrderItem.builder()
+                    .productId(item.getProductId())
+                    .quantity(item.getQuantity())
+                    .price(item.getPrice())
+                    .productVariantId(item.getProductVariantId())
+                    .build();
+            order.addOrderItem(orderItem);
+        });
+        orderRepository.save(order);
+        orderEventProducer.send(
+                CreateOrderEvent.builder()
+                        .orderId(order.getOrderId())
+                        .createOrderItemEventList(order.getItems().stream()
+                                .map(item -> CreateOrderItemEvent.builder()
+                                        .productId(item.getProductId())
+                                        .productVariantId(item.getProductVariantId())
+                                        .quantity(item.getQuantity())
+                                        .price(item.getPrice())
+                                        .build()).toList())
+                        .build()
+        );
+    }
 
-        order.setItems(orderItems);
-        order = orderRepository.save(order);
 
-        log.info("Created order: {} for user: {}", order.getOrderId(), userId);
+    @Override
+    public void updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
 
-        return orderMapper.toOrderResponse(order);
+        order.setOrderStatus(newStatus);
+        orderRepository.save(order);
+
+
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public OrderResponse getOrderById(Long userId, Long orderId) {
-        Order order = orderRepository.findByOrderIdAndUserId(orderId, userId)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+    public void cancelOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
 
-        return orderMapper.toOrderResponse(order);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponse> getOrdersByUserId(Long userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
-        return orders.stream()
-                .map(orderMapper::toOrderResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponse> getOrdersByUserIdAndStatus(Long userId, OrderStatus status) {
-        List<Order> orders = orderRepository.findByUserIdAndStatus(userId, status);
-        return orders.stream()
-                .map(orderMapper::toOrderResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public OrderResponse updateOrderStatus(Long userId, Long orderId, OrderStatus newStatus) {
-        Order order = orderRepository.findByOrderIdAndUserId(orderId, userId)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
-
-        order.setStatus(newStatus);
-        order = orderRepository.save(order);
-
-        log.info("Updated order status: {} to {} for user: {}", orderId, newStatus, userId);
-
-        return orderMapper.toOrderResponse(order);
-    }
-
-    @Override
-    public OrderResponse cancelOrder(Long userId, Long orderId) {
-        Order order = orderRepository.findByOrderIdAndUserId(orderId, userId)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
-
-        if (order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.CANCELLED) {
-            throw new RuntimeException("Cannot cancel order with status: " + order.getStatus());
+        if (order.getOrderStatus() == OrderStatus.DELIVERED || order.getOrderStatus() == OrderStatus.CANCELLED) {
+            throw new HttpRequestException(MessageError.CANNOT_CANCEL_ORDER, 400 , LocalDateTime.now());
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
+        order.setOrderStatus(OrderStatus.CANCELLED);
         order = orderRepository.save(order);
 
-        log.info("Cancelled order: {} for user: {}", orderId, userId);
-
-        return orderMapper.toOrderResponse(order);
     }
 
-    private OrderItem createOrderItem(Order order, OrderItemRequest itemRequest) {
-        return OrderItem.builder()
-                .order(order)
-                .productId(itemRequest.getProductId())
-                .quantity(itemRequest.getQuantity())
-                .price(itemRequest.getPrice())
-                .build();
-    }
 }
 

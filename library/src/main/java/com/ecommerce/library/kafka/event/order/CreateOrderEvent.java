@@ -1,17 +1,18 @@
 package com.ecommerce.library.kafka.event.order;
 
-import com.ecommerce.library.enumeration.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Builder
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OderStatusEvent {
-
+public class CreateOrderEvent {
     private Long orderId;
-    private OrderStatus orderStatus;
+    private List<CreateOrderItemEvent> createOrderItemEventList;
+
 }

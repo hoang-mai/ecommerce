@@ -1,8 +1,11 @@
 package com.ecommerce.product.service.impl;
 
+import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.exception.NotFoundException;
+import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
+import com.ecommerce.library.kafka.event.order.UpdateOrderStatusEvent;
 import com.ecommerce.library.kafka.event.product.*;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
@@ -10,6 +13,7 @@ import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.product.dto.*;
 import com.ecommerce.product.entity.*;
 import com.ecommerce.product.entity.ProductVariantAttributeValue;
+import com.ecommerce.product.messaging.producer.OrderEventProducer;
 import com.ecommerce.product.messaging.producer.ProductEventProducer;
 import com.ecommerce.product.repository.*;
 import com.ecommerce.product.service.FileService;
@@ -39,6 +43,7 @@ public class ProductServiceImpl implements ProductService {
     private final ShopRepository shopRepository;
     private final FileService fileService;
     private final ProductEventProducer productEventProducer;
+    private final OrderEventProducer orderEventProducer;
     private final ProductVariantRepository productVariantRepository;
 
     @Override
@@ -402,6 +407,39 @@ public class ProductServiceImpl implements ProductService {
                         .productStatus(product.getProductStatus())
                         .build()
         );
+    }
+
+    @Override
+    public void handleCreateOrderEvent(CreateOrderEvent createOrderEvent) {
+        createOrderEvent.getCreateOrderItemEventList().forEach(orderItem -> {
+            ProductVariant productVariant = productVariantRepository.findById(orderItem.getProductVariantId())
+                    .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
+
+            int updatedStock = productVariant.getStockQuantity() - orderItem.getQuantity();
+            productVariant.setStockQuantity(updatedStock);
+
+            if(updatedStock < 0) {
+                orderEventProducer.send(
+                        UpdateOrderStatusEvent.builder()
+                                .orderId(createOrderEvent.getOrderId())
+                                .orderStatus(OrderStatus.CANCELLED)
+                                .build()
+                );
+                return;
+            } else if (updatedStock == 0) {
+                productVariant.setProductVariantStatus(ProductVariantStatus.OUT_OF_STOCK);
+                // bắn kafka sang chat-service thông báo hết hàng
+            }
+
+            productVariantRepository.save(productVariant);
+
+            productEventProducer.send(
+                    UpdateProductVariantStatusEvent.builder()
+                            .productVariantId(productVariant.getProductVariantId())
+                            .productVariantStatus(productVariant.getProductVariantStatus())
+                            .build()
+            );
+        });
     }
 
     private PageResponse<ResProductDTO> buildPageResponse(Page<Product> productsPage) {

@@ -1,4 +1,4 @@
-package com.ecommerce.order.entity;
+package com.ecommerce.read.entity;
 
 import com.ecommerce.library.entity.BaseEntity;
 import com.ecommerce.library.enumeration.OrderStatus;
@@ -6,9 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -20,7 +18,6 @@ import java.util.UUID;
 public class Order extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "order_id", updatable = false, nullable = false)
     private Long orderId;
 
@@ -43,14 +40,8 @@ public class Order extends BaseEntity {
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<OrderItem> items = new ArrayList<>();
-
-    public void addOrderItem(OrderItem orderItem) {
-        items.add(orderItem);
-        orderItem.setOrder(this);
-    }
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> items;
 
 }
 

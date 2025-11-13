@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OderStatusEvent {
-
+public class UpdateOrderStatusEvent {
     private Long orderId;
     private OrderStatus orderStatus;
 }

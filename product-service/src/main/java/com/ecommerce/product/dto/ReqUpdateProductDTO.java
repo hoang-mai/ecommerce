@@ -2,6 +2,7 @@ package com.ecommerce.product.dto;
 
 import com.ecommerce.library.utils.MessageError;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -22,9 +23,11 @@ public class ReqUpdateProductDTO {
     @Schema(description = "Category ID for the product", example = "1")
     private Long categoryId;
 
+    @Valid
     @Schema(description = "List of product attributes (e.g., Color, Size)")
     private List<ReqUpdateProductAttributeDTO> productAttributes;
 
+    @Valid
     @Schema(description = "List of product variants with pricing and stock")
     private List<ReqUpdateProductVariantDTO> productVariants;
 

@@ -2,6 +2,7 @@ package com.ecommerce.product.dto;
 
 import com.ecommerce.library.utils.MessageError;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -26,10 +27,12 @@ public class ReqCreateProductDTO {
     @Schema(description = "Category ID for the product", example = "1")
     private Long categoryId;
 
+    @Valid
     @NotNull(message = MessageError.PRODUCT_ATTRIBUTES_NOT_NULL)
     @Schema(description = "List of product attributes (e.g., Color, Size)")
     private List<ReqProductAttributeDTO> productAttributes;
 
+    @Valid
     @NotNull(message = MessageError.PRODUCT_VARIANTS_NOT_NULL)
     @Schema(description = "List of product variants with pricing and stock")
     private List<ReqProductVariantDTO> productVariants;
