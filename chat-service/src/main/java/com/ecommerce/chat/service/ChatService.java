@@ -30,34 +30,4 @@ public interface ChatService {
      */
     PageResponse<ResMessageDTO> getChatById(String chatId, int pageNo, int pageSize);
 
-
-    /**
-     * Tạo một tin nhắn nhóm
-     *
-     * @param reqPrivateMessageDTO Thông tin tin nhắn nhóm
-     */
-    void createMessageGroup(ReqPrivateMessageDTO reqPrivateMessageDTO);
-
-    /**
-     * Tạo một cuộc trò chuyện nhóm
-     *
-     * @param reqCreateGroupChatDTO Danh sách ID thành viên nhóm
-     */
-    void createGroupChat(ReqCreateGroupChatDTO reqCreateGroupChatDTO);
-
-    /**
-     * Thêm thành viên vào cuộc trò chuyện nhóm
-     *
-     * @param chatId                ID của cuộc trò chuyện nhóm
-     * @param reqCreateGroupChatDTO Danh sách ID thành viên mới
-     */
-    void addMemberToGroupChat(String chatId, ReqCreateGroupChatDTO reqCreateGroupChatDTO);
-
-    /**
-     * Cập nhật thông tin cuộc trò chuyện
-     *
-     * @param chatId           ID của cuộc trò chuyện
-     * @param reqUpdateChatDTO Thông tin cập nhật cuộc trò chuyện
-     */
-    void updateChat(String chatId, ReqUpdateChatDTO reqUpdateChatDTO);
 }

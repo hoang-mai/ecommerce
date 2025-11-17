@@ -34,13 +34,16 @@ public class Message {
     private String messageContent;
 
     @Field("is_updated")
-    private boolean isUpdated;
+    private Boolean isUpdated;
 
     @Field("is_deleted")
-    private boolean isDeleted;
+    private Boolean isDeleted;
 
-    @Field("chat_member_id")
-    private String chatMemberId;
+    @Field("is_read")
+    private Boolean isRead;
+
+    @Field("user_id")
+    private Long userId;
 
     @Field("chat_id")
     private String chatId;

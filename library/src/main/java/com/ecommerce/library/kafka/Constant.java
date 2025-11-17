@@ -24,8 +24,8 @@ public final class Constant {
     public static final String PRODUCT_SERVICE_GROUP = "product-service-group";
     public static final String CREATE_ORDER_TOPIC = PRODUCT_SERVICE_TOPIC + ".create-order";
 
-    // Chat Service Kafka Topics and Group
-    public static final String CHAT_SERVICE_TOPIC = "chat-service-topic";
-    public static final String ORDER_STATUS_TOPIC = CHAT_SERVICE_TOPIC + ".order-status";
-    public static final String CHAT_SERVICE_GROUP = "chat-service-group";
+    // Notification Service Kafka Topics and Group
+    public static final String NOTIFICATION_SERVICE_TOPIC = "notification-service-topic";
+    public static final String ORDER_STATUS_TOPIC = NOTIFICATION_SERVICE_TOPIC + ".order-status";
+    public static final String NOTIFICATION_SERVICE_GROUP = "notification-service-group";
 }

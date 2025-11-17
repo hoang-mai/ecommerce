@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 public class ResMessageDTO {
     private String messageId;
     private String chatMemberId;
-    private String nickName;
     private MessageType messageType;
     private String content;
     private boolean isDeleted;

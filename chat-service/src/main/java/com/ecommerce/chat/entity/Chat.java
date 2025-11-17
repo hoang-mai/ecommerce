@@ -34,13 +34,5 @@ public class Chat {
     @Field("updated_at")
     private LocalDateTime updatedAt;
 
-    @Field("chat_name")
-    private String chatName;
-
-    @Field("is_group_chat")
-    private boolean isGroupChat;
-
-    @Field("chat_image_url")
-    private String chatImageUrl;
 
 }

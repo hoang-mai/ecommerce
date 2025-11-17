@@ -84,11 +84,5 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
 
     boolean existsByChatId(String chatId);
 
-    @Aggregation(pipeline = {
-            "{ $match: { chat_id: ?0 } }",
-            "{ $lookup: { from: 'chat_members', localField: 'chat_id', foreignField: 'chat_id', as: 'members' } }",
-            "{ $unwind: '$members' }",
-            "{ $project: { userId: '$members.user_id', _id: 0 } }"
-    })
-    Set<Long> getUserIdsByChatId(String chatId);
+
 }
