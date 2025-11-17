@@ -1,6 +1,7 @@
 package com.ecommerce.order.service;
 
 import com.ecommerce.library.enumeration.OrderStatus;
+import com.ecommerce.order.dto.ReqUpdateOrderStatus;
 import com.ecommerce.order.dto.ResCreateOrderDTO;
 
 public interface OrderService {
@@ -13,11 +14,7 @@ public interface OrderService {
     /**
      * Update order status
      */
-    void updateOrderStatus(Long orderId, OrderStatus newStatus);
+    void updateOrderStatus(Long orderId, ReqUpdateOrderStatus reqUpdateOrderStatus);
 
-    /**
-     * Cancel order
-     */
-    void cancelOrder(Long orderId);
 }
 

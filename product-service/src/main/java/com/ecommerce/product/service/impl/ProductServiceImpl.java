@@ -1,11 +1,12 @@
 package com.ecommerce.product.service.impl;
 
+import com.ecommerce.library.component.MessageService;
 import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
-import com.ecommerce.library.kafka.event.order.UpdateOrderStatusEvent;
+import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.kafka.event.product.*;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
@@ -45,6 +46,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductEventProducer productEventProducer;
     private final OrderEventProducer orderEventProducer;
     private final ProductVariantRepository productVariantRepository;
+    private final MessageService messageService;
 
     @Override
     @Transactional
@@ -123,46 +125,6 @@ public class ProductServiceImpl implements ProductService {
                         .productVariantId(product.getProductVariants().stream().map(ProductVariant::getProductVariantId).toList())
                         .build()
         );
-        productEventProducer.send(
-                CreateProductEvent.builder()
-                        .productName(product.getName())
-                        .productId(product.getProductId())
-                        .description(product.getDescription())
-                        .productImages(product.getProductImages().stream()
-                                .map(productImage -> CreateProductImageEvent.builder()
-                                        .productId(product.getProductId())
-                                        .productImageId(productImage.getProductImageId())
-                                        .imageUrl(productImage.getImageUrl())
-                                        .build()
-                                ).toList())
-                        .productAttributes(product.getProductAttributes().stream().map(
-                                productAttribute -> CreateProductAttributeEvent.builder()
-                                        .productId(product.getProductId())
-                                        .productAttributeId(productAttribute.getAttributeId())
-                                        .productAttributeName(productAttribute.getAttributeName())
-                                        .productAttributeValues(productAttribute.getProductAttributeValues().stream().map(attributeValue -> CreateProductAttributeValueEvent.builder()
-                                                .attributeValueId(attributeValue.getAttributeValueId())
-                                                .attributeId(productAttribute.getAttributeId())
-                                                .value(attributeValue.getValue())
-                                                .build()).toList())
-                                        .build()).toList())
-                        .productVariants(product.getProductVariants().stream().map(
-                                productVariant -> CreateProductVariantEvent.builder()
-                                        .productVariantId(productVariant.getProductVariantId())
-                                        .productId(product.getProductId())
-                                        .price(productVariant.getPrice())
-                                        .productVariantStatus(productVariant.getProductVariantStatus())
-                                        .stockQuantity(productVariant.getStockQuantity())
-                                        .isDefault(productVariant.getIsDefault())
-                                        .productVariantAttributeValues(
-                                                productVariant.getProductVariantAttributeValues().stream().map(
-                                                        variantAttrValue -> CreateProductVariantValueEvent.builder()
-                                                                .variantId(productVariant.getProductVariantId())
-                                                                .productVariantValueId(variantAttrValue.getProductVariantAttributeValueId())
-                                                                .attributeValueId(variantAttrValue.getProductAttributeValue().getAttributeValueId())
-                                                                .build()).toList())
-                                        .build()).toList())
-                        .build());
     }
 
     @Override
@@ -319,46 +281,6 @@ public class ProductServiceImpl implements ProductService {
                         .productVariantId(product.getProductVariants().stream().map(ProductVariant::getProductVariantId).toList())
                         .build()
         );
-        productEventProducer.send(
-                CreateProductEvent.builder()
-                        .productName(product.getName())
-                        .productId(product.getProductId())
-                        .description(product.getDescription())
-                        .productImages(product.getProductImages().stream()
-                                .map(productImage -> CreateProductImageEvent.builder()
-                                        .productId(product.getProductId())
-                                        .productImageId(productImage.getProductImageId())
-                                        .imageUrl(productImage.getImageUrl())
-                                        .build()
-                                ).toList())
-                        .productAttributes(product.getProductAttributes().stream().map(
-                                productAttribute -> CreateProductAttributeEvent.builder()
-                                        .productId(product.getProductId())
-                                        .productAttributeId(productAttribute.getAttributeId())
-                                        .productAttributeName(productAttribute.getAttributeName())
-                                        .productAttributeValues(productAttribute.getProductAttributeValues().stream().map(attributeValue -> CreateProductAttributeValueEvent.builder()
-                                                .attributeValueId(attributeValue.getAttributeValueId())
-                                                .attributeId(productAttribute.getAttributeId())
-                                                .value(attributeValue.getValue())
-                                                .build()).toList())
-                                        .build()).toList())
-                        .productVariants(product.getProductVariants().stream().map(
-                                productVariant -> CreateProductVariantEvent.builder()
-                                        .productVariantId(productVariant.getProductVariantId())
-                                        .productId(product.getProductId())
-                                        .price(productVariant.getPrice())
-                                        .stockQuantity(productVariant.getStockQuantity())
-                                        .isDefault(productVariant.getIsDefault())
-                                        .productVariantStatus(productVariant.getProductVariantStatus())
-                                        .productVariantAttributeValues(
-                                                productVariant.getProductVariantAttributeValues().stream().map(
-                                                        variantAttrValue -> CreateProductVariantValueEvent.builder()
-                                                                .variantId(productVariant.getProductVariantId())
-                                                                .productVariantValueId(variantAttrValue.getProductVariantAttributeValueId())
-                                                                .attributeValueId(variantAttrValue.getProductAttributeValue().getAttributeValueId())
-                                                                .build()).toList())
-                                        .build()).toList())
-                        .build());
 
     }
 
@@ -369,12 +291,6 @@ public class ProductServiceImpl implements ProductService {
         productVariant.setProductVariantStatus(request.getProductVariantStatus());
         productVariantRepository.save(productVariant);
 
-        productEventProducer.send(
-                UpdateProductVariantStatusEvent.builder()
-                        .productVariantId(productVariant.getProductVariantId())
-                        .productVariantStatus(productVariant.getProductVariantStatus())
-                        .build()
-        );
     }
 
 
@@ -401,45 +317,44 @@ public class ProductServiceImpl implements ProductService {
         product.setProductStatus(status.getProductStatus());
         productRepository.save(product);
 
-        productEventProducer.send(
-                UpdateProductStatusEvent.builder()
-                        .productId(product.getProductId())
-                        .productStatus(product.getProductStatus())
-                        .build()
-        );
     }
 
+    @Transactional
     @Override
     public void handleCreateOrderEvent(CreateOrderEvent createOrderEvent) {
-        createOrderEvent.getCreateOrderItemEventList().forEach(orderItem -> {
-            ProductVariant productVariant = productVariantRepository.findById(orderItem.getProductVariantId())
+        createOrderEvent.getCreateOrderItemEventList().forEach(orderItem -> orderItem.getCreateProductOrderItemEvents().forEach(productOrderItemEvent -> {
+            ProductVariant productVariant = productVariantRepository.findByIdForUpDate(productOrderItemEvent.getProductVariantId())
                     .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
 
-            int updatedStock = productVariant.getStockQuantity() - orderItem.getQuantity();
-            productVariant.setStockQuantity(updatedStock);
-
-            if(updatedStock < 0) {
+            if (productVariant.getProductVariantStatus() == ProductVariantStatus.INACTIVE) {
                 orderEventProducer.send(
-                        UpdateOrderStatusEvent.builder()
+                        OrderStatusEvent.builder()
                                 .orderId(createOrderEvent.getOrderId())
                                 .orderStatus(OrderStatus.CANCELLED)
+                                .reason(messageService.getMessage(MessageError.PRODUCT_VARIANT_INACTIVE))
+                                .build()
+                );
+                return;
+            }
+
+            int updatedStock = productVariant.getStockQuantity() - productOrderItemEvent.getQuantity();
+            productVariant.setStockQuantity(updatedStock);
+
+            if (updatedStock < 0) {
+                orderEventProducer.send(
+                        OrderStatusEvent.builder()
+                                .orderId(createOrderEvent.getOrderId())
+                                .orderStatus(OrderStatus.CANCELLED)
+                                .reason(messageService.getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK))
                                 .build()
                 );
                 return;
             } else if (updatedStock == 0) {
                 productVariant.setProductVariantStatus(ProductVariantStatus.OUT_OF_STOCK);
-                // bắn kafka sang chat-service thông báo hết hàng
             }
 
             productVariantRepository.save(productVariant);
-
-            productEventProducer.send(
-                    UpdateProductVariantStatusEvent.builder()
-                            .productVariantId(productVariant.getProductVariantId())
-                            .productVariantStatus(productVariant.getProductVariantStatus())
-                            .build()
-            );
-        });
+        }));
     }
 
     private PageResponse<ResProductDTO> buildPageResponse(Page<Product> productsPage) {

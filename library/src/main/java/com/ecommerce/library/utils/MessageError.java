@@ -108,4 +108,10 @@ public final class MessageError {
     public static final String STOCK_QUANTITY_POSITIVE_OR_ZERO = "";
     public static final String ORDER_NOT_FOUND = "";
     public static final String CANNOT_CANCEL_ORDER = "";
+    public static final String ORDER_STATUS_NOT_NULL = "";
+    public static final String INVALID_ORDER_STATUS_TRANSITION = "";
+    public static final String UNSUPPORTED_ORDER_STATUS = "";
+    public static final String PRODUCT_VARIANT_INACTIVE = "";
+    public static final String INSUFFICIENT_PRODUCT_VARIANT_STOCK = "";
+    public static final String PRODUCT_ORDER_ITEMS_NOT_NULL = "";
 }

@@ -7,8 +7,10 @@ import com.ecommerce.order.dto.ReqAddToCartDTO;
 import com.ecommerce.order.dto.ReqUpdateCartItemDTO;
 import com.ecommerce.order.entity.Cart;
 import com.ecommerce.order.entity.CartItem;
+import com.ecommerce.order.entity.ProductCartItem;
 import com.ecommerce.order.repository.CartItemRepository;
 import com.ecommerce.order.repository.CartRepository;
+import com.ecommerce.order.repository.ProductCartItemRepository;
 import com.ecommerce.order.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ public class CartServiceImpl implements CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final UserHelper userHelper;
-
+    private final ProductCartItemRepository productCartItemRepository;
 
     @Override
     public void addToCart(ReqAddToCartDTO request) {
@@ -35,22 +37,37 @@ public class CartServiceImpl implements CartService {
 
         // Check if item already exists in cart
         CartItem existingItem = cart.getCartItems().stream()
-                .filter(item -> item.getProductVariantId().equals(request.getProductVariantId()))
+                .filter(item -> item.getProductId().equals(request.getProductId()))
                 .findFirst()
                 .orElse(null);
 
         if (existingItem != null) {
             // Update quantity if item exists
-            existingItem.setQuantity(existingItem.getQuantity() + request.getQuantity());
+            ProductCartItem productCartItem = existingItem.getProductCartItems().stream()
+                    .filter(pci -> pci.getProductVariantId().equals(request.getProductVariantId()))
+                    .findFirst()
+                    .orElse(null);
+            if (productCartItem != null) {
+                productCartItem.setQuantity(productCartItem.getQuantity() + request.getQuantity());
+            } else {
+                ProductCartItem newProductCartItem = ProductCartItem.builder()
+                        .productVariantId(request.getProductVariantId())
+                        .quantity(request.getQuantity())
+                        .build();
+                existingItem.addProductCartItem(newProductCartItem);
+            }
             cartItemRepository.save(existingItem);
         } else {
             CartItem newItem = CartItem.builder()
                     .cart(cart)
                     .productId(request.getProductId())
+                    .build();
+
+            ProductCartItem productCartItem = ProductCartItem.builder()
                     .productVariantId(request.getProductVariantId())
                     .quantity(request.getQuantity())
                     .build();
-
+            newItem.addProductCartItem(productCartItem);
             cart.addCartItem(newItem);
         }
         cartRepository.save(cart);
@@ -58,11 +75,11 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void updateCartItem( Long cartItemId, ReqUpdateCartItemDTO request) {
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
+    public void updateCartItem( Long productCartItemId, ReqUpdateCartItemDTO request) {
+        ProductCartItem productCartItem = productCartItemRepository.findById(productCartItemId)
                 .orElseThrow(() -> new NotFoundException(MessageError.CART_ITEM_NOT_FOUND));
-        cartItem.setQuantity(request.getQuantity());
-        cartItemRepository.save(cartItem);
+        productCartItem.setQuantity(request.getQuantity());
+        productCartItemRepository.save(productCartItem);
     }
 
     @Override

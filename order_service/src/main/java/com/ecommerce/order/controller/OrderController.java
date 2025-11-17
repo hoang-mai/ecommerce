@@ -5,6 +5,7 @@ import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
+import com.ecommerce.order.dto.ReqUpdateOrderStatus;
 import com.ecommerce.order.dto.ResCreateOrderDTO;
 import com.ecommerce.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,31 +48,13 @@ public class OrderController {
     @Operation(summary = "Update order status", description = "Update the status of an order")
     public ResponseEntity<BaseResponse<Void>> updateOrderStatus(
             @PathVariable Long orderId,
-            @RequestParam OrderStatus status) {
+            @RequestBody @Valid ReqUpdateOrderStatus reqUpdateOrderStatus) {
 
-        orderService.updateOrderStatus(orderId, status);
+        orderService.updateOrderStatus(orderId, reqUpdateOrderStatus);
 
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(MessageSuccess.UPDATE_ORDER_STATUS_SUCCESS)
-
-                .build());
-    }
-
-    /**
-     * Cancel order
-     */
-    @PostMapping("/{orderId}/cancel")
-    @Operation(summary = "Cancel order", description = "Cancel an order")
-    public ResponseEntity<BaseResponse<Void>> cancelOrder(
-
-            @PathVariable Long orderId) {
-
-        orderService.cancelOrder(orderId);
-
-        return ResponseEntity.ok(BaseResponse.<Void>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message(MessageSuccess.CANCEL_ORDER_SUCCESS)
 
                 .build());
     }

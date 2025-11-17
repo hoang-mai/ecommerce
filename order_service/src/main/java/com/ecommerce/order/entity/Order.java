@@ -31,6 +31,9 @@ public class Order extends BaseEntity {
     @Column(name = "status", nullable = false)
     private OrderStatus orderStatus;
 
+    @Column(name = "reason")
+    private String reason;
+
     @Column(name = "total_price", precision = 15, scale = 2, nullable = false)
     private BigDecimal totalPrice;
 

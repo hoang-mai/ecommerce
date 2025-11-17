@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "cart_items")
@@ -27,11 +28,13 @@ public class CartItem extends BaseEntity {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(name = "product_variant_id", nullable = false)
-    private Long productVariantId;
+    @OneToMany(mappedBy = "cartItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductCartItem> productCartItems;
 
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    public void addProductCartItem(ProductCartItem productCartItem) {
+        productCartItems.add(productCartItem);
+        productCartItem.setCartItem(this);
+    }
 
 }
 

@@ -1,7 +1,7 @@
 package com.ecommerce.chat.service.impl;
 
 import com.ecommerce.chat.service.OrderStatusService;
-import com.ecommerce.library.kafka.event.order.OderStatusEvent;
+import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -14,11 +14,11 @@ public class OrderStatusServiceImpl implements OrderStatusService {
 
 
     @Override
-    public void sendOrderStatusMessage(OderStatusEvent oderStatusEvent) {
+    public void sendOrderStatusMessage(OrderStatusEvent orderStatusEvent) {
         simpMessagingTemplate.convertAndSendToUser(
-                oderStatusEvent.getUserId().toString(),
+                orderStatusEvent.getUserId().toString(),
                 "/queue/order-status",
-                oderStatusEvent
+                orderStatusEvent
         );
     }
 }

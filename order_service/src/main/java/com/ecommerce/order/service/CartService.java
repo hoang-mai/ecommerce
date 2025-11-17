@@ -14,7 +14,7 @@ public interface CartService {
     /**
      * Update cart item quantity
      */
-    void updateCartItem(Long cartItemId, ReqUpdateCartItemDTO request);
+    void updateCartItem(Long productCartItemId, ReqUpdateCartItemDTO request);
 
     /**
      * Remove item from cart

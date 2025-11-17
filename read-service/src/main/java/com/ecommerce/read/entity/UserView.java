@@ -1,49 +1,59 @@
 package com.ecommerce.read.entity;
 
-import com.ecommerce.library.entity.BaseEntity;
 import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Table(name = "user_views")
-@Entity
+import java.time.LocalDateTime;
+
+@Document("user_views")
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserView extends BaseEntity {
+public class UserView {
     @Id
-    @Column(name = "user_id")
+    @Field(name = "user_id")
     private Long userId;
 
-    @Column(name = "username", unique = true)
+    @Field(name = "username")
     private String username;
 
-    @Column(name = "email", unique = true)
+    @Field(name = "email")
     private String email;
 
-    @Column(name = "account_status")
-    @Enumerated(EnumType.STRING)
+    @Field(name = "account_status")
     private AccountStatus accountStatus;
 
-    @Column(name = "avatar_url")
+    @Field(name = "avatar_url")
     private String avatarUrl;
 
-    @Column(name = "first_name")
+    @Field(name = "first_name")
     private String firstName;
 
-    @Column(name = "middle_name")
+    @Field(name = "middle_name")
     private String middleName;
 
-    @Column(name = "last_name")
+    @Field(name = "last_name")
     private String lastName;
 
-    @Column(name = "phone_number")
+    @Field(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "role")
-    @Enumerated(EnumType.STRING)
+    @Field(name = "role")
     private Role role;
+
+    @CreatedDate
+    @Field(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Field(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

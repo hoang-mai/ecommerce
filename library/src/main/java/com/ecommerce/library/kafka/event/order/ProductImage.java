@@ -1,6 +1,5 @@
 package com.ecommerce.library.kafka.event.order;
 
-import com.ecommerce.library.enumeration.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OderStatusEvent {
-
-    private Long orderId;
-    private OrderStatus orderStatus;
+public class ProductImage {
+    private Long productImageId;
+    private String imageUrl;
 }

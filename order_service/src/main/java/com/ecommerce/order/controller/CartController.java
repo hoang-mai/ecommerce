@@ -42,12 +42,12 @@ public class CartController {
     /**
      * Update cart item quantity
      */
-    @PatchMapping("/{cartItemId}")
+    @PatchMapping("/{productCartItemId}")
     @Operation(summary = "Update cart item", description = "Update cart item quantity")
     public ResponseEntity<BaseResponse<Void>> updateCartItem(
-            @PathVariable Long cartItemId,
+            @PathVariable Long productCartItemId,
             @Valid @RequestBody ReqUpdateCartItemDTO request) {
-        cartService.updateCartItem(cartItemId, request);
+        cartService.updateCartItem(productCartItemId, request);
 
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())

@@ -3,6 +3,8 @@ package com.ecommerce.order.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "order_items")
@@ -25,14 +27,16 @@ public class OrderItem {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(name = "product_variant_id", nullable = false)
-    private Long productVariantId;
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ProductOrderItem> productOrderItems = new ArrayList<>();
 
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    public void addProductOrderItem(ProductOrderItem productOrderItem) {
+        productOrderItems.add(productOrderItem);
+        productOrderItem.setOrderItem(this);
+    }
 
-    @Column(name = "price", precision = 15, scale = 2, nullable = false)
-    private BigDecimal price;
+
 }
 
 
