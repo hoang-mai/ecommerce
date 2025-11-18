@@ -12,6 +12,8 @@ public final class MessageSuccess {
     public static final String UPDATE_ACCOUNT_SUCCESS = "update.account.success";
     public static final String GET_LIST_CHAT_PREVIEW_SUCCESS = "get.list.chat.preview.success";
     public static final String GET_CHAT_SUCCESS = "get.chat.success";
+    public static final String MARK_AS_READ_SUCCESS = "mark.as.read.success";
+    public static final String GET_UNREAD_COUNT_SUCCESS = "get.unread.count.success";
     public static final String UPDATE_MESSAGE_SUCCESS = "update.message.success";
     public static final String CREATE_GROUP_CHAT_SUCCESS = "create.group.chat.success";
     public static final String ADD_MEMBER_TO_GROUP_CHAT_SUCCESS = "add.member.to.group.chat.success";
@@ -68,4 +70,13 @@ public final class MessageSuccess {
     public static final String ORDER_CREATED_SUCCESS = "";
     public static final String UPDATE_ORDER_STATUS_SUCCESS = "";
     public static final String CANCEL_ORDER_SUCCESS = "";
+    public static final String GET_ORDER_SUCCESS = "";
+    public static final String ORDER_CANCELLED_TITLE = "";
+    public static final String ORDER_SUCCESS_TITLE = "";
+    public static final String ORDER_CANCELLED_MESSAGE = "";
+    public static final String ORDER_SUCCESS_MESSAGE = "";
+    public static final String GET_NOTIFICATIONS_SUCCESS = "";
+    public static final String UPDATE_NOTIFICATION_SUCCESS = "";
+    public static final String PUSH_SUBSCRIPTION_SUCCESS = "";
+    public static final String PUSH_UNSUBSCRIPTION_SUCCESS = "";
 }

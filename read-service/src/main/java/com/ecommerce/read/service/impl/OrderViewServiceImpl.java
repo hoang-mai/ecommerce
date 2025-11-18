@@ -5,10 +5,15 @@ import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.utils.MessageError;
+import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.OrderView;
 import com.ecommerce.read.repository.OrderViewRepository;
 import com.ecommerce.read.service.OrderViewService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,7 +25,7 @@ public class OrderViewServiceImpl implements OrderViewService {
     @Override
     public void createOrderView(CreateOrderEvent createOrderViewEvent) {
         orderViewRepository.save(OrderView.builder()
-                .orderId(createOrderViewEvent.getOrderId())
+                .orderId(String.valueOf(createOrderViewEvent.getOrderId()))
                 .userId(createOrderViewEvent.getUserId())
                 .orderStatus(createOrderViewEvent.getOrderStatus())
                 .totalPrice(createOrderViewEvent.getTotalPrice())
@@ -31,7 +36,7 @@ public class OrderViewServiceImpl implements OrderViewService {
                                         .orderItemId(orderItemEvent.getOrderItemId())
                                         .productId(orderItemEvent.getProductId())
                                         .productName(orderItemEvent.getProductName())
-                                        .productImageList(orderItemEvent.getProductImageList().stream().map(
+                                        .productImageList(orderItemEvent.getCreateProductImageList().stream().map(
                                                 imageEvent -> OrderView.ProductImage.builder()
                                                         .imageUrl(imageEvent.getImageUrl())
                                                         .build()).toList())
@@ -40,7 +45,7 @@ public class OrderViewServiceImpl implements OrderViewService {
                                                         .productVariantId(productVariantEvent.getProductVariantId())
                                                         .quantity(productVariantEvent.getQuantity())
                                                         .price(productVariantEvent.getPrice())
-                                                        .productAttributes(productVariantEvent.getProductAttributeList().stream().map(
+                                                        .productAttributes(productVariantEvent.getCreateProductAttributeList().stream().map(
                                                                 attributeEvent -> OrderView.ProductAttribute.builder()
                                                                         .attributeName(attributeEvent.getAttributeName())
                                                                         .attributeValue(attributeEvent.getAttributeValue())
@@ -59,5 +64,23 @@ public class OrderViewServiceImpl implements OrderViewService {
             orderView.setReason(orderStatusEvent.getReason());
         }
         orderViewRepository.save(orderView);
+    }
+
+    @Override
+    public PageResponse<OrderView> getOrderViews(OrderStatus orderStatus, String keyword, int pageNo, int pageSize, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        Page<OrderView> orderViewPage = orderViewRepository.getOrderView(orderStatus, keyword, pageable);
+
+        return PageResponse.<OrderView>builder()
+                .data(orderViewPage.getContent())
+                .pageNo(orderViewPage.getNumber())
+                .pageSize(orderViewPage.getSize())
+                .totalElements(orderViewPage.getTotalElements())
+                .totalPages(orderViewPage.getTotalPages())
+                .build();
     }
 }

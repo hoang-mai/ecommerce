@@ -114,4 +114,6 @@ public final class MessageError {
     public static final String PRODUCT_VARIANT_INACTIVE = "";
     public static final String INSUFFICIENT_PRODUCT_VARIANT_STOCK = "";
     public static final String PRODUCT_ORDER_ITEMS_NOT_NULL = "";
+    public static final String NOTIFICATION_NOT_FOUND = "";
+    public static final String USER_CHAT_NOT_FOUND = "";
 }

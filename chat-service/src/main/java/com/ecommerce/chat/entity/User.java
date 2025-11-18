@@ -19,7 +19,7 @@ public class User {
 
     @Id
     @Field("user_id")
-    private Long userId;
+    private String userId;
 
     @Field("avatar_url")
     private String avatarUrl;

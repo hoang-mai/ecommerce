@@ -39,11 +39,8 @@ public class Message {
     @Field("is_deleted")
     private Boolean isDeleted;
 
-    @Field("is_read")
-    private Boolean isRead;
-
-    @Field("user_id")
-    private Long userId;
+    @Field("user_chat_id")
+    private String userChatId;
 
     @Field("chat_id")
     private String chatId;

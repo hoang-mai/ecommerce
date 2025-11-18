@@ -22,10 +22,10 @@ public class MessageChatServiceImpl implements MessageChatService {
                 .orElseThrow(() -> new NotFoundException(MessageError.MESSAGE_NOT_FOUND));
         if (FnCommon.isNotNull(reqUpdateMessageDTO.getContent())) {
             message.setMessageContent(reqUpdateMessageDTO.getContent());
-            message.setUpdated(true);
+            message.setIsUpdated(true);
         }
         if (FnCommon.isNotNull(reqUpdateMessageDTO.getIsDeleted())) {
-            message.setDeleted(reqUpdateMessageDTO.getIsDeleted());
+            message.setIsDeleted(reqUpdateMessageDTO.getIsDeleted());
         }
         messageRepository.save(message);
     }

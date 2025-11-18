@@ -5,8 +5,7 @@ import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.exception.NotFoundException;
-import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
-import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
+import com.ecommerce.library.kafka.event.order.*;
 import com.ecommerce.library.kafka.event.product.*;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
@@ -322,39 +321,76 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public void handleCreateOrderEvent(CreateOrderEvent createOrderEvent) {
-        createOrderEvent.getCreateOrderItemEventList().forEach(orderItem -> orderItem.getCreateProductOrderItemEvents().forEach(productOrderItemEvent -> {
-            ProductVariant productVariant = productVariantRepository.findByIdForUpDate(productOrderItemEvent.getProductVariantId())
-                    .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
+        createOrderEvent.getCreateOrderItemEventList().forEach(orderItem -> {
+            Product product = productRepository.findById(orderItem.getProductId())
+                    .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+            orderItem.setProductName(product.getName());
+            orderItem.setCreateProductImageList(
+                    product.getProductImages().stream()
+                            .map(productImage -> CreateProductImage.builder()
+                                    .imageUrl(productImage.getImageUrl())
+                                    .build())
+                            .collect(Collectors.toList())
+            );
+            orderItem.getCreateProductOrderItemEvents().forEach(productOrderItemEvent -> {
 
-            if (productVariant.getProductVariantStatus() == ProductVariantStatus.INACTIVE) {
+                ProductVariant productVariant = productVariantRepository.findByIdForUpDate(productOrderItemEvent.getProductVariantId())
+                        .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
+                productOrderItemEvent.setCreateProductAttributeList(
+                        productVariant.getProductVariantAttributeValues().stream()
+                                .map(variantAttrValue -> CreateProductAttribute.builder()
+                                        .attributeName(variantAttrValue.getProductAttributeValue().getProductAttribute().getAttributeName())
+                                        .attributeValue(variantAttrValue.getProductAttributeValue().getValue())
+                                        .build())
+                                .collect(Collectors.toList())
+                );
+
+                if (productVariant.getProductVariantStatus() == ProductVariantStatus.INACTIVE) {
+                    orderEventProducer.send(
+                            OrderStatusEvent.builder()
+                                    .userId(createOrderEvent.getUserId())
+                                    .orderId(createOrderEvent.getOrderId())
+                                    .orderStatus(OrderStatus.CANCELLED)
+                                    .reason(messageService.getMessage(MessageError.PRODUCT_VARIANT_INACTIVE))
+                                    .build()
+                    );
+                    createOrderEvent.setOrderStatus(OrderStatus.CANCELLED);
+                    createOrderEvent.setReason(messageService.getMessage(MessageError.PRODUCT_VARIANT_INACTIVE));
+                    orderEventProducer.send(createOrderEvent);
+                    return;
+                }
+
+                int updatedStock = productVariant.getStockQuantity() - productOrderItemEvent.getQuantity();
+                productVariant.setStockQuantity(updatedStock);
+
+                if (updatedStock < 0) {
+                    orderEventProducer.send(
+                            OrderStatusEvent.builder()
+                                    .userId(createOrderEvent.getUserId())
+                                    .orderId(createOrderEvent.getOrderId())
+                                    .orderStatus(OrderStatus.CANCELLED)
+                                    .reason(messageService.getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK))
+                                    .build()
+                    );
+                    createOrderEvent.setOrderStatus(OrderStatus.CANCELLED);
+                    createOrderEvent.setReason(messageService.getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK));
+                    orderEventProducer.send(createOrderEvent);
+                    return;
+                } else if (updatedStock == 0) {
+                    productVariant.setProductVariantStatus(ProductVariantStatus.OUT_OF_STOCK);
+                }
+                orderEventProducer.send(createOrderEvent);
                 orderEventProducer.send(
                         OrderStatusEvent.builder()
+                                .userId(createOrderEvent.getUserId())
                                 .orderId(createOrderEvent.getOrderId())
-                                .orderStatus(OrderStatus.CANCELLED)
-                                .reason(messageService.getMessage(MessageError.PRODUCT_VARIANT_INACTIVE))
+                                .orderStatus(OrderStatus.PAID)
                                 .build()
                 );
-                return;
-            }
+                productVariantRepository.save(productVariant);
+            });
 
-            int updatedStock = productVariant.getStockQuantity() - productOrderItemEvent.getQuantity();
-            productVariant.setStockQuantity(updatedStock);
-
-            if (updatedStock < 0) {
-                orderEventProducer.send(
-                        OrderStatusEvent.builder()
-                                .orderId(createOrderEvent.getOrderId())
-                                .orderStatus(OrderStatus.CANCELLED)
-                                .reason(messageService.getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK))
-                                .build()
-                );
-                return;
-            } else if (updatedStock == 0) {
-                productVariant.setProductVariantStatus(ProductVariantStatus.OUT_OF_STOCK);
-            }
-
-            productVariantRepository.save(productVariant);
-        }));
+        });
     }
 
     private PageResponse<ResProductDTO> buildPageResponse(Page<Product> productsPage) {

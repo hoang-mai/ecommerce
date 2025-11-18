@@ -6,7 +6,7 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductAttribute {
+public class CreateProductAttribute {
     private String attributeName;
     private String attributeValue;
 }

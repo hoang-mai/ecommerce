@@ -21,7 +21,7 @@ public class OrderView {
 
     @Id
     @Field(name = "order_id")
-    private Long orderId;
+    private String orderId;
 
     @Field(name = "user_id")
     private Long userId;

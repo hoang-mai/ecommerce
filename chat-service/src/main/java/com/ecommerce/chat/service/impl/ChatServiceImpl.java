@@ -1,36 +1,25 @@
 package com.ecommerce.chat.service.impl;
 
 import com.ecommerce.chat.dto.*;
+import com.ecommerce.chat.dto.*;
 import com.ecommerce.chat.entity.Chat;
 import com.ecommerce.chat.entity.Message;
-import com.ecommerce.chat.entity.User;
+import com.ecommerce.chat.entity.UserChat;
 import com.ecommerce.chat.repository.ChatRepository;
 import com.ecommerce.chat.repository.MessageRepository;
-import com.ecommerce.chat.repository.UserRepository;
+import com.ecommerce.chat.repository.UserChatRepository;
 import com.ecommerce.chat.service.ChatService;
 import com.ecommerce.library.component.UserHelper;
-import com.ecommerce.library.exception.HttpRequestException;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.user.UserServiceGrpc;
-import com.ecommerce.utils.base_response.BaseResponse;
-import com.google.protobuf.InvalidProtocolBufferException;
-import io.grpc.Metadata;
-import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
-import org.springframework.grpc.client.interceptor.security.BearerTokenAuthenticationInterceptor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -38,37 +27,60 @@ public class ChatServiceImpl implements ChatService {
 
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
-    private final UserRepository userRepository;
+    private final UserChatRepository userChatRepository;
     private final UserHelper userHelper;
 
     @Transactional
     @Override
     public void createMessagePrivate(ReqPrivateMessageDTO reqPrivateMessageDTO) {
         Long senderId = userHelper.getCurrentUserId();
+        Long receiverId = reqPrivateMessageDTO.getReceiverId();
 
         if (FnCommon.isNotNullOrEmpty(reqPrivateMessageDTO.getChatId())) {
-            Chat chat = Chat.builder()
-                    .build();
-            chatRepository.save(chat);
-
-            Message message = Message.builder()
-                    .messageType(reqPrivateMessageDTO.getMessageType())
-                    .messageContent(reqPrivateMessageDTO.getMessageContent())
-                    .userId(senderId)
-                    .chatId(chat.getChatId())
-                    .isDeleted(false)
-                    .isUpdated(false)
-                    .build();
-            messageRepository.save(message);
-        } else {
-            if (chatRepository.existsByChatId(reqPrivateMessageDTO.getChatId())) {
+            if (!chatRepository.existsById(reqPrivateMessageDTO.getChatId())) {
                 throw new NotFoundException(MessageError.CHAT_NOT_FOUND);
             }
+            UserChat userChat = userChatRepository.findUserChatByChatIdAndUserId(reqPrivateMessageDTO.getChatId(), String.valueOf(senderId))
+                    .orElseThrow(() -> new NotFoundException(MessageError.USER_CHAT_NOT_FOUND));
             Message message = Message.builder()
                     .chatId(reqPrivateMessageDTO.getChatId())
                     .messageType(reqPrivateMessageDTO.getMessageType())
                     .messageContent(reqPrivateMessageDTO.getMessageContent())
-                    .userId(senderId)
+                    .userChatId(userChat.getUserChatId())
+                    .isDeleted(false)
+                    .isUpdated(false)
+                    .build();
+            UserChat receiverUserChat = userChatRepository.findUserChatByChatIdAndUserIdNot(
+                    reqPrivateMessageDTO.getChatId(),
+                    String.valueOf(senderId)
+            ).orElseThrow(() -> new NotFoundException(MessageError.USER_CHAT_NOT_FOUND));
+            receiverUserChat.setIsRead(false);
+            userChatRepository.save(receiverUserChat);
+            messageRepository.save(message);
+
+        } else {
+            Chat chat = Chat.builder().build();
+            chatRepository.save(chat);
+
+            UserChat sender = UserChat.builder()
+                    .chatId(chat.getChatId())
+                    .userId(String.valueOf(senderId))
+                    .isRead(true)
+                    .build();
+
+
+            UserChat receiver = UserChat.builder()
+                    .chatId(chat.getChatId())
+                    .userId(String.valueOf(receiverId))
+                    .isRead(false)
+                    .build();
+            userChatRepository.saveAll(List.of(sender, receiver));
+
+            Message message = Message.builder()
+                    .messageType(reqPrivateMessageDTO.getMessageType())
+                    .messageContent(reqPrivateMessageDTO.getMessageContent())
+                    .userChatId(sender.getUserChatId())
+                    .chatId(chat.getChatId())
                     .isDeleted(false)
                     .isUpdated(false)
                     .build();
@@ -78,13 +90,10 @@ public class ChatServiceImpl implements ChatService {
 
 
     @Override
-    public PageResponse<ResChatPreviewDTO> getListChatPreview(Long userId, int pageNo, int pageSize) {
+    public PageResponse<ResChatPreviewDTO> getListChatPreview(int pageNo, int pageSize) {
         Long currentUserId = userHelper.getCurrentUserId();
-        if (!Objects.equals(currentUserId, userId)) {
-            throw new NotFoundException(MessageError.USER_NOT_FOUND);
-        }
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Slice<ResChatPreviewDTO> resChatPreviewDTOS = chatRepository.findByUserId(userId, pageable);
+        Slice<ResChatPreviewDTO> resChatPreviewDTOS = chatRepository.findByUserId(currentUserId, pageable);
         return PageResponse.<ResChatPreviewDTO>builder()
                 .pageNo(resChatPreviewDTOS.getNumber())
                 .pageSize(resChatPreviewDTOS.getSize())

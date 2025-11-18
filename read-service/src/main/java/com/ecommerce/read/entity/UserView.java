@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class UserView {
     @Id
     @Field(name = "user_id")
-    private Long userId;
+    private String userId;
 
     @Field(name = "username")
     private String username;

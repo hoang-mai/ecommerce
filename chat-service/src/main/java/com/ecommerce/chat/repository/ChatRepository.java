@@ -82,7 +82,6 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
     })
     Slice<ResChatPreviewDTO> findByUserId(Long userId, Pageable pageable);
 
-    boolean existsByChatId(String chatId);
 
 
 }

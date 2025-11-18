@@ -1,6 +1,6 @@
 package com.ecommerce.notification.config;
 
-import com.ecommerce.chat.config.WebSocketInterceptor;
+import com.ecommerce.notification.config.WebSocketInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;

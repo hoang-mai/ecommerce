@@ -7,6 +7,7 @@ import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderItemEvent;
 import com.ecommerce.library.kafka.event.order.CreateProductOrderItemEvent;
+import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.order.dto.ReqUpdateOrderStatus;
 import com.ecommerce.order.dto.ResCreateOrderDTO;
@@ -67,6 +68,11 @@ public class OrderServiceImpl implements OrderService {
         orderEventProducer.send(
                 CreateOrderEvent.builder()
                         .orderId(order.getOrderId())
+                        .userId(userId)
+                        .orderStatus(order.getOrderStatus())
+                        .totalPrice(order.getTotalPrice())
+                        .address(order.getAddress())
+                        .phoneNumber(order.getPhoneNumber())
                         .createOrderItemEventList(order.getItems().stream()
                                 .map(item -> CreateOrderItemEvent.builder()
                                         .orderItemId(item.getOrderItemId())
@@ -101,7 +107,24 @@ public class OrderServiceImpl implements OrderService {
 
         orderRepository.save(order);
 
+        orderEventProducer.send(
+                OrderStatusEvent.builder()
+                        .orderId(order.getOrderId())
+                        .orderStatus(order.getOrderStatus())
+                        .reason(order.getReason())
+                        .build()
+        );
+    }
 
+    @Override
+    public void updateOrderStatus( OrderStatusEvent orderStatusEvent) {
+        Order order = orderRepository.findById(orderStatusEvent.getOrderId())
+                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+        order.setOrderStatus(orderStatusEvent.getOrderStatus());
+        if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
+            order.setReason(orderStatusEvent.getReason());
+        }
+        orderRepository.save(order);
     }
 
     private static final Map<OrderStatus, Set<OrderStatus>> transitions = Map.of(

@@ -9,7 +9,6 @@ import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -28,7 +27,7 @@ public class ChatController {
     public void sendPrivateMessage(@Payload ReqPrivateMessageDTO reqPrivateMessageDTO) {
         chatService.createMessagePrivate(reqPrivateMessageDTO);
         simpMessagingTemplate.convertAndSendToUser(
-                reqPrivateMessageDTO.getReceiverId().toString(),
+                String.valueOf(reqPrivateMessageDTO.getReceiverId()),
                 "/queue/messages",
                 reqPrivateMessageDTO
         );
@@ -36,10 +35,9 @@ public class ChatController {
 
     @GetMapping("/list")
     public ResponseEntity<BaseResponse<PageResponse<ResChatPreviewDTO>>> getListChatPreview(
-            @RequestHeader("user-id") Long userId,
             @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
-        PageResponse<ResChatPreviewDTO> chatPreviews = chatService.getListChatPreview(userId, pageNo, pageSize);
+        PageResponse<ResChatPreviewDTO> chatPreviews = chatService.getListChatPreview(pageNo, pageSize);
         return ResponseEntity.ok(BaseResponse.<PageResponse<ResChatPreviewDTO>>builder()
                 .statusCode(200)
                 .message(messageService.getMessage(MessageSuccess.GET_LIST_CHAT_PREVIEW_SUCCESS))

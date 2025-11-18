@@ -15,10 +15,11 @@ public interface ChatService {
     /**
      * Lấy danh sách các cuộc trò chuyện của người dùng
      *
-     * @param userId ID của người dùng
+     * @param pageNo   Số trang
+     * @param pageSize Kích thước trang
      * @return Danh sách các cuộc trò chuyện
      */
-    PageResponse<ResChatPreviewDTO> getListChatPreview(Long userId, int pageNo, int pageSize);
+    PageResponse<ResChatPreviewDTO> getListChatPreview(int pageNo, int pageSize);
 
     /**
      * Lấy thông tin cuộc trò chuyện theo ID

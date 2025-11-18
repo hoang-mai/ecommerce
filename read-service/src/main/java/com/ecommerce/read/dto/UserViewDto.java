@@ -2,11 +2,9 @@ package com.ecommerce.read.dto;
 
 import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**

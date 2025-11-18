@@ -1,6 +1,7 @@
 package com.ecommerce.order.service;
 
 import com.ecommerce.library.enumeration.OrderStatus;
+import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.order.dto.ReqUpdateOrderStatus;
 import com.ecommerce.order.dto.ResCreateOrderDTO;
 
@@ -15,6 +16,11 @@ public interface OrderService {
      * Update order status
      */
     void updateOrderStatus(Long orderId, ReqUpdateOrderStatus reqUpdateOrderStatus);
+
+    /**
+     * Update order status
+     */
+    void updateOrderStatus(OrderStatusEvent orderStatusEvent);
 
 }
 

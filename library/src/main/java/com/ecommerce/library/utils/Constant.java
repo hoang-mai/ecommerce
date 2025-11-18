@@ -28,6 +28,9 @@ public final class Constant {
     public static final String PRODUCT = REQUEST_MAPPING + "/product";
     public static final String SAGA = REQUEST_MAPPING + "/saga";
     public static final String USER_VIEW = REQUEST_MAPPING + "/user-view";
+    public static final String ORDER_VIEW = REQUEST_MAPPING + "/order-view";
     public static final String CART = REQUEST_MAPPING + "/cart";
     public static final String ORDER = REQUEST_MAPPING + "/order";
+    public static final String NOTIFICATION = REQUEST_MAPPING + "/notification";
+    public static final String USER_CHAT = REQUEST_MAPPING + "/user-chat";
 }
