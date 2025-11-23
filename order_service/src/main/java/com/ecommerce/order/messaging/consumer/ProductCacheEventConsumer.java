@@ -15,7 +15,7 @@ public class ProductCacheEventConsumer {
     private final ProductCacheService productCacheService ;
 
     @KafkaListener(topics = CREATE_PRODUCT_CACHE_TOPIC, groupId = ORDER_SERVICE_GROUP)
-    public void listenCreateUser(CreateProductCacheEvent createProductCacheEvent) {
+    public void listenCreateCreateProductCache(CreateProductCacheEvent createProductCacheEvent) {
         productCacheService.createProductCache(createProductCacheEvent);
     }
 

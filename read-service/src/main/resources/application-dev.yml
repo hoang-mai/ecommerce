@@ -12,22 +12,15 @@ spring:
         key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
         value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
         properties:
-          spring.json.trusted.packages: "com.ecommerce.library.kafka.event"
+          spring.json.trusted.packages: "com.ecommerce.library.kafka.event.*"
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8081/auth/realms/ecommerce
-  datasource:
-    url: jdbc:mysql://localhost:3306/read_service
-    username: read_service
-    password: read_service
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  data:
+    mongodb:
+        uri: mongodb://read-service:read-service@localhost:27017/read-service
 minio:
   url: http://localhost:9000
   access-key: root

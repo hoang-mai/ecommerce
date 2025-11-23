@@ -132,7 +132,7 @@ public final class FnCommon {
             case MALE -> Gender.MALE;
             case FEMALE -> Gender.FEMALE;
             case OTHER -> Gender.OTHER;
-            default -> throw new IllegalArgumentException(MessageError.INVALID_GENDER);
+            default -> null;
         };
     }
 

@@ -26,41 +26,42 @@ public class OrderViewServiceImpl implements OrderViewService {
     public void createOrderView(CreateOrderEvent createOrderViewEvent) {
         orderViewRepository.save(OrderView.builder()
                 .orderId(String.valueOf(createOrderViewEvent.getOrderId()))
-                .userId(createOrderViewEvent.getUserId())
+                .userId(String.valueOf(createOrderViewEvent.getUserId()))
                 .orderStatus(createOrderViewEvent.getOrderStatus())
                 .totalPrice(createOrderViewEvent.getTotalPrice())
+                .receiverName(createOrderViewEvent.getReceiverName())
                 .address(createOrderViewEvent.getAddress())
                 .phoneNumber(createOrderViewEvent.getPhoneNumber())
                 .orderItems(createOrderViewEvent.getCreateOrderItemEventList().stream().map(
-                                orderItemEvent -> OrderView.OrderItem.builder()
-                                        .orderItemId(orderItemEvent.getOrderItemId())
-                                        .productId(orderItemEvent.getProductId())
-                                        .productName(orderItemEvent.getProductName())
-                                        .productImageList(orderItemEvent.getCreateProductImageList().stream().map(
-                                                imageEvent -> OrderView.ProductImage.builder()
-                                                        .imageUrl(imageEvent.getImageUrl())
-                                                        .build()).toList())
-                                        .productVariants(orderItemEvent.getCreateProductOrderItemEvents().stream().map(
-                                                productVariantEvent -> OrderView.ProductVariant.builder()
-                                                        .productVariantId(productVariantEvent.getProductVariantId())
-                                                        .quantity(productVariantEvent.getQuantity())
-                                                        .price(productVariantEvent.getPrice())
-                                                        .productAttributes(productVariantEvent.getCreateProductAttributeList().stream().map(
-                                                                attributeEvent -> OrderView.ProductAttribute.builder()
-                                                                        .attributeName(attributeEvent.getAttributeName())
-                                                                        .attributeValue(attributeEvent.getAttributeValue())
-                                                                        .build()).toList())
-                                                        .build()).toList())
-                                        .build()).toList())
+                        orderItemEvent -> OrderView.OrderItem.builder()
+                                .orderItemId(String.valueOf(orderItemEvent.getOrderItemId()))
+                                .productId(String.valueOf(orderItemEvent.getProductId()))
+                                .productName(orderItemEvent.getProductName())
+                                .productImageList(orderItemEvent.getCreateProductImageList().stream().map(
+                                        imageEvent -> OrderView.ProductImage.builder()
+                                                .imageUrl(imageEvent.getImageUrl())
+                                                .build()).toList())
+                                .productVariants(orderItemEvent.getCreateProductOrderItemEvents().stream().map(
+                                        productVariantEvent -> OrderView.ProductVariant.builder()
+                                                .productVariantId(String.valueOf(productVariantEvent.getProductVariantId()))
+                                                .quantity(productVariantEvent.getQuantity())
+                                                .price(productVariantEvent.getPrice())
+                                                .productAttributes(productVariantEvent.getCreateProductAttributeList().stream().map(
+                                                        attributeEvent -> OrderView.ProductAttribute.builder()
+                                                                .attributeName(attributeEvent.getAttributeName())
+                                                                .attributeValue(attributeEvent.getAttributeValue())
+                                                                .build()).toList())
+                                                .build()).toList())
+                                .build()).toList())
                 .build());
     }
 
     @Override
     public void updateOrderStatusView(OrderStatusEvent orderStatusEvent) {
-        OrderView orderView = orderViewRepository.findById(orderStatusEvent.getOrderId())
+        OrderView orderView = orderViewRepository.findById(String.valueOf(orderStatusEvent.getOrderId()))
                 .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
         orderView.setOrderStatus(orderStatusEvent.getOrderStatus());
-        if(orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED){
+        if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
             orderView.setReason(orderStatusEvent.getReason());
         }
         orderViewRepository.save(orderView);

@@ -29,7 +29,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("""
             SELECT p FROM Product p WHERE
-            (:shopId IS NULL OR p.shopId = :shopId) AND
+            (:shopId IS NULL OR p.shop.shopId = :shopId) AND
             (:categoryId IS NULL OR p.category.categoryId = :categoryId) AND
             (:status IS NULL OR p.productStatus = :status) AND
             (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR

@@ -40,6 +40,9 @@ public class Order extends BaseEntity {
     @Column(name = "payment_id")
     private Long paymentId;
 
+    @Column(name = "receiver_name", nullable = false)
+    private String receiverName;
+
     @Column(name = "address", nullable = false)
     private String address;
 

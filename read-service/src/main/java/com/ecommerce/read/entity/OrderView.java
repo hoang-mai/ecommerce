@@ -17,42 +17,37 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderView {
+public class OrderView extends BaseEntity {
 
     @Id
-    @Field(name = "order_id")
+    @Field(name = "orderId")
     private String orderId;
 
-    @Field(name = "user_id")
-    private Long userId;
+    @Field(name = "userId")
+    private String userId;
 
-    @Field(name = "order_status")
+    @Field(name = "orderStatus")
     private OrderStatus orderStatus;
 
     @Field(name = "reason")
     private String reason;
 
-    @Field(name = "total_price")
+    @Field(name = "totalPrice")
     private BigDecimal totalPrice;
 
-    @Field(name = "payment_id")
-    private Long paymentId;
+    @Field(name = "paymentId")
+    private String paymentId;
+
+    @Field(name = "receiverName")
+    private String receiverName;
 
     @Field(name = "address")
     private String address;
 
-    @Field(name = "phone_number")
+    @Field(name = "phoneNumber")
     private String phoneNumber;
 
-    @CreatedDate
-    @Field(name = "created_at")
-    private Long createdAt;
-
-    @LastModifiedDate
-    @Field(name = "updated_at")
-    private Long updatedAt;
-
-    @Field(name = "order_items")
+    @Field(name = "orderItems")
     private List<OrderItem> orderItems;
 
     @Getter
@@ -63,11 +58,11 @@ public class OrderView {
     public static class OrderItem {
 
         @Id
-        @Field(name = "order_item_id")
-        private Long orderItemId;
+        @Field(name = "orderItemId")
+        private String orderItemId;
 
-        @Field(name = "product_id")
-        private Long productId;
+        @Field(name = "productId")
+        private String productId;
 
         @Field(name = "productName")
         private String productName;
@@ -76,7 +71,7 @@ public class OrderView {
         private List<ProductImage> productImageList;
 
 
-        @Field(name = "product_variants")
+        @Field(name = "productVariants")
         private List<ProductVariant> productVariants;
     }
 
@@ -88,8 +83,8 @@ public class OrderView {
     public static class ProductVariant {
 
         @Id
-        @Field(name = "product_variant_id")
-        private Long productVariantId;
+        @Field(name = "productVariantId")
+        private String productVariantId;
 
         @Field(name = "price")
         private BigDecimal price;
@@ -97,7 +92,7 @@ public class OrderView {
         @Field(name = "quantity")
         private Integer quantity;
 
-        @Field(name = "product_attributes")
+        @Field(name = "productAttributes")
         private List<ProductAttribute> productAttributes;
 
     }
@@ -109,10 +104,10 @@ public class OrderView {
     @NoArgsConstructor
     public static class ProductAttribute {
 
-        @Field(name = "attribute_name")
+        @Field(name = "attributeName")
         private String attributeName;
 
-        @Field(name = "attribute_value")
+        @Field(name = "attributeValue")
         private String attributeValue;
 
     }
@@ -125,11 +120,10 @@ public class OrderView {
     public static class ProductImage {
 
         @Id
-        @Field(name = "product_image_id")
-        private Long productImageId;
+        @Field(name = "productImageId")
+        private String productImageId;
 
-        @Field(name = "image_url")
+        @Field(name = "imageUrl")
         private String imageUrl;
     }
 }
-

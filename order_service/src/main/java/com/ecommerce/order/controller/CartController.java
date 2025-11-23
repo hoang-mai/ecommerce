@@ -29,7 +29,7 @@ public class CartController {
      */
     @PostMapping("")
     @Operation(summary = "Add to cart", description = "Add item to shopping cart")
-    public ResponseEntity<BaseResponse<Void>> addToCart(@Valid @RequestBody ReqAddToCartDTO request) {
+    public ResponseEntity<BaseResponse<Void>>  addToCart(@Valid @RequestBody ReqAddToCartDTO request) {
 
         cartService.addToCart(request);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -81,6 +81,21 @@ public class CartController {
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.CLEAR_CART_SUCCESS))
+                .build());
+    }
+
+    /**
+     * Get cart item count
+     */
+    @GetMapping("/count")
+    @Operation(summary = "Get cart item count", description = "Get the number of items in the cart for a specific user")
+    public ResponseEntity<BaseResponse<Integer>> getCartItemCount() {
+        Integer count = cartService.getCartItemCount();
+
+        return ResponseEntity.ok(BaseResponse.<Integer>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_CART_ITEM_COUNT_SUCCESS))
+                .data(count)
                 .build());
     }
 }

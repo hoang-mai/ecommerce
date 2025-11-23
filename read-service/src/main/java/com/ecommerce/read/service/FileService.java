@@ -1,6 +1,10 @@
 package com.ecommerce.read.service;
 
 
+import com.ecommerce.read.dto.ProductViewDTO;
+
+import java.util.List;
+
 public interface FileService {
 
     /**

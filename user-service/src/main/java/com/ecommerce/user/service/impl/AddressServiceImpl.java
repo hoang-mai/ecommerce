@@ -114,4 +114,21 @@ public class AddressServiceImpl implements AddressService {
         address.setIsDefault(true);
         addressRepository.save(address);
     }
+
+    @Override
+    public ResInfoAddressDTO getDefaultAddress() {
+        Address defaultAddress = addressRepository.findByUserUserIdAndIsDefault(userHelper.getCurrentUserId(), true);
+        if (FnCommon.isNotNull(defaultAddress)) {
+            return ResInfoAddressDTO.builder()
+                    .addressId(defaultAddress.getAddressId())
+                    .province(defaultAddress.getProvince())
+                    .ward(defaultAddress.getWard())
+                    .detail(defaultAddress.getDetail())
+                    .receiverName(defaultAddress.getReceiverName())
+                    .phoneNumber(defaultAddress.getPhoneNumber())
+                    .isDefault(defaultAddress.getIsDefault())
+                    .build();
+        }
+        return null;
+    }
 }

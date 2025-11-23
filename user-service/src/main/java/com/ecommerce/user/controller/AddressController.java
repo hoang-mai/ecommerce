@@ -100,4 +100,18 @@ public class AddressController {
                 .build());
     }
 
+    /**
+     * Lấy địa chỉ mặc định của người dùng hiện tại
+     * @return Địa chỉ mặc định
+     */
+    @GetMapping("/default")
+    public ResponseEntity<BaseResponse<ResInfoAddressDTO>> getDefaultAddress() {
+        ResInfoAddressDTO defaultAddress = addressService.getDefaultAddress();
+        return ResponseEntity.ok(BaseResponse.<ResInfoAddressDTO>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_USER_ADDRESSES_SUCCESS))
+                .data(defaultAddress)
+                .build());
+    }
+
 }

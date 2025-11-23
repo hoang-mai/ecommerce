@@ -15,7 +15,7 @@ public interface UserVerificationRepository extends JpaRepository<UserVerificati
     boolean existsByVerificationCode(String verificationCode);
 
     @Query("""
-            SELECT uv FROM UserVerification uv LEFT JOIN uv.user u WHERE
+            SELECT uv FROM UserVerification uv LEFT JOIN FETCH uv.user u WHERE
             (:status IS NULL OR uv.userVerificationStatus = :status) AND
             (:keyword IS NULL OR LOWER(uv.verificationCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
              LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR

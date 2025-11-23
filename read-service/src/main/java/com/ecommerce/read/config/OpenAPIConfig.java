@@ -38,7 +38,7 @@ public class OpenAPIConfig {
             @Value("${openapi.service.api-docs}") String apiDocs){
         return GroupedOpenApi.builder()
                 .group(apiDocs)
-                .packagesToScan("com.ecommerce.user.controller")
+                .packagesToScan("com.ecommerce.read.controller")
                 .build();
     }
 }

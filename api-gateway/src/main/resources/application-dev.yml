@@ -44,7 +44,7 @@ spring:
         - id: read-service
           uri: lb://read-service
           predicates:
-            - Path=/api/v1/user-view/**
+            - Path=/api/v1/user-view/**,/api/v1/product-view/**,/api/v1/order-view/**,/api/v1/cart-view/**
         - id: order-service
           uri: lb://order-service
           predicates:

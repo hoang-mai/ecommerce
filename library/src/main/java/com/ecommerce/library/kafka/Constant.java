@@ -12,7 +12,12 @@ public final class Constant {
     public static final String UPDATE_AVATAR_URL_TOPIC = READ_SERVICE_TOPIC + ".update-avatar-url";
     public static final String CREATE_ORDER_VIEW_TOPIC = READ_SERVICE_TOPIC + ".create-order-view";
     public static final String UPDATE_ORDER_STATUS_VIEW_TOPIC = READ_SERVICE_TOPIC + ".update-order-status-view";
-
+    public static final String CREATE_PRODUCT_TOPIC = READ_SERVICE_TOPIC + ".create-product";
+    public static final String UPDATE_STATUS_PRODUCT_TOPIC= READ_SERVICE_TOPIC + ".update-status-product";
+    public static final String UPDATE_STATUS_PRODUCT_VARIANT_TOPIC= READ_SERVICE_TOPIC + ".update-status-product-variant";
+    public static final String CREATE_CART_TOPIC = READ_SERVICE_TOPIC + ".create-cart";
+    public static final String UPDATE_CART_ITEM_TOPIC = READ_SERVICE_TOPIC + ".update-cart-item";
+    public static final String DELETE_CART_ITEM_TOPIC = READ_SERVICE_TOPIC + ".delete-cart-item";
     // Order Service Kafka Topics and Group
     public static final String ORDER_SERVICE_TOPIC = "order-service-topic";
     public static final String ORDER_SERVICE_GROUP = "order-service-group";

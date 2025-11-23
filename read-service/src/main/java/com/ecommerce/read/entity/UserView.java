@@ -17,9 +17,9 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserView {
+public class UserView extends BaseEntity{
     @Id
-    @Field(name = "user_id")
+    @Field(name = "userId")
     private String userId;
 
     @Field(name = "username")
@@ -28,32 +28,25 @@ public class UserView {
     @Field(name = "email")
     private String email;
 
-    @Field(name = "account_status")
+    @Field(name = "accountStatus")
     private AccountStatus accountStatus;
 
-    @Field(name = "avatar_url")
+    @Field(name = "avatarUrl")
     private String avatarUrl;
 
-    @Field(name = "first_name")
+    @Field(name = "firstName")
     private String firstName;
 
-    @Field(name = "middle_name")
+    @Field(name = "middleName")
     private String middleName;
 
-    @Field(name = "last_name")
+    @Field(name = "lastName")
     private String lastName;
 
-    @Field(name = "phone_number")
+    @Field(name = "phoneNumber")
     private String phoneNumber;
 
     @Field(name = "role")
     private Role role;
 
-    @CreatedDate
-    @Field(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Field(name = "updated_at")
-    private LocalDateTime updatedAt;
 }

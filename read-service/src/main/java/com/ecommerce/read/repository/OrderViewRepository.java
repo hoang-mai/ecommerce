@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OrderViewRepository extends MongoRepository<OrderView, Long> {
+public interface OrderViewRepository extends MongoRepository<OrderView, String> {
 
 
     @Query("""

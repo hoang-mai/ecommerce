@@ -25,6 +25,11 @@ CREATE DATABASE IF NOT EXISTS product_service;
 CREATE USER IF NOT EXISTS 'product_service'@'%' IDENTIFIED BY 'product_service';
 GRANT ALL PRIVILEGES ON product_service.* TO 'product_service'@'%';
 
+-- Tạo database cho order-service
+CREATE DATABASE IF NOT EXISTS order_service;
+CREATE USER IF NOT EXISTS 'order_service'@'%' IDENTIFIED BY 'order_service';
+GRANT ALL PRIVILEGES ON order_service.* TO 'order_service'@'%';
+
 -- Tạo database cho notification-service
 CREATE DATABASE IF NOT EXISTS notification_service;
 CREATE USER IF NOT EXISTS 'notification_service'@'%' IDENTIFIED BY 'notification_service';

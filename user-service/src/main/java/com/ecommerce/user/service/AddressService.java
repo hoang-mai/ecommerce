@@ -43,4 +43,10 @@ public interface AddressService {
      * @param addressId ID của địa chỉ cần đặt làm mặc định
      */
     void setDefaultAddress(Long addressId);
+
+    /**
+     * Lấy địa chỉ mặc định của người dùng hiện tại
+     * @return Địa chỉ mặc định
+     */
+    ResInfoAddressDTO getDefaultAddress();
 }

@@ -5,6 +5,7 @@ import com.ecommerce.library.enumeration.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,22 +23,37 @@ public class Product extends BaseEntity {
     @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "shop_id", nullable = false)
-    private Long shopId;
-
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "product_status", nullable = false)
     private ProductStatus productStatus;
 
+    @Column(name = "total_sold")
+    @Builder.Default
+    private Integer totalSold = 0;
+
+    @Column(name = "discount")
+    @Builder.Default
+    private Double discount = 0.0;
+
+    @Column(name = "discount_start_date")
+    private LocalDateTime discountStartDate;
+
+    @Column(name = "discount_end_date")
+    private LocalDateTime discountEndDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    private Shop shop;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -69,5 +85,9 @@ public class Product extends BaseEntity {
     public void addProductVariant(ProductVariant productVariant) {
         productVariants.add(productVariant);
         productVariant.setProduct(this);
+    }
+
+    public void addSold(Integer quantity) {
+        totalSold += quantity;
     }
 }

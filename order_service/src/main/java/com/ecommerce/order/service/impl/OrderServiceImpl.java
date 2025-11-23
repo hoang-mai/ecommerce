@@ -16,6 +16,7 @@ import com.ecommerce.order.entity.OrderItem;
 import com.ecommerce.order.entity.ProductOrderItem;
 import com.ecommerce.order.messaging.producer.OrderEventProducer;
 import com.ecommerce.order.repository.OrderRepository;
+import com.ecommerce.order.service.CartService;
 import com.ecommerce.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final UserHelper userHelper;
     private final OrderEventProducer orderEventProducer;
+    private final CartService cartService;
 
     @Override
     public void createOrder(ResCreateOrderDTO request) {
@@ -46,6 +48,7 @@ public class OrderServiceImpl implements OrderService {
                 .userId(userId)
                 .orderStatus(OrderStatus.PENDING)
                 .totalPrice(totalPrice)
+                .receiverName(request.getReceiverName())
                 .address(request.getAddress())
                 .phoneNumber(request.getPhoneNumber())
                 .build();
@@ -71,6 +74,7 @@ public class OrderServiceImpl implements OrderService {
                         .userId(userId)
                         .orderStatus(order.getOrderStatus())
                         .totalPrice(order.getTotalPrice())
+                        .receiverName(order.getReceiverName())
                         .address(order.getAddress())
                         .phoneNumber(order.getPhoneNumber())
                         .createOrderItemEventList(order.getItems().stream()
@@ -103,6 +107,8 @@ public class OrderServiceImpl implements OrderService {
 
         if (newStatus == OrderStatus.CANCELLED || newStatus == OrderStatus.RETURNED) {
             order.setReason(reqUpdateOrderStatus.getReason());
+        } else if (newStatus == OrderStatus.PAID) {
+            cartService.clearCartByUserId(order.getUserId());
         }
 
         orderRepository.save(order);

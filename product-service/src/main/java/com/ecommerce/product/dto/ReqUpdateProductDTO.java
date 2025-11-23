@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -30,6 +31,15 @@ public class ReqUpdateProductDTO {
     @Valid
     @Schema(description = "List of product variants with pricing and stock")
     private List<ReqUpdateProductVariantDTO> productVariants;
+
+    @Schema(description = "Discount percentage for the product", example = "10.5")
+    private Double discount;
+
+    @Schema(description = "Discount start date (timestamp in milliseconds)", example = "1700000000000")
+    private LocalDateTime discountStartDate;
+
+    @Schema(description = "Discount end date (timestamp in milliseconds)", example = "1700086400000")
+    private LocalDateTime discountEndDate;
 
     private List<Long> deletedImageIds;
 }

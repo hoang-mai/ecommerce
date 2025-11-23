@@ -101,7 +101,7 @@ public class AuthController {
      * @param userId              ID của người dùng
      * @return Trả về thành công
      */
-    @PatchMapping("{userId}")
+    @PatchMapping("/{userId}")
     public ResponseEntity<BaseResponse<Void>> adminUpdateAccountStatus(
             @RequestBody ReqUpdateAccountDTO reqUpdateAccountDTO,
             @PathVariable Long userId) {

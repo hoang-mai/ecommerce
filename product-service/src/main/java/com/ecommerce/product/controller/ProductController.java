@@ -118,7 +118,7 @@ public class ProductController {
     @Operation(summary = "Update product status by product ID", description = "Update product status by product ID")
     public ResponseEntity<BaseResponse<Void>> updateProductStatusByProductId(
             @PathVariable Long productId,
-            @RequestParam ReqUpdateProductStatusDTO status) {
+            @RequestBody @Valid ReqUpdateProductStatusDTO status) {
         productService.updateProductStatusByProductId(productId, status);
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())

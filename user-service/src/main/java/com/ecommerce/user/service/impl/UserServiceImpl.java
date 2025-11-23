@@ -69,6 +69,7 @@ public class UserServiceImpl implements UserService {
         Long currentUserId = userHelper.getCurrentUserId();
         return getUserById(currentUserId);
     }
+
     @Transactional
     @Override
     public void uploadAvatar(MultipartFile file, Boolean isDelete) {

@@ -79,4 +79,6 @@ public final class MessageSuccess {
     public static final String UPDATE_NOTIFICATION_SUCCESS = "";
     public static final String PUSH_SUBSCRIPTION_SUCCESS = "";
     public static final String PUSH_UNSUBSCRIPTION_SUCCESS = "";
+    public static final String GET_CART_ITEM_COUNT_SUCCESS = "";
+    public static final String CART_RETRIEVED_SUCCESS = "";
 }

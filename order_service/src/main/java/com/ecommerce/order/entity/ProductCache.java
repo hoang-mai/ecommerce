@@ -1,9 +1,6 @@
 package com.ecommerce.order.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
@@ -20,6 +17,8 @@ public class ProductCache {
     @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "product_variant_ids")
+    @ElementCollection
+    @CollectionTable(name = "product_cache_variant_ids", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "variant_id")
     private List<Long> productVariantIds;
 }

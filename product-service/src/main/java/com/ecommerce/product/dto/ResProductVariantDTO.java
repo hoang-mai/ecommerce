@@ -14,6 +14,7 @@ public class ResProductVariantDTO {
     private Long productVariantId;
     private BigDecimal price;
     private Integer stockQuantity;
+    private Integer sold;
     private Boolean isDefault;
     private ProductVariantStatus productVariantStatus;
     private Map<String, String> attributeValues;

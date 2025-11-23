@@ -15,6 +15,10 @@ import java.util.List;
 @Setter
 public class ResCreateOrderDTO {
 
+    @NotBlank(message = MessageError.RECEIVER_NAME_NOT_BLANK)
+    @Schema(description = "Name of the order receiver", example = "John Doe")
+    private String receiverName;
+
     @NotBlank(message = MessageError.ADDRESS_NOT_BLANK)
     @Schema(description = "Shipping address ID", example = "123e4567-e89b-12d3-a456-426614174000")
     private String address;

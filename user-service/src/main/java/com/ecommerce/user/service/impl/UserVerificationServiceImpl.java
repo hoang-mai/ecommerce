@@ -73,7 +73,6 @@ public class UserVerificationServiceImpl implements UserVerificationService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public PageResponse<ResUserVerificationDTO> searchUserVerifications(
             UserVerificationStatus status,
             String keyword,

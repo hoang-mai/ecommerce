@@ -9,6 +9,7 @@ import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.UserViewDto;
 import com.ecommerce.read.entity.UserView;
 import com.ecommerce.read.repository.UserViewRepository;
+import com.ecommerce.read.repository.impl.UserViewRepositoryImpl;
 import com.ecommerce.read.service.FileService;
 import com.ecommerce.read.service.UserViewService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserViewServiceImpl implements UserViewService {
     private  final UserViewRepository userViewRepository;
+    private final UserViewRepositoryImpl userViewRepositoryImpl;
     private final FileService fileService;
 
     @Override
@@ -42,7 +44,7 @@ public class UserViewServiceImpl implements UserViewService {
 
     @Override
     public void updateRole(UpdateRoleEvent updateRoleEvent) {
-        UserView userView = userViewRepository.findById(updateRoleEvent.getUserId())
+        UserView userView = userViewRepository.findById(String.valueOf(updateRoleEvent.getUserId()))
                 .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
         userView.setRole(updateRoleEvent.getRole());
         userViewRepository.save(userView);
@@ -50,17 +52,19 @@ public class UserViewServiceImpl implements UserViewService {
 
     @Override
     public void updateUserView(UpdateUserEvent updateUserEvent) {
-        UserView userView = userViewRepository.findById(updateUserEvent.getUserId())
+        UserView userView = userViewRepository.findById(String.valueOf(updateUserEvent.getUserId()))
                 .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
         userView.setFirstName(updateUserEvent.getFirstName());
         userView.setMiddleName(updateUserEvent.getMiddleName());
         userView.setLastName(updateUserEvent.getLastName());
+        userView.setPhoneNumber(updateUserEvent.getPhoneNumber());
+        userView.setEmail(updateUserEvent.getEmail());
         userViewRepository.save(userView);
     }
 
     @Override
     public void updateAccountStatus(UpdateAccountStatusEvent updateAccountStatusEvent) {
-        UserView userView = userViewRepository.findById(updateAccountStatusEvent.getUserId())
+        UserView userView = userViewRepository.findById(String.valueOf(updateAccountStatusEvent.getUserId()))
                 .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
         userView.setAccountStatus(updateAccountStatusEvent.getAccountStatus());
         userViewRepository.save(userView);
@@ -73,7 +77,7 @@ public class UserViewServiceImpl implements UserViewService {
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        Page<UserView> userViewPage = userViewRepository.getUserView(accountStatus, role, keyword, pageable);
+        Page<UserView> userViewPage = userViewRepositoryImpl.getUserView(accountStatus, role, keyword, pageable);
 
         return PageResponse.<UserViewDto>builder()
                 .data(userViewPage.getContent().stream().map(this::mapToDto).toList())
@@ -86,7 +90,7 @@ public class UserViewServiceImpl implements UserViewService {
 
     @Override
     public void updateAvatarUser(UpdateAvatarUserEvent updateAvatarUserEvent) {
-        UserView userView = userViewRepository.findById(updateAvatarUserEvent.getUserId())
+        UserView userView = userViewRepository.findById(String.valueOf(updateAvatarUserEvent.getUserId()))
                 .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
         userView.setAvatarUrl(updateAvatarUserEvent.getAvatarUrl());
         userViewRepository.save(userView);

@@ -26,5 +26,15 @@ public interface CartService {
      */
     void clearCart();
 
+    /**
+     * Get cart item count by userId
+     */
+    Integer getCartItemCount();
+
+    /**
+     * Clear cart by userId
+     */
+    void clearCartByUserId(Long userId);
+
 }
 

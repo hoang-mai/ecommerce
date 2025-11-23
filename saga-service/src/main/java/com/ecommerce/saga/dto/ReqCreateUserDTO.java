@@ -24,7 +24,6 @@ public class ReqCreateUserDTO {
     private String password;
 
 
-    @Size(min = 1, max = 10, message = MessageError.NAME_SIZE)
     @Schema(description = "First name must be between 1 and 10 characters", example = "John")
     private String firstName;
 

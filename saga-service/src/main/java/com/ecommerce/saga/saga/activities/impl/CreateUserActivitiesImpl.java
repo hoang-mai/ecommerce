@@ -4,6 +4,7 @@ import com.ecommerce.auth.AccountServiceGrpc;
 import com.ecommerce.auth.ReqCreateAccountDTO;
 import com.ecommerce.auth.ReqDeleteAccountDTO;
 import com.ecommerce.auth.ResCreateAccountDTO;
+import com.ecommerce.enumeration.Gender;
 import com.ecommerce.library.exception.HttpRequestException;
 import com.ecommerce.library.kafka.event.user.CreateUserEvent;
 import com.ecommerce.library.utils.FnCommon;
@@ -41,7 +42,7 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
                             .setFirstName(createUserData.getFirstName())
                             .setMiddleName(createUserData.getMiddleName())
                             .setLastName(createUserData.getLastName())
-                            .setGender(FnCommon.convertGenderToGenderProto(createUserData.getGender()))
+                            .setGender(FnCommon.isNotNull(createUserData.getGender()) ? FnCommon.convertGenderToGenderProto(createUserData.getGender()) : Gender.GENDER_UNSPECIFIED )
                             .setRole(FnCommon.convertRoleToRoleProto(createUserData.getRole()))
                             .setWard(createUserData.getWard())
                             .setProvince(createUserData.getProvince())
@@ -102,13 +103,13 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
     @Override
     public void createUserView(CreateUserData createUserData) {
         userEventProducer.send(CreateUserEvent.builder()
-                        .userId(createUserData.getUserId())
-                        .username(createUserData.getUsername())
-                        .firstName(createUserData.getFirstName())
-                        .middleName(createUserData.getMiddleName())
-                        .lastName(createUserData.getLastName())
-                        .accountStatus(createUserData.getAccountStatus())
-                        .role(createUserData.getRole())
+                .userId(createUserData.getUserId())
+                .username(createUserData.getUsername())
+                .firstName(createUserData.getFirstName())
+                .middleName(createUserData.getMiddleName())
+                .lastName(createUserData.getLastName())
+                .accountStatus(createUserData.getAccountStatus())
+                .role(createUserData.getRole())
                 .build());
     }
 

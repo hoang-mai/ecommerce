@@ -16,6 +16,7 @@ public class CreateOrderEvent {
     private Long userId;
     private OrderStatus orderStatus;
     private BigDecimal totalPrice;
+    private String receiverName;
     private String address;
     private String phoneNumber;
     private String reason;

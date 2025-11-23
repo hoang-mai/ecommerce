@@ -1,5 +1,6 @@
 package com.ecommerce.library.component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -89,5 +91,13 @@ public class LoggingAspect {
         String methodName = joinPoint.getSignature().getName();
         LocalDateTime endTime = LocalDateTime.now();
         log.info("Method {} returned successfully with result: {}. End time: {}", methodName, result, endTime);
+    }
+
+    @Before(value = "within(com.ecommerce.*.messaging.consumer.*)")
+    public void logBeforeConsumer(JoinPoint joinPoint) throws JsonProcessingException {
+        Object[] args = joinPoint.getArgs();
+        String methodName = joinPoint.getSignature().getName();
+        LocalDateTime startTime = LocalDateTime.now();
+        log.info("Consumer Method {} called with args: {}. Start time: {}", methodName, objectMapper.writeValueAsString(args), startTime);
     }
 }

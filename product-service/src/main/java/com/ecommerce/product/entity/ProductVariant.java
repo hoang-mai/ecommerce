@@ -33,7 +33,12 @@ public class ProductVariant extends BaseEntity {
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity;
 
+    @Column(name = "sold")
+    @Builder.Default
+    private Integer sold = 0;
+
     @Column(name = "is_default", nullable = false)
+    @Builder.Default
     private Boolean isDefault = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -47,5 +52,9 @@ public class ProductVariant extends BaseEntity {
     public void addProductVariantAttributeValue(ProductVariantAttributeValue attributeValue) {
         productVariantAttributeValues.add(attributeValue);
         attributeValue.setProductVariant(this);
+    }
+
+    public void addSold(Integer quantity) {
+        this.sold += quantity;
     }
 }

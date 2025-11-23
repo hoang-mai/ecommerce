@@ -16,6 +16,10 @@ public class ResProductDTO {
     private String name;
     private String description;
     private ProductStatus productStatus;
+    private Integer totalSold;
+    private Double discount;
+    private LocalDateTime discountStartDate;
+    private LocalDateTime discountEndDate;
     private ResCategoryDTO category;
     private List<ResProductImageDTO> productImages;
     private List<ResProductAttributeDTO> productAttributes;
