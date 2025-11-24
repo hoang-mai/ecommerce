@@ -6,21 +6,19 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8081/auth/realms/ecommerce
-  datasource:
-    url: jdbc:mysql://localhost:3306/notification_service
-    username: notification_service
-    password: notification_service
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  data:
+    mongodb:
+      uri: mongodb://notification-service:notification-service@localhost:27017/notification-service
 minio:
   url: http://localhost:9000
   access-key: root
@@ -49,3 +47,8 @@ openapi:
     title: Notification Service API
     version: 1.0.0
     description: API document
+logging:
+  level:
+    org.springframework.web.socket: DEBUG
+    org.springframework.messaging: DEBUG
+    org.springframework.web.servlet.handler: DEBUG

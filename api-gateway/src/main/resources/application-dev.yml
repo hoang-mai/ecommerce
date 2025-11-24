@@ -49,3 +49,11 @@ spring:
           uri: lb://order-service
           predicates:
             - Path=/api/v1/order/**,/api/v1/cart/**
+        - id: notification-service-api
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notification/**
+        - id: notification-service-websocket
+          uri: lb://notification-service
+          predicates:
+            - Path=/ws/notification/**

@@ -6,8 +6,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum NotificationType {
-    PROMOTION("PROMOTION"),
-    ORDER_UPDATE("ORDER_UPDATE");
+    ERROR("error"),
+    SUCCESS("success"),
+    INFO("info"),
+    WARNING("warning");
 
     private final String notificationType;
 }

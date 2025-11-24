@@ -47,23 +47,7 @@ public class ProductController {
                 .build());
     }
 
-    /**
-     * Lấy thông tin sản phẩm theo ID
-     *
-     * @param productId ID của sản phẩm
-     * @return Thông tin sản phẩm
-     */
-    @GetMapping("/{productId}")
-    @Operation(summary = "Get product by ID", description = "Retrieve product details by product ID")
-    public ResponseEntity<BaseResponse<ResProductDTO>> getProductById(@PathVariable Long productId) {
-        ResProductDTO productResponse = productService.getProductById(productId);
 
-        return ResponseEntity.ok(BaseResponse.<ResProductDTO>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message(messageService.getMessage(MessageSuccess.PRODUCT_RETRIEVED_SUCCESS))
-                .data(productResponse)
-                .build());
-    }
 
     /**
      * Cập nhật thông tin sản phẩm

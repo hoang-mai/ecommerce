@@ -24,9 +24,7 @@ public class PushSubscriptionServiceImpl implements PushSubscriptionService {
     public PushSubscriptionDto subscribe(PushSubscriptionRequest request) {
         Long userId = userHelper.getCurrentUserId();
 
-        // Kiểm tra xem subscription đã tồn tại chưa
         if (pushSubscriptionRepository.existsByEndpointAndUserId(request.getEndpoint(), userId)) {
-            // Nếu tồn tại, activate lại
             PushSubscription existing = pushSubscriptionRepository.findByEndpoint(request.getEndpoint())
                     .orElseThrow(() -> new NotFoundException("Subscription không tồn tại"));
             existing.setActive(true);
@@ -66,14 +64,14 @@ public class PushSubscriptionServiceImpl implements PushSubscriptionService {
     @Override
     public List<PushSubscriptionDto> getActiveSubscriptions() {
         Long userId = userHelper.getCurrentUserId();
-        List<PushSubscription> subscriptions = pushSubscriptionRepository.findActiveByUserId(userId);
+        List<PushSubscription> subscriptions = pushSubscriptionRepository.findPushSubscriptionByUserIdAndActive(userId, true);
         return subscriptions.stream()
                 .map(this::convertToDto)
                 .toList();
     }
 
     @Override
-    public void deactivateSubscription(Long subscriptionId) {
+    public void deactivateSubscription(String subscriptionId) {
         PushSubscription pushSubscription = pushSubscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new NotFoundException("Subscription không tồn tại"));
         pushSubscription.setActive(false);
@@ -81,7 +79,7 @@ public class PushSubscriptionServiceImpl implements PushSubscriptionService {
     }
 
     @Override
-    public void activateSubscription(Long subscriptionId) {
+    public void activateSubscription(String subscriptionId) {
         PushSubscription pushSubscription = pushSubscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new NotFoundException("Subscription không tồn tại"));
         pushSubscription.setActive(true);

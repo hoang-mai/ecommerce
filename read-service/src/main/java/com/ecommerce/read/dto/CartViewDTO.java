@@ -17,6 +17,8 @@ public class CartViewDTO {
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CartItemViewDTO {
         @JsonProperty("cartItemId")
         private String _id;
@@ -26,6 +28,8 @@ public class CartViewDTO {
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ProductCartItemViewDTO {
         @JsonProperty("productCartItemId")
         private String _id;

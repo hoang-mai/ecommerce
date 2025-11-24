@@ -5,7 +5,6 @@ import com.ecommerce.library.kafka.event.cart.UpdateProductCartItemEvent;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.read.dto.CartViewDTO;
 import com.ecommerce.read.entity.CartView;
-import com.ecommerce.read.entity.ProductView;
 import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
@@ -17,8 +16,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -51,17 +48,21 @@ public class CartViewRepositoryImpl {
         }
     }
 
-    public CartViewDTO findByUserId(String currentUserId) {
+    public CartViewDTO findCartViewDTOByUserId(String currentUserId) {
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("userId").is(currentUserId)),
                 Aggregation.unwind("cartItems"),
                 Aggregation.lookup("product_views", "cartItems.productId", "_id", "product_views"),
                 Aggregation.unwind("product_views"),
-                Aggregation.group("cartItems._id")
-                        .first("product_views").as("productViewDTO")
-                        .first("cartItems.productCartItems").as("productCartItems"),
                 Aggregation.group("_id")
-                        .push("$$ROOT").as("cartItems")
+                        .push(new Document()
+                                .append("_id", "$cartItems._id")
+                                .append("productViewDTO", "$product_views")
+                                .append("productCartItems", "$cartItems.productCartItems")
+                        ).as("cartItems"),
+                Aggregation.project()
+                        .and("_id").as("_id")
+                        .and("cartItems").as("cartItems")
         );
         AggregationResults<CartViewDTO> results = mongoTemplate.aggregate(
                 aggregation, "cart_views", CartViewDTO.class

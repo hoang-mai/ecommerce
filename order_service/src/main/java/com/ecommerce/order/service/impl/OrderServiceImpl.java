@@ -20,6 +20,7 @@ import com.ecommerce.order.service.CartService;
 import com.ecommerce.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -35,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderEventProducer orderEventProducer;
     private final CartService cartService;
 
+    @Transactional
     @Override
     public void createOrder(ResCreateOrderDTO request) {
         Long userId = userHelper.getCurrentUserId();
@@ -68,6 +70,7 @@ public class OrderServiceImpl implements OrderService {
             order.addOrderItem(orderItem);
         });
         orderRepository.save(order);
+        cartService.clearCartByUserId(userId);
         orderEventProducer.send(
                 CreateOrderEvent.builder()
                         .orderId(order.getOrderId())
@@ -107,8 +110,6 @@ public class OrderServiceImpl implements OrderService {
 
         if (newStatus == OrderStatus.CANCELLED || newStatus == OrderStatus.RETURNED) {
             order.setReason(reqUpdateOrderStatus.getReason());
-        } else if (newStatus == OrderStatus.PAID) {
-            cartService.clearCartByUserId(order.getUserId());
         }
 
         orderRepository.save(order);

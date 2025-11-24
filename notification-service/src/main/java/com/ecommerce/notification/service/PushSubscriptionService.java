@@ -30,11 +30,11 @@ public interface PushSubscriptionService {
     /**
      * Deactivate một subscription
      */
-    void deactivateSubscription(Long subscriptionId);
+    void deactivateSubscription(String subscriptionId);
 
     /**
      * Activate một subscription
      */
-    void activateSubscription(Long subscriptionId);
+    void activateSubscription(String subscriptionId);
 }
 

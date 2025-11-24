@@ -47,7 +47,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void markAsRead(Long notificationId) {
+    public void markAsRead(String notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotFoundException(MessageError.NOTIFICATION_NOT_FOUND));
 
@@ -60,7 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public long getUnreadCount() {
         Long userId = userHelper.getCurrentUserId();
-        return notificationRepository.countUnreadByUserId(userId);
+        return notificationRepository.countByUserIdAndIsRead(userId, false);
     }
 
     @Override

@@ -12,7 +12,6 @@ import java.util.List;
 public class ResProductDTO {
 
     private Long productId;
-    private Long shopId;
     private String name;
     private String description;
     private ProductStatus productStatus;

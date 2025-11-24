@@ -23,11 +23,11 @@ public class WebSocketInterceptor implements ChannelInterceptor {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
         if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-            String authen = accessor.getFirstNativeHeader("Authorization");
-            if(authen == null || !authen.startsWith("Bearer ")) {
+            String authToken = accessor.getFirstNativeHeader("Authorization");
+            if(authToken == null || !authToken.startsWith("Bearer ")) {
                 return null;
             }
-            String token = authen.substring(7);
+            String token = authToken.substring(7);
             try {
                 Jwt jwt = jwtDecoder.decode(token);
                 String userId = jwt.getClaimAsString("user-id");

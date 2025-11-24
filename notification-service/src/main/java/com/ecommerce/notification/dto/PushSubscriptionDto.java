@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class PushSubscriptionDto {
 
-    private Long pushSubscriptionId;
+    private String pushSubscriptionId;
     private Long userId;
     private String endpoint;
     private String p256dh;

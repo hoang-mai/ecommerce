@@ -1,40 +1,49 @@
 package com.ecommerce.notification.entity;
 
-import com.ecommerce.library.entity.BaseEntity;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "notifications")
-public class Notification extends BaseEntity {
+@Document(collection = "notifications")
+public class Notification {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "notification_id")
-    private Long notificationId;
+    private String notificationId;
 
-    @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "title")
+    @Field("title")
     private String title;
 
-    @Column(name = "message", columnDefinition = "TEXT")
+    @Field("message")
     private String message;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "notification_type")
+    @Field("notificationType")
     private NotificationType notificationType;
 
-    @Column(name = "is_read")
+
+    @Field("isRead")
     private Boolean isRead;
 
-    @Column(name = "sent_realtime")
+    @Field("sentRealtime")
     private Boolean sentRealtime;
+
+    @Field("createdAt")
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @Field("updatedAt")
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
 }

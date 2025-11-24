@@ -1,31 +1,45 @@
 package com.ecommerce.notification.entity;
 
 import com.ecommerce.library.entity.BaseEntity;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
+import java.time.LocalDateTime;
+
+@Document(collection = "push_subscriptions")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "push_subscriptions")
-public class PushSubscription extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "push_subscription_id")
-    private Long pushSubscriptionId;
+public class PushSubscription {
 
-    @Column(name = "user_id")
+    @Id
+    private String pushSubscriptionId;
+
+    @Field("userId")
     private Long userId;
 
     private String endpoint;
 
-    @Column(length = 512)
+    @Field("p256dh")
     private String p256dh;
 
-    @Column(length = 128)
-    private String auth; // authentication secret
+    @Field("auth")
+    private String auth;
+
+    @Field("active")
     private boolean active;
+
+    @Field("createdAt")
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @Field("updatedAt")
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

@@ -31,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -170,23 +171,7 @@ public class ProductServiceImpl implements ProductService {
                         .build());
     }
 
-    @Override
-    public ResProductDTO getProductById(Long productId) {
-        Product product = productRepository.findByIdWithDetails(productId)
-                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
 
-        return ResProductDTO.builder()
-                .productId(product.getProductId())
-                .name(product.getName())
-                .description(product.getDescription())
-//                .shopId(product.getShopId())
-                .discount(product.getDiscount())
-                .category(buildCategoryResponse(product.getCategory()))
-                .productImages(buildProductImagesResponse(product.getProductImages()))
-                .productAttributes(buildProductAttributesResponse(product.getProductAttributes()))
-                .productVariants(buildProductVariantsResponse(product.getProductVariants()))
-                .build();
-    }
 
     @Override
     @Transactional
@@ -420,6 +405,9 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public void handleCreateOrderEvent(CreateOrderEvent createOrderEvent) {
+        AtomicBoolean isOutOfStock = new AtomicBoolean(false);
+
+        // Kiểm tra tồn kho trước khi cập nhật
         createOrderEvent.getCreateOrderItemEventList().forEach(orderItem -> {
             Product product = productRepository.findById(orderItem.getProductId())
                     .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
@@ -433,7 +421,7 @@ public class ProductServiceImpl implements ProductService {
             );
             orderItem.getCreateProductOrderItemEvents().forEach(productOrderItemEvent -> {
 
-                ProductVariant productVariant = productVariantRepository.findByIdForUpDate(productOrderItemEvent.getProductVariantId())
+                ProductVariant productVariant = productVariantRepository.findById(productOrderItemEvent.getProductVariantId())
                         .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
                 productOrderItemEvent.setCreateProductAttributeList(
                         productVariant.getProductVariantAttributeValues().stream()
@@ -463,37 +451,75 @@ public class ProductServiceImpl implements ProductService {
 
 
                 if (updatedStock < 0) {
-                    orderEventProducer.send(
-                            OrderStatusEvent.builder()
-                                    .userId(createOrderEvent.getUserId())
-                                    .orderId(createOrderEvent.getOrderId())
-                                    .orderStatus(OrderStatus.CANCELLED)
-                                    .reason(messageService.getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK))
-                                    .build()
-                    );
-                    createOrderEvent.setOrderStatus(OrderStatus.CANCELLED);
-                    createOrderEvent.setReason(messageService.getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK));
-                    orderEventProducer.send(createOrderEvent);
-                    return;
-                } else if (updatedStock == 0) {
-                    productVariant.setProductVariantStatus(ProductVariantStatus.OUT_OF_STOCK);
-                }
-                orderEventProducer.send(createOrderEvent);
-                orderEventProducer.send(
-                        OrderStatusEvent.builder()
-                                .userId(createOrderEvent.getUserId())
-                                .orderId(createOrderEvent.getOrderId())
-                                .orderStatus(OrderStatus.PAID)
-                                .build()
-                );
-                productVariant.setStockQuantity(updatedStock);
-                productVariant.addSold(productOrderItemEvent.getQuantity());
-                product.addSold(productOrderItemEvent.getQuantity());
+                    isOutOfStock.set(true);
 
-                productVariantRepository.save(productVariant);
+                }
             });
-            productRepository.save(product);
         });
+
+        if(isOutOfStock.get()) {
+            orderEventProducer.send(
+                    OrderStatusEvent.builder()
+                            .userId(createOrderEvent.getUserId())
+                            .orderId(createOrderEvent.getOrderId())
+                            .orderStatus(OrderStatus.CANCELLED)
+                            .reason(messageService.getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK))
+                            .build()
+            );
+            createOrderEvent.setOrderStatus(OrderStatus.CANCELLED);
+            createOrderEvent.setReason(messageService.getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK));
+            orderEventProducer.send(createOrderEvent);
+        } else{
+
+            createOrderEvent.getCreateOrderItemEventList().forEach(orderItem -> {
+                Product product = productRepository.findById(orderItem.getProductId())
+                        .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+                orderItem.getCreateProductOrderItemEvents().forEach(productOrderItemEvent -> {
+
+                    ProductVariant productVariant = productVariantRepository.findByIdForUpDate(productOrderItemEvent.getProductVariantId())
+                            .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
+
+                    if (productVariant.getProductVariantStatus() == ProductVariantStatus.INACTIVE) {
+                        orderEventProducer.send(
+                                OrderStatusEvent.builder()
+                                        .userId(createOrderEvent.getUserId())
+                                        .orderId(createOrderEvent.getOrderId())
+                                        .orderStatus(OrderStatus.CANCELLED)
+                                        .reason(messageService.getMessage(MessageError.PRODUCT_VARIANT_INACTIVE))
+                                        .build()
+                        );
+                        createOrderEvent.setOrderStatus(OrderStatus.CANCELLED);
+                        createOrderEvent.setReason(messageService.getMessage(MessageError.PRODUCT_VARIANT_INACTIVE));
+                        orderEventProducer.send(createOrderEvent);
+                        return;
+                    }
+
+                    int updatedStock = productVariant.getStockQuantity() - productOrderItemEvent.getQuantity();
+
+                    if (updatedStock == 0) {
+                        productVariant.setProductVariantStatus(ProductVariantStatus.OUT_OF_STOCK);
+                    }
+
+                    productVariant.setStockQuantity(updatedStock);
+                    productVariant.addSold(productOrderItemEvent.getQuantity());
+                    product.addSold(productOrderItemEvent.getQuantity());
+
+                    productVariantRepository.save(productVariant);
+                });
+                productRepository.save(product);
+            });
+
+
+            createOrderEvent.setOrderStatus(OrderStatus.PAID);
+            orderEventProducer.send(createOrderEvent);
+            orderEventProducer.send(
+                    OrderStatusEvent.builder()
+                            .userId(createOrderEvent.getUserId())
+                            .orderId(createOrderEvent.getOrderId())
+                            .orderStatus(OrderStatus.PAID)
+                            .build()
+            );
+        }
     }
 
     private PageResponse<ResProductDTO> buildPageResponse(Page<Product> productsPage) {
@@ -517,7 +543,6 @@ public class ProductServiceImpl implements ProductService {
                 .productId(product.getProductId())
                 .name(product.getName())
                 .description(product.getDescription())
-//                .shopId(product.getShopId())
                 .productStatus(product.getProductStatus())
                 .totalSold(product.getTotalSold())
                 .category(buildCategoryResponse(product.getCategory()))

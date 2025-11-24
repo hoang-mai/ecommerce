@@ -84,7 +84,7 @@ public class CartViewServiceImpl implements CartViewService {
 
     @Override
     public CartViewDTO getCurrentUserCart() {
-        CartViewDTO cartViewDTO= cartViewRepositoryImpl.findByUserId(String.valueOf(userHelper.getCurrentUserId()));
+        CartViewDTO cartViewDTO= cartViewRepositoryImpl.findCartViewDTOByUserId(String.valueOf(userHelper.getCurrentUserId()));
         if(cartViewDTO != null){
             cartViewDTO.getCartItems().forEach(cartItemDTO -> {
                 if(cartItemDTO.getProductViewDTO() != null && cartItemDTO.getProductViewDTO().getProductImages() != null){
@@ -101,5 +101,13 @@ public class CartViewServiceImpl implements CartViewService {
             });
         }
         return cartViewDTO;
+    }
+
+    @Override
+    public void clearCartViewByUserId(String userId) {
+        CartView cartView = cartViewRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(MessageError.CART_NOT_FOUND));
+        cartView.clearCart();
+        cartViewRepository.save(cartView);
     }
 }

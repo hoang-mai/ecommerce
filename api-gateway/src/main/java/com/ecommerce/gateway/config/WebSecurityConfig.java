@@ -27,7 +27,8 @@ public class WebSecurityConfig {
                         .pathMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api-docs-json/**"
+                                "/api-docs-json/**",
+                                "ws/**"
                         ).permitAll()
                         .pathMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
                         .pathMatchers(HttpMethod.POST,"/api/v1/saga/register").permitAll()

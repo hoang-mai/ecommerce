@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "order_views")
@@ -48,7 +49,8 @@ public class OrderView extends BaseEntity {
     private String phoneNumber;
 
     @Field(name = "orderItems")
-    private List<OrderItem> orderItems;
+    @Builder.Default
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     @Getter
     @Setter
@@ -68,11 +70,13 @@ public class OrderView extends BaseEntity {
         private String productName;
 
         @Field(name = "product")
-        private List<ProductImage> productImageList;
+        @Builder.Default
+        private List<ProductImage> productImageList = new ArrayList<>();
 
 
         @Field(name = "productVariants")
-        private List<ProductVariant> productVariants;
+        @Builder.Default
+        private List<ProductVariant> productVariants = new ArrayList<>();
     }
 
     @Getter
@@ -93,7 +97,8 @@ public class OrderView extends BaseEntity {
         private Integer quantity;
 
         @Field(name = "productAttributes")
-        private List<ProductAttribute> productAttributes;
+        @Builder.Default
+        private List<ProductAttribute> productAttributes = new ArrayList<>();
 
     }
 

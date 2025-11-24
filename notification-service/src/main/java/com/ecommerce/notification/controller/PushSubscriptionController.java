@@ -96,7 +96,7 @@ public class PushSubscriptionController {
      */
     @PatchMapping("/{subscriptionId}/deactivate")
     public ResponseEntity<BaseResponse<Void>> deactivateSubscription(
-            @PathVariable Long subscriptionId) {
+            @PathVariable String subscriptionId) {
 
         pushSubscriptionService.deactivateSubscription(subscriptionId);
 
@@ -113,7 +113,7 @@ public class PushSubscriptionController {
      */
     @PatchMapping("/{subscriptionId}/activate")
     public ResponseEntity<BaseResponse<Void>> activateSubscription(
-            @PathVariable Long subscriptionId) {
+            @PathVariable String subscriptionId) {
 
         pushSubscriptionService.activateSubscription(subscriptionId);
 

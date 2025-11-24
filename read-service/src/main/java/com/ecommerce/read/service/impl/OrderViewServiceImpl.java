@@ -1,6 +1,7 @@
 package com.ecommerce.read.service.impl;
 
 import com.ecommerce.library.enumeration.OrderStatus;
+import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
@@ -8,7 +9,9 @@ import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.OrderView;
 import com.ecommerce.read.repository.OrderViewRepository;
+import com.ecommerce.read.service.CartViewService;
 import com.ecommerce.read.service.OrderViewService;
+import com.ecommerce.read.service.ProductViewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +24,8 @@ import org.springframework.stereotype.Service;
 public class OrderViewServiceImpl implements OrderViewService {
 
     private final OrderViewRepository orderViewRepository;
+    private final CartViewService cartViewService;
+    private final ProductViewService productViewService;
 
     @Override
     public void createOrderView(CreateOrderEvent createOrderViewEvent) {
@@ -54,6 +59,10 @@ public class OrderViewServiceImpl implements OrderViewService {
                                                 .build()).toList())
                                 .build()).toList())
                 .build());
+        if(createOrderViewEvent.getOrderStatus()== OrderStatus.PAID){
+            cartViewService.clearCartViewByUserId(String.valueOf(createOrderViewEvent.getUserId()));
+            productViewService.updateStockAfterCreateOrder(createOrderViewEvent);
+        }
     }
 
     @Override

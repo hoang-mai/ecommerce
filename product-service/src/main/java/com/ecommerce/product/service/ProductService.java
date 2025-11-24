@@ -17,13 +17,6 @@ public interface ProductService {
      */
     void createProduct(ReqCreateProductDTO request, List<MultipartFile> files);
 
-    /**
-     * Lấy thông tin sản phẩm theo ID
-     *
-     * @param productId ID của sản phẩm
-     * @return Thông tin sản phẩm
-     */
-    ResProductDTO getProductById(Long productId);
 
     /**
      * Cập nhật thông tin sản phẩm

@@ -22,25 +22,31 @@ public class OrderStatusServiceImpl implements OrderStatusService {
 
     @Override
     public void sendOrderStatusMessage(OrderStatusEvent orderStatusEvent) {
-        simpMessagingTemplate.convertAndSendToUser(
-                String.valueOf(orderStatusEvent.getUserId()),
-                "/queue/notify",
-                orderStatusEvent
-        );
         Notification notification = Notification.builder()
                 .userId(orderStatusEvent.getUserId())
-                .notificationType(NotificationType.ORDER_UPDATE)
+                .notificationType(
+                        orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED
+                                ? NotificationType.ERROR
+                                : NotificationType.SUCCESS
+                )
                 .isRead(false)
                 .sentRealtime(true)
                 .title(messageService.getMessage(orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED
-                                        ? MessageSuccess.ORDER_CANCELLED_TITLE
-                                        : MessageSuccess.ORDER_SUCCESS_TITLE)
+                        ? MessageSuccess.ORDER_CANCELLED_TITLE
+                        : MessageSuccess.ORDER_SUCCESS_TITLE)
                 )
                 .message(messageService.getMessage(orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED
-                                        ? MessageSuccess.ORDER_CANCELLED_MESSAGE
-                                        : MessageSuccess.ORDER_SUCCESS_MESSAGE)
+                        ? MessageSuccess.ORDER_CANCELLED_MESSAGE
+                        : MessageSuccess.ORDER_SUCCESS_MESSAGE)
                 )
                 .build();
+
+
         notificationRepository.save(notification);
+        simpMessagingTemplate.convertAndSendToUser(
+                String.valueOf(orderStatusEvent.getUserId()),
+                "/queue/notify",
+                notification
+        );
     }
 }

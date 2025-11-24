@@ -53,7 +53,7 @@ public class NotificationController {
      */
     @PatchMapping("/{notificationId}/mark-as-read")
     public ResponseEntity<BaseResponse<Void>> markAsRead(
-            @PathVariable Long notificationId) {
+            @PathVariable String notificationId) {
 
        notificationService.markAsRead(notificationId);
 

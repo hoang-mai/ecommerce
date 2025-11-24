@@ -6,7 +6,7 @@ import com.ecommerce.notification.dto.NotificationDto;
 public interface NotificationService {
     PageResponse<NotificationDto> getNotifications(int pageNo, int pageSize, String sortBy, String sortDir);
 
-    void markAsRead(Long notificationId);
+    void markAsRead(String notificationId);
 
     long getUnreadCount();
 

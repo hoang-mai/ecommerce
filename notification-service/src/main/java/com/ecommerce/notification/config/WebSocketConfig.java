@@ -1,6 +1,5 @@
 package com.ecommerce.notification.config;
 
-import com.ecommerce.notification.config.WebSocketInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -18,7 +17,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins("http://127.0.0.1:3000").withSockJS();
+        registry.addEndpoint("/ws/notification").setAllowedOriginPatterns("*");
     }
 
     @Override

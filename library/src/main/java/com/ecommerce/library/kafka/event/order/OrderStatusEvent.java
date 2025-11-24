@@ -1,13 +1,12 @@
 package com.ecommerce.library.kafka.event.order;
 
 import com.ecommerce.library.enumeration.OrderStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderStatusEvent {

@@ -11,4 +11,6 @@ public interface CartViewService {
     void deleteCartItem(DeleteCartItemEvent event);
 
     CartViewDTO getCurrentUserCart();
+
+    void clearCartViewByUserId(String userId);
 }

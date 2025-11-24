@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Getter
 public abstract class BaseEntity {
 
-    @CreatedDate
     @Field("createdAt")
     private LocalDateTime createdAt;
 
