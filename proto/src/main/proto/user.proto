@@ -6,6 +6,8 @@ import "utils/base_response.proto";
 import "enumeration/role.proto";
 import "enumeration/gender.proto";
 import "enumeration/use_verification_status.proto";
+import "google/protobuf/timestamp.proto";
+
 option java_multiple_files = true;
 option java_package = "com.ecommerce.user";
 
@@ -33,6 +35,8 @@ message ReqCreateUserDTO {
 
 message ResCreateUserDTO {
   int64 user_id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
 }
 
 message ReqDeleteUserDTO {

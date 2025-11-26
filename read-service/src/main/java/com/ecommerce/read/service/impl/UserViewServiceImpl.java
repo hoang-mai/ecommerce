@@ -29,7 +29,7 @@ public class UserViewServiceImpl implements UserViewService {
     @Override
     public void createUserView(CreateUserEvent createUserEvent) {
         UserView userView = UserView.builder()
-                .userId(String.valueOf(createUserEvent.getUserId()))
+                ._id(String.valueOf(createUserEvent.getUserId()))
                 .username(createUserEvent.getUsername())
                 .email(createUserEvent.getEmail())
                 .accountStatus(createUserEvent.getAccountStatus())
@@ -38,6 +38,8 @@ public class UserViewServiceImpl implements UserViewService {
                 .lastName(createUserEvent.getLastName())
                 .phoneNumber(createUserEvent.getPhoneNumber())
                 .role(createUserEvent.getRole())
+                .createdAt(createUserEvent.getCreatedAt())
+                .updatedAt(createUserEvent.getUpdatedAt())
                 .build();
         userViewRepository.save(userView);
     }
@@ -98,7 +100,7 @@ public class UserViewServiceImpl implements UserViewService {
 
     private UserViewDto mapToDto(UserView userView) {
         return UserViewDto.builder()
-                .userId(Long.valueOf(userView.getUserId()))
+                .userId(Long.valueOf(userView.get_id()))
                 .username(userView.getUsername())
                 .email(userView.getEmail())
                 .accountStatus(userView.getAccountStatus())

@@ -1,6 +1,7 @@
 package com.ecommerce.product.service.impl;
 
 import com.ecommerce.library.component.MessageService;
+import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ProductVariantStatus;
@@ -47,14 +48,16 @@ public class ProductServiceImpl implements ProductService {
     private final OrderEventProducer orderEventProducer;
     private final ProductVariantRepository productVariantRepository;
     private final MessageService messageService;
+    private final UserHelper userHelper;
 
     @Override
     @Transactional
     public void createProduct(ReqCreateProductDTO request, List<MultipartFile> files) {
+        Long ownerId = userHelper.getCurrentUserId();
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new NotFoundException(MessageError.CATEGORY_NOT_FOUND));
 
-        Shop shop = shopRepository.findById(request.getShopId())
+        Shop shop = shopRepository.findByShopIdAndOwnerId(request.getShopId(), ownerId)
                 .orElseThrow(() -> new NotFoundException(MessageError.SHOP_NOT_FOUND));
         Product product = Product.builder()
                 .shop(shop)
@@ -130,30 +133,36 @@ public class ProductServiceImpl implements ProductService {
         productEventProducer.send(
                 CreateProductEvent.builder()
                         .shopId(product.getShop().getShopId())
+                        .categoryId(product.getCategory().getCategoryId())
+                        .categoryName(product.getCategory().getCategoryName())
+                        .shopStatus(product.getShop().getShopStatus())
                         .productName(product.getName())
                         .productId(product.getProductId())
+                        .ownerId(ownerId)
                         .description(product.getDescription())
                         .discount(product.getDiscount())
                         .discountStartDate(product.getDiscountStartDate())
                         .discountEndDate(product.getDiscountEndDate())
                         .totalSold(product.getTotalSold())
+                        .createdAt(product.getCreatedAt())
+                        .updatedAt(product.getUpdatedAt())
                         .productImages(product.getProductImages().stream()
-                                .map(productImage -> CreateProductImageEvent.builder()
+                                .map(productImage -> CreateProductEvent.CreateProductImageEvent.builder()
                                         .productImageId(productImage.getProductImageId())
                                         .imageUrl(productImage.getImageUrl())
                                         .build()
                                 ).toList())
                         .productAttributes(product.getProductAttributes().stream().map(
-                                productAttribute -> CreateProductAttributeEvent.builder()
+                                productAttribute -> CreateProductEvent.CreateProductAttributeEvent.builder()
                                         .productAttributeId(productAttribute.getAttributeId())
                                         .productAttributeName(productAttribute.getAttributeName())
-                                        .productAttributeValues(productAttribute.getProductAttributeValues().stream().map(attributeValue -> CreateProductAttributeValueEvent.builder()
+                                        .productAttributeValues(productAttribute.getProductAttributeValues().stream().map(attributeValue -> CreateProductEvent.CreateProductAttributeValueEvent.builder()
                                                 .productAttributeValueId(attributeValue.getAttributeValueId())
                                                 .value(attributeValue.getValue())
                                                 .build()).toList())
                                         .build()).toList())
                         .productVariants(product.getProductVariants().stream().map(
-                                productVariant -> CreateProductVariantEvent.builder()
+                                productVariant -> CreateProductEvent.CreateProductVariantEvent.builder()
                                         .productVariantId(productVariant.getProductVariantId())
                                         .price(productVariant.getPrice())
                                         .productVariantStatus(productVariant.getProductVariantStatus())
@@ -162,7 +171,7 @@ public class ProductServiceImpl implements ProductService {
                                         .isDefault(productVariant.getIsDefault())
                                         .productVariantAttributeValues(
                                                 productVariant.getProductVariantAttributeValues().stream().map(
-                                                        variantAttrValue -> CreateProductVariantValueEvent.builder()
+                                                        variantAttrValue -> CreateProductEvent.CreateProductVariantValueEvent.builder()
                                                                 .productVariantAttributeValueId(variantAttrValue.getProductVariantAttributeValueId())
                                                                 .productAttributeId(variantAttrValue.getProductAttributeValue().getProductAttribute().getAttributeId())
                                                                 .productAttributeValueId(variantAttrValue.getProductAttributeValue().getAttributeValueId())
@@ -176,10 +185,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void updateProduct(Long productId, ReqUpdateProductDTO request, List<MultipartFile> files) {
-
+        Long ownerId = userHelper.getCurrentUserId();
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
 
+        if(!product.getShop().getOwnerId().equals(ownerId)) {
+            throw new NotFoundException(MessageError.PRODUCT_NOT_FOUND);
+        }
         if (FnCommon.isNotNull(request.getCategoryId())) {
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new NotFoundException(MessageError.CATEGORY_NOT_FOUND));
@@ -321,22 +333,22 @@ public class ProductServiceImpl implements ProductService {
                         .discountEndDate(product.getDiscountEndDate())
                         .totalSold(product.getTotalSold())
                         .productImages(product.getProductImages().stream()
-                                .map(productImage -> CreateProductImageEvent.builder()
+                                .map(productImage -> CreateProductEvent.CreateProductImageEvent.builder()
                                         .productImageId(productImage.getProductImageId())
                                         .imageUrl(productImage.getImageUrl())
                                         .build()
                                 ).toList())
                         .productAttributes(product.getProductAttributes().stream().map(
-                                productAttribute -> CreateProductAttributeEvent.builder()
+                                productAttribute -> CreateProductEvent.CreateProductAttributeEvent.builder()
                                         .productAttributeId(productAttribute.getAttributeId())
                                         .productAttributeName(productAttribute.getAttributeName())
-                                        .productAttributeValues(productAttribute.getProductAttributeValues().stream().map(attributeValue -> CreateProductAttributeValueEvent.builder()
+                                        .productAttributeValues(productAttribute.getProductAttributeValues().stream().map(attributeValue -> CreateProductEvent.CreateProductAttributeValueEvent.builder()
                                                 .productAttributeValueId(attributeValue.getAttributeValueId())
                                                 .value(attributeValue.getValue())
                                                 .build()).toList())
                                         .build()).toList())
                         .productVariants(product.getProductVariants().stream().map(
-                                productVariant -> CreateProductVariantEvent.builder()
+                                productVariant -> CreateProductEvent.CreateProductVariantEvent.builder()
                                         .productVariantId(productVariant.getProductVariantId())
                                         .price(productVariant.getPrice())
                                         .productVariantStatus(productVariant.getProductVariantStatus())
@@ -345,7 +357,7 @@ public class ProductServiceImpl implements ProductService {
                                         .isDefault(productVariant.getIsDefault())
                                         .productVariantAttributeValues(
                                                 productVariant.getProductVariantAttributeValues().stream().map(
-                                                        variantAttrValue -> CreateProductVariantValueEvent.builder()
+                                                        variantAttrValue -> CreateProductEvent.CreateProductVariantValueEvent.builder()
                                                                 .productVariantAttributeValueId(variantAttrValue.getProductVariantAttributeValueId())
                                                                 .productAttributeId(variantAttrValue.getProductAttributeValue().getProductAttribute().getAttributeId())
                                                                 .productAttributeValueId(variantAttrValue.getProductAttributeValue().getAttributeValueId())
@@ -356,8 +368,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProductVariantStatus(Long productVariantId, ReqUpdateProductVariantStatusDTO request) {
+        Long ownerId = userHelper.getCurrentUserId();
         ProductVariant productVariant = productVariantRepository.findById(productVariantId)
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
+
+        if(!productVariant.getProduct().getShop().getOwnerId().equals(ownerId)) {
+            throw new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND);
+        }
         productVariant.setProductVariantStatus(request.getProductVariantStatus());
         productVariantRepository.save(productVariant);
 
@@ -371,27 +388,13 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-
-    @Override
-    @Transactional(readOnly = true)
-    public PageResponse<ResProductDTO> searchProducts(Long shopId, Long categoryId, ProductVariantStatus status,
-                                                      String keyword, int pageNo, int pageSize,
-                                                      String sortBy, String sortDir) {
-
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        Page<Product> productsPage = productRepository.searchProducts(shopId, categoryId, status, keyword, pageable);
-
-        return buildPageResponse(productsPage);
-    }
-
     @Override
     public void updateProductStatusByProductId(Long productId, ReqUpdateProductStatusDTO status) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+        if(!product.getShop().getOwnerId().equals(userHelper.getCurrentUserId())) {
+            throw new NotFoundException(MessageError.PRODUCT_NOT_FOUND);
+        }
         product.setProductStatus(status.getProductStatus());
         productRepository.save(product);
         productEventProducer.send(
@@ -520,115 +523,6 @@ public class ProductServiceImpl implements ProductService {
                             .build()
             );
         }
-    }
-
-    private PageResponse<ResProductDTO> buildPageResponse(Page<Product> productsPage) {
-        List<ResProductDTO> productResponses = productsPage.getContent().stream()
-                .map(this::convertToProductDTO)
-                .collect(Collectors.toList());
-
-        return PageResponse.<ResProductDTO>builder()
-                .pageNo(productsPage.getNumber())
-                .pageSize(productsPage.getSize())
-                .totalElements(productsPage.getTotalElements())
-                .totalPages(productsPage.getTotalPages())
-                .hasNextPage(productsPage.hasNext())
-                .hasPreviousPage(productsPage.hasPrevious())
-                .data(productResponses)
-                .build();
-    }
-
-    private ResProductDTO convertToProductDTO(Product product) {
-        return ResProductDTO.builder()
-                .productId(product.getProductId())
-                .name(product.getName())
-                .description(product.getDescription())
-                .productStatus(product.getProductStatus())
-                .totalSold(product.getTotalSold())
-                .category(buildCategoryResponse(product.getCategory()))
-                .productImages(buildProductImagesResponse(product.getProductImages()))
-                .productAttributes(buildProductAttributesResponse(product.getProductAttributes()))
-                .productVariants(buildProductVariantsResponse(product.getProductVariants()))
-                .createdAt(product.getCreatedAt())
-                .updatedAt(product.getUpdatedAt())
-                .build();
-    }
-
-
-    private ResCategoryDTO buildCategoryResponse(Category category) {
-        if (category == null) {
-            return null;
-        }
-        return ResCategoryDTO.builder()
-                .categoryId(category.getCategoryId())
-                .categoryName(category.getCategoryName())
-                .description(category.getDescription())
-                .categoryStatus(category.getCategoryStatus())
-                .build();
-    }
-
-    private List<ResProductImageDTO> buildProductImagesResponse(List<ProductImage> productImages) {
-        if (!FnCommon.isNotNullOrEmptyList(productImages)) {
-            return new ArrayList<>();
-        }
-        return productImages.stream()
-                .map(productImage -> ResProductImageDTO.builder()
-                        .productImageId(productImage.getProductImageId())
-                        .imageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    private List<ResProductAttributeDTO> buildProductAttributesResponse(List<ProductAttribute> productAttributes) {
-        if (!FnCommon.isNotNullOrEmptyList(productAttributes)) {
-            return new ArrayList<>();
-        }
-        return productAttributes.stream()
-                .map(productAttribute -> ResProductAttributeDTO.builder()
-                        .productAttributeId(productAttribute.getAttributeId())
-                        .attributeName(productAttribute.getAttributeName())
-                        .attributeValues(buildProductAttributeValuesResponse(productAttribute.getProductAttributeValues()))
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    private List<ResProductAttributeValueDTO> buildProductAttributeValuesResponse(List<ProductAttributeValue> attributeValues) {
-        if (!FnCommon.isNotNullOrEmptyList(attributeValues)) {
-            return new ArrayList<>();
-        }
-        return attributeValues.stream()
-                .map(productAttributeValue -> ResProductAttributeValueDTO.builder()
-                        .attributeValueId(productAttributeValue.getAttributeValueId())
-                        .attributeValue(productAttributeValue.getValue())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    private List<ResProductVariantDTO> buildProductVariantsResponse(List<ProductVariant> productVariants) {
-        if (!FnCommon.isNotNullOrEmptyList(productVariants)) {
-            return new ArrayList<>();
-        }
-        return productVariants.stream()
-                .map(productVariant -> {
-                    Map<String, String> attributeValues = productVariant.getProductVariantAttributeValues()
-                            .stream()
-                            .collect(Collectors.toMap(
-                                    variantAttrValue -> variantAttrValue.getProductAttributeValue()
-                                            .getProductAttribute().getAttributeName(),
-                                    variantAttrValue -> variantAttrValue.getProductAttributeValue().getValue()
-                            ));
-
-                    return ResProductVariantDTO.builder()
-                            .productVariantId(productVariant.getProductVariantId())
-                            .price(productVariant.getPrice())
-                            .stockQuantity(productVariant.getStockQuantity())
-                            .sold(productVariant.getSold())
-                            .productVariantStatus(productVariant.getProductVariantStatus())
-                            .isDefault(productVariant.getIsDefault())
-                            .attributeValues(attributeValues)
-                            .build();
-                })
-                .collect(Collectors.toList());
     }
 
 }

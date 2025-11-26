@@ -2,7 +2,9 @@ package com.ecommerce.read.entity;
 
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ProductVariantStatus;
+import com.ecommerce.library.enumeration.ShopStatus;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -15,16 +17,13 @@ import java.util.List;
 @Document(collection = "product_views")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductView extends BaseEntity {
     @Id
-    @Field("productId")
-    private String productId;
-
-    @Field("shopId")
-    private String shopId;
+    @Field("_id")
+    private String _id;
 
     @Field("rating")
     @Builder.Default
@@ -55,6 +54,18 @@ public class ProductView extends BaseEntity {
 
     @Field("categoryId")
     private String categoryId;
+
+    @Field("categoryName")
+    private String categoryName;
+
+    @Field("shopId")
+    private String shopId;
+
+    @Field(name = "shopStatus")
+    private ShopStatus shopStatus;
+
+    @Field("ownerId")
+    private String ownerId;
 
     @Field("productImages")
     @Builder.Default
@@ -95,8 +106,8 @@ public class ProductView extends BaseEntity {
     @AllArgsConstructor
     public static class ProductImage {
         @Id
-        @Field("productImageId")
-        private String productImageId;
+        @Field("_id")
+        private String _id;
         @Field("url")
         private String url;
     }
@@ -108,8 +119,9 @@ public class ProductView extends BaseEntity {
     @AllArgsConstructor
     public static class ProductAttribute {
         @Id
-        @Field("productAttributeId")
-        private String productAttributeId;
+        @Field("_id")
+        private String _id;
+
         @Field("productAttributeName")
         private String productAttributeName;
         @Builder.Default
@@ -124,8 +136,8 @@ public class ProductView extends BaseEntity {
     @AllArgsConstructor
     public static class ProductAttributeValue {
         @Id
-        @Field("productAttributeValueId")
-        private String productAttributeValueId;
+        @Field("_id")
+        private String _id;
         @Field("productAttributeValue")
         private String productAttributeValue;
     }
@@ -138,8 +150,8 @@ public class ProductView extends BaseEntity {
     @AllArgsConstructor
     public static class ProductVariant {
         @Id
-        @Field("productVariantId")
-        private String productVariantId;
+        @Field("_id")
+        private String _id;
 
         @Field("productVariantStatus")
         private ProductVariantStatus productVariantStatus;
@@ -174,11 +186,12 @@ public class ProductView extends BaseEntity {
     @AllArgsConstructor
     public static class ProductVariantAttributeValue {
         @Id
-        @Field("productVariantAttributeValueId")
-        private String productVariantAttributeValueId;
+        @Field("_id")
+        private String _id;
         @Field("productAttributeId")
         private String productAttributeId;
         @Field("productAttributeValueId")
         private String productAttributeValueId;
     }
+
 }

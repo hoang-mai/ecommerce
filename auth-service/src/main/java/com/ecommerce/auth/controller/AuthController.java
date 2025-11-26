@@ -35,7 +35,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(loginDTO.getExpiresIn())
+                .maxAge(loginDTO.getRefreshExpiresIn())
                 .sameSite("Lax")
                 .build();
 
@@ -123,7 +123,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(resRefreshTokenDTO.getExpiresIn())
+                .maxAge(resRefreshTokenDTO.getRefreshExpiresIn())
                 .sameSite("Lax")
                 .build();
 

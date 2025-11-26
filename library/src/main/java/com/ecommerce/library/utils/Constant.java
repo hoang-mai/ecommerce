@@ -35,4 +35,5 @@ public final class Constant {
     public static final String USER_CHAT = REQUEST_MAPPING + "/user-chat";
     public static final String CART_VIEW = REQUEST_MAPPING + "/cart-view";
     public static final String PRODUCT_VIEW = REQUEST_MAPPING + "/product-view";
+    public static final String SHOP_VIEW = REQUEST_MAPPING + "/shop-view";
 }

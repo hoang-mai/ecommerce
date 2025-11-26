@@ -24,8 +24,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class Message {
 
     @Id
-    @Field("message_id")
-    private String messageId;
+    @Field("_id")
+    private String _id;
 
     @Field("message_type")
     private MessageType messageType;

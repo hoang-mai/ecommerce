@@ -45,11 +45,12 @@ public class ProductViewController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) ProductStatus status,
             @RequestParam(required = false) String keyword,
+            @RequestParam(value = "isOwner", defaultValue = "false", required = false) boolean isOwner,
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = "createdAt", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
-        PageResponse<ProductViewDTO> page = productViewService.searchProducts(shopId, categoryId, status, keyword, pageNo, pageSize, sortBy, sortDir);
+        PageResponse<ProductViewDTO> page = productViewService.searchProducts(isOwner,shopId, categoryId, status, keyword, pageNo, pageSize, sortBy, sortDir);
 
         return ResponseEntity.ok(
                 BaseResponse.<PageResponse<ProductViewDTO>>builder()
@@ -59,6 +60,7 @@ public class ProductViewController {
                         .build()
         );
     }
+
     /**
      * Lấy thông tin sản phẩm theo ID
      *
@@ -67,8 +69,11 @@ public class ProductViewController {
      */
     @GetMapping("/{productId}")
     @Operation(summary = "Get product by ID", description = "Retrieve product details by product ID")
-    public ResponseEntity<BaseResponse<ProductViewDTO>> getProductById(@PathVariable Long productId) {
-        ProductViewDTO productResponse = productViewService.getProductById(productId);
+    public ResponseEntity<BaseResponse<ProductViewDTO>> getProductById(
+            @PathVariable Long productId,
+            @RequestParam(value = "isOwner", defaultValue = "false", required = false) boolean isOwner
+            ) {
+        ProductViewDTO productResponse = productViewService.getProductById(productId, isOwner);
 
         return ResponseEntity.ok(BaseResponse.<ProductViewDTO>builder()
                 .statusCode(HttpStatus.OK.value())

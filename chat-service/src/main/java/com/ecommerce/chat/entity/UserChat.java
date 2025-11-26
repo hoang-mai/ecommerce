@@ -13,8 +13,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Builder
 public class UserChat {
     @Id
-    @Field("user_chat_id")
-    private String userChatId;
+    @Field("_id")
+    private String _id;
 
     @Field("user_id")
     private String userId;

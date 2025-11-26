@@ -110,38 +110,4 @@ public class ProductController {
                 .build());
     }
 
-    /**
-     * Tìm kiếm sản phẩm với nhiều bộ lọc
-     *
-     * @param shopId ID của shop (optional)
-     * @param categoryId ID của category (optional)
-     * @param status Trạng thái sản phẩm (optional)
-     * @param keyword Từ khóa tìm kiếm (optional)
-     * @param pageNo Số trang (mặc định là 0)
-     * @param pageSize Kích thước trang (mặc định là 10)
-     * @param sortBy Trường sắp xếp (mặc định là createdAt)
-     * @param sortDir Hướng sắp xếp (mặc định là desc)
-     * @return Danh sách sản phẩm phù hợp
-     */
-    @GetMapping("/search")
-    @Operation(summary = "Search products", description = "Search products with multiple filters")
-    public ResponseEntity<BaseResponse<PageResponse<ResProductDTO>>> searchProducts(
-            @RequestParam(required = false) Long shopId,
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) ProductVariantStatus status,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "createdAt", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
-
-        PageResponse<ResProductDTO> pageResponse = productService.searchProducts(
-                shopId, categoryId, status, keyword, pageNo, pageSize, sortBy, sortDir);
-
-        return ResponseEntity.ok(BaseResponse.<PageResponse<ResProductDTO>>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message(messageService.getMessage(MessageSuccess.PRODUCTS_RETRIEVED_SUCCESS))
-                .data(pageResponse)
-                .build());
-    }
 }

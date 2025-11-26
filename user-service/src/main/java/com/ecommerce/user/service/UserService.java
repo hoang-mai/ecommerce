@@ -1,10 +1,6 @@
 package com.ecommerce.user.service;
 
-import com.ecommerce.library.enumeration.Role;
-import com.ecommerce.user.ReqCreateUserDTO;
-import com.ecommerce.user.ReqRollbackUpdateUserRoleAndVerificationStatusDTO;
-import com.ecommerce.user.ReqUpdateUserRoleAndVerificationStatusDTO;
-import com.ecommerce.user.ResUpdateUserRoleAndVerificationStatusDTO;
+import com.ecommerce.user.*;
 import com.ecommerce.user.dto.*;
 import com.ecommerce.library.utils.PageResponse;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +15,7 @@ public interface UserService {
      * @param reqCreateUserDTO DTO chứa thông tin người dùng mới
      * @return userId của người dùng đã được tạo
      */
-    Long createUser(ReqCreateUserDTO reqCreateUserDTO);
+    ResCreateUserDTO createUser(ReqCreateUserDTO reqCreateUserDTO);
 
     /**
      * Lấy thông tin người dùng theo ID.

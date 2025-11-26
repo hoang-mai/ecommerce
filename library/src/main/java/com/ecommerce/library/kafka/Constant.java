@@ -18,6 +18,9 @@ public final class Constant {
     public static final String CREATE_CART_TOPIC = READ_SERVICE_TOPIC + ".create-cart";
     public static final String UPDATE_CART_ITEM_TOPIC = READ_SERVICE_TOPIC + ".update-cart-item";
     public static final String DELETE_CART_ITEM_TOPIC = READ_SERVICE_TOPIC + ".delete-cart-item";
+    public static final String CREATE_SHOP_TOPIC = READ_SERVICE_TOPIC + ".create-shop";
+    public static final String UPDATE_SHOP_STATUS_TOPIC = READ_SERVICE_TOPIC + ".update-shop-status";
+    public static final String UPDATE_SHOP_TOPIC = READ_SERVICE_TOPIC + ".update-shop";
     // Order Service Kafka Topics and Group
     public static final String ORDER_SERVICE_TOPIC = "order-service-topic";
     public static final String ORDER_SERVICE_GROUP = "order-service-group";

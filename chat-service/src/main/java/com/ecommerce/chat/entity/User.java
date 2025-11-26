@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    @Field("user_id")
-    private String userId;
+    @Field("_id")
+    private String _id;
 
     @Field("avatar_url")
     private String avatarUrl;

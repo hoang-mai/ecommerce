@@ -1,17 +1,19 @@
 package com.ecommerce.product.service.impl;
 
 import com.ecommerce.library.component.UserHelper;
+import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.exception.NotFoundException;
+import com.ecommerce.library.kafka.event.shop.CreateShopEvent;
+import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.product.dto.ReqCreateShopDTO;
 import com.ecommerce.product.dto.ReqUpdateShopDTO;
 import com.ecommerce.product.dto.ReqUpdateShopStatusDTO;
-import com.ecommerce.product.dto.ResShopDTO;
 import com.ecommerce.product.entity.Shop;
-import com.ecommerce.product.repository.CategoryRepository;
+import com.ecommerce.product.messaging.producer.ShopEventProducer;
 import com.ecommerce.product.repository.ShopRepository;
 import com.ecommerce.product.service.FileService;
 import com.ecommerce.product.service.ShopService;
@@ -31,9 +33,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ShopServiceImpl implements ShopService {
 
+    private final ShopEventProducer shopEventProducer;
     private final ShopRepository shopRepository;
     private final UserHelper userHelper;
     private final FileService fileService;
+
     @Transactional
     @Override
     public void createShop(ReqCreateShopDTO reqCreateShopDTO, MultipartFile logoFile, MultipartFile bannerFile) {
@@ -55,22 +59,43 @@ public class ShopServiceImpl implements ShopService {
                 .build();
         shopRepository.save(shop);
         String logoUrl;
-        if(logoFile != null) {
+        if (logoFile != null) {
             logoUrl = fileService.uploadFile(logoFile, "shop" + shop.getShopId() + "/logo");
             shop.setLogoUrl(logoUrl);
 
         }
         String bannerUrl;
-        if(bannerFile != null) {
+        if (bannerFile != null) {
             bannerUrl = fileService.uploadFile(bannerFile, "shop" + shop.getShopId() + "/banner");
             shop.setBannerUrl(bannerUrl);
         }
         shopRepository.save(shop);
+        shopEventProducer.send(
+                CreateShopEvent.builder()
+                        .shopId(shop.getShopId())
+                        .ownerId(shop.getOwnerId())
+                        .shopName(shop.getShopName())
+                        .description(shop.getDescription())
+                        .logoUrl(shop.getLogoUrl())
+                        .bannerUrl(shop.getBannerUrl())
+                        .shopStatus(shop.getShopStatus())
+                        .province(shop.getProvince())
+                        .ward(shop.getWard())
+                        .detail(shop.getDetail())
+                        .phoneNumber(shop.getPhoneNumber())
+                        .createdAt(shop.getCreatedAt())
+                        .updatedAt(shop.getUpdatedAt())
+                        .build()
+        );
     }
+
     @Transactional
     @Override
     public void updateShop(Long shopId, ReqUpdateShopDTO reqUpdateShopDTO, MultipartFile logoFile, MultipartFile bannerFile) {
-        Shop shop = shopRepository.findById(shopId)
+
+        Long ownerId = userHelper.getCurrentUserId();
+
+        Shop shop = shopRepository.findByShopIdAndOwnerId(shopId, ownerId)
                 .orElseThrow(() -> new NotFoundException(MessageError.SHOP_NOT_FOUND));
 
         shop.setShopName(reqUpdateShopDTO.getShopName());
@@ -80,115 +105,86 @@ public class ShopServiceImpl implements ShopService {
         shop.setDetail(reqUpdateShopDTO.getDetail());
         shop.setPhoneNumber(reqUpdateShopDTO.getPhoneNumber());
 
-        if(logoFile != null) {
+        if (logoFile != null) {
             String logoUrl = fileService.uploadFile(logoFile, "shop" + shop.getShopId() + "/logo");
             shop.setLogoUrl(logoUrl);
         }
-        if(bannerFile != null) {
+        if (bannerFile != null) {
             String bannerUrl = fileService.uploadFile(bannerFile, "shop" + shop.getShopId() + "/banner");
             shop.setBannerUrl(bannerUrl);
         }
-        if(logoFile == null && !FnCommon.isNotNullOrEmpty(reqUpdateShopDTO.getLogoUrl())) {
+        if (logoFile == null && !FnCommon.isNotNullOrEmpty(reqUpdateShopDTO.getLogoUrl())) {
             shop.setLogoUrl(null);
             fileService.deleteFilesInDirectory("shop" + shop.getShopId() + "/logo");
         }
-        if(bannerFile == null && !FnCommon.isNotNullOrEmpty(reqUpdateShopDTO.getBannerUrl())) {
+        if (bannerFile == null && !FnCommon.isNotNullOrEmpty(reqUpdateShopDTO.getBannerUrl())) {
             shop.setBannerUrl(null);
             fileService.deleteFilesInDirectory("shop" + shop.getShopId() + "/banner");
         }
 
 
         shopRepository.save(shop);
+        shopEventProducer.send(
+                CreateShopEvent.builder()
+                        .shopId(shop.getShopId())
+                        .ownerId(shop.getOwnerId())
+                        .shopName(shop.getShopName())
+                        .description(shop.getDescription())
+                        .logoUrl(shop.getLogoUrl())
+                        .bannerUrl(shop.getBannerUrl())
+                        .shopStatus(shop.getShopStatus())
+                        .province(shop.getProvince())
+                        .ward(shop.getWard())
+                        .detail(shop.getDetail())
+                        .phoneNumber(shop.getPhoneNumber())
+                        .createdAt(shop.getCreatedAt())
+                        .updatedAt(shop.getUpdatedAt())
+                        .build()
+        );
     }
 
     @Override
     public void updateShopStatus(Long shopId, ReqUpdateShopStatusDTO reqUpdateShopStatusDTO) {
-        Shop shop = shopRepository.findById(shopId)
-                .orElseThrow(() -> new NotFoundException(MessageError.SHOP_NOT_FOUND));
+        Shop shop;
+        Role currentUserRole = userHelper.getRole();
+        if (currentUserRole == Role.OWNER) {
+            Long ownerId = userHelper.getCurrentUserId();
+            shop = shopRepository.findByShopIdAndOwnerId(shopId, ownerId)
+                    .orElseThrow(() -> new NotFoundException(MessageError.SHOP_NOT_FOUND));
 
-        if (reqUpdateShopStatusDTO.getShopStatus() == ShopStatus.ACTIVE &&
-            shop.getShopStatus() == ShopStatus.INACTIVE) {
-            long shopCount = shopRepository.countByOwnerIdAndStatus(shop.getOwnerId());
-            if (shopCount >= 50) {
-                throw new IllegalStateException(MessageError.EXCEED_MAX_SHOP_LIMIT);
+            if (reqUpdateShopStatusDTO.getShopStatus() == ShopStatus.SUSPENDED) {
+                throw new IllegalStateException(MessageError.UNAUTHORIZED_ACTION);
             }
+            if (shop.getShopStatus() == ShopStatus.SUSPENDED) {
+                throw new IllegalStateException(MessageError.UNAUTHORIZED_ACTION);
+            }
+
+            if (reqUpdateShopStatusDTO.getShopStatus() == ShopStatus.ACTIVE &&
+                    shop.getShopStatus() == ShopStatus.INACTIVE) {
+                long shopCount = shopRepository.countByOwnerIdAndStatus(shop.getOwnerId());
+                if (shopCount >= 50) {
+                    throw new IllegalStateException(MessageError.EXCEED_MAX_SHOP_LIMIT);
+                }
+            }
+        } else if (currentUserRole == Role.ADMIN) {
+            shop = shopRepository.findById(shopId)
+                    .orElseThrow(() -> new NotFoundException(MessageError.SHOP_NOT_FOUND));
+            if (reqUpdateShopStatusDTO.getShopStatus() == ShopStatus.INACTIVE) {
+                throw new IllegalStateException(MessageError.UNAUTHORIZED_ACTION);
+            }
+        } else {
+            throw new IllegalStateException(MessageError.UNAUTHORIZED_ACTION);
         }
 
         shop.setShopStatus(reqUpdateShopStatusDTO.getShopStatus());
         shopRepository.save(shop);
+        shopEventProducer.send(
+                UpdateShopStatusEvent.builder()
+                        .shopId(shop.getShopId())
+                        .shopStatus(shop.getShopStatus())
+                        .build()
+        );
     }
 
-    @Override
-    public PageResponse<ResShopDTO> getShops(ShopStatus status,
-                                             String keyword, int pageNo, int pageSize,
-                                             String sortBy, String sortDir) {
 
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        Page<Shop> shopsPage = shopRepository.searchShops( status, keyword, pageable);
-
-        return buildPageResponse(shopsPage);
-    }
-
-    @Override
-    public PageResponse<ResShopDTO> getShopsByCurrentOwner(ShopStatus status,
-                                                            String keyword, int pageNo, int pageSize,
-                                                            String sortBy, String sortDir) {
-
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        Long currentOwnerId = userHelper.getCurrentUserId();
-        Page<Shop> shopsPage = shopRepository.searchShopsByOwner(currentOwnerId, status, keyword, pageable);
-
-        return buildPageResponse(shopsPage);
-    }
-
-    @Override
-    public ResShopDTO getShopById(Long shopId) {
-        Shop shop = shopRepository.findById(shopId)
-                .orElseThrow(() -> new NotFoundException(MessageError.SHOP_NOT_FOUND));
-        
-        return convertToShopDTO(shop);
-    }
-
-    private PageResponse<ResShopDTO> buildPageResponse(Page<Shop> shopsPage) {
-        List<ResShopDTO> shopResponses = shopsPage.getContent().stream()
-                .map(this::convertToShopDTO)
-                .collect(Collectors.toList());
-
-        return PageResponse.<ResShopDTO>builder()
-                .pageNo(shopsPage.getNumber())
-                .pageSize(shopsPage.getSize())
-                .totalElements(shopsPage.getTotalElements())
-                .totalPages(shopsPage.getTotalPages())
-                .hasNextPage(shopsPage.hasNext())
-                .hasPreviousPage(shopsPage.hasPrevious())
-                .data(shopResponses)
-                .build();
-    }
-
-    private ResShopDTO convertToShopDTO(Shop shop) {
-        return ResShopDTO.builder()
-                .shopId(shop.getShopId())
-                .ownerId(shop.getOwnerId())
-                .shopName(shop.getShopName())
-                .description(shop.getDescription())
-                .logoUrl(fileService.getPresignedUrl(shop.getLogoUrl()))
-                .bannerUrl(fileService.getPresignedUrl(shop.getBannerUrl()))
-                .rating(shop.getRating())
-                .shopStatus(shop.getShopStatus())
-                .province(shop.getProvince())
-                .ward(shop.getWard())
-                .detail(shop.getDetail())
-                .phoneNumber(shop.getPhoneNumber())
-                .createdAt(shop.getCreatedAt())
-                .updatedAt(shop.getUpdatedAt())
-                .build();
-    }
 }

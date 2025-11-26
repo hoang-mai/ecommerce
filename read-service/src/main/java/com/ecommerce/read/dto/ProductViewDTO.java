@@ -2,6 +2,7 @@ package com.ecommerce.read.dto;
 
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ProductVariantStatus;
+import com.ecommerce.library.enumeration.ShopStatus;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
@@ -26,9 +27,13 @@ public class ProductViewDTO {
     private LocalDateTime discountStartDate;
     private LocalDateTime discountEndDate;
     private String categoryId;
+    private String categoryName;
+    private ShopStatus shopStatus;
     private List<ProductImageDTO> productImages;
     private List<ProductAttributeDTO> productAttributes;
     private List<ProductVariantDTO> productVariants;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @Getter
     @Setter

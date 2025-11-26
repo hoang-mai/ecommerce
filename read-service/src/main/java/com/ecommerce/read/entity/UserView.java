@@ -3,6 +3,7 @@ package com.ecommerce.read.entity;
 import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,13 +15,13 @@ import java.time.LocalDateTime;
 @Document("user_views")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserView extends BaseEntity{
+public class UserView extends BaseEntity {
     @Id
-    @Field(name = "userId")
-    private String userId;
+    @Field(name = "_id")
+    private String _id;
 
     @Field(name = "username")
     private String username;

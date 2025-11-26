@@ -19,7 +19,8 @@ import java.time.LocalDateTime;
 public class PushSubscription {
 
     @Id
-    private String pushSubscriptionId;
+    @Field("_id")
+    private String _id;
 
     @Field("userId")
     private Long userId;

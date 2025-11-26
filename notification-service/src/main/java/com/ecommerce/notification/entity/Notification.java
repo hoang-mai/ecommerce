@@ -18,7 +18,8 @@ import java.time.LocalDateTime;
 public class Notification {
 
     @Id
-    private String notificationId;
+    @Field("_id")
+    private String _id;
 
     private Long userId;
 

@@ -155,6 +155,14 @@ public class AuthServiceImpl implements AuthService {
                     .notBeforePolicy(resKeyCloakRefreshTokenDTO.getNotBeforePolicy())
                     .scope(resKeyCloakRefreshTokenDTO.getScope())
                     .build();
+        }catch (HttpClientErrorException e) {
+            String errorJson = e.getResponseBodyAsString();
+            if (errorJson.contains("Token is not active")) {
+                throw new HttpRequestException(messageService.getMessage(MessageError.TOKEN_EXPIRED), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
+            } else {
+                throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_PARSE_ERROR_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            }
+
         } catch (Exception e) {
             throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         }

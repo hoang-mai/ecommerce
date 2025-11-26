@@ -2,10 +2,7 @@ package com.ecommerce.user.service.impl;
 
 import com.ecommerce.library.kafka.event.user.UpdateAvatarUserEvent;
 import com.ecommerce.library.kafka.event.user.UpdateUserEvent;
-import com.ecommerce.user.ReqCreateUserDTO;
-import com.ecommerce.user.ReqRollbackUpdateUserRoleAndVerificationStatusDTO;
-import com.ecommerce.user.ReqUpdateUserRoleAndVerificationStatusDTO;
-import com.ecommerce.user.ResUpdateUserRoleAndVerificationStatusDTO;
+import com.ecommerce.user.*;
 import com.ecommerce.user.dto.*;
 import com.ecommerce.user.entity.User;
 import com.ecommerce.library.component.UserHelper;
@@ -80,6 +77,12 @@ public class UserServiceImpl implements UserService {
             user.setAvatarUrl(null);
             fileService.deleteFilesInDirectory("avatars/" + currentUserId);
             userRepository.save(user);
+            userEventProducer.send(
+                    UpdateAvatarUserEvent.builder()
+                            .userId(user.getUserId())
+                            .avatarUrl(null)
+                            .build()
+            );
             return;
         }
         if (file.getSize() > 3 * 1024 * 1024) {
@@ -131,7 +134,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Long createUser(ReqCreateUserDTO reqCreateUserDTO) {
+    public ResCreateUserDTO createUser(ReqCreateUserDTO reqCreateUserDTO) {
         User user = User.builder()
                 .firstName(reqCreateUserDTO.getFirstName())
                 .middleName(reqCreateUserDTO.getMiddleName())
@@ -150,7 +153,12 @@ public class UserServiceImpl implements UserService {
                 .build();
         user.setAddresses(List.of(address));
         userRepository.save(user);
-        return user.getUserId();
+        return ResCreateUserDTO.newBuilder()
+                .setUserId(user.getUserId())
+                .setCreatedAt(FnCommon.convertLocalDateTimeToTimestamp(user.getCreatedAt()))
+                .setUpdatedAt(FnCommon.convertLocalDateTimeToTimestamp(user.getUpdatedAt()))
+                .build();
+
     }
 
 
@@ -160,11 +168,11 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
 
-        if (FnCommon.isNotNull(reqUpdateUserDTO.getEmail())) {
+        if (FnCommon.isNotNullOrEmpty(reqUpdateUserDTO.getEmail())) {
             if (userRepository.existsEmailAlreadyUsedByAnotherUser(userId, reqUpdateUserDTO.getEmail()))
                 throw new DuplicateException(MessageError.EMAIL_EXISTS);
+            user.setEmail(reqUpdateUserDTO.getEmail());
         }
-        user.setEmail(reqUpdateUserDTO.getEmail());
         user.setDescription(reqUpdateUserDTO.getDescription());
         user.setFirstName(reqUpdateUserDTO.getFirstName());
         user.setMiddleName(reqUpdateUserDTO.getMiddleName());

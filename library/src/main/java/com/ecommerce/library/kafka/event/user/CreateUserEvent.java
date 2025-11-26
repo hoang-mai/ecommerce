@@ -4,6 +4,8 @@ import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 @AllArgsConstructor
@@ -19,4 +21,6 @@ public class CreateUserEvent {
     private String lastName;
     private String phoneNumber;
     private Role role;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

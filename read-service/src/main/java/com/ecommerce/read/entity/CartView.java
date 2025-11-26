@@ -1,6 +1,7 @@
 package com.ecommerce.read.entity;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -13,12 +14,12 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class CartView extends BaseEntity {
 
     @Id
-    @Field("cartId")
-    private String cartId;
+    @Field("_id")
+    private String _id;
 
     @Field("userId")
     private String userId;
@@ -46,8 +47,8 @@ public class CartView extends BaseEntity {
     @AllArgsConstructor
     public static class CartItem {
         @Id
-        @Field("cartItemId")
-        private String cartItemId;
+        @Field("_id")
+        private String _id;
 
         @Field("productId")
         private String productId;
@@ -67,8 +68,8 @@ public class CartView extends BaseEntity {
     @AllArgsConstructor
     public static class ProductCartItem{
         @Id
-        @Field("productCartItemId")
-        private String productCartItemId;
+        @Field("_id")
+        private String _id;
 
         @Field("productVariantId")
         private String productVariantId;

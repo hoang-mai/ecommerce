@@ -91,6 +91,8 @@ public class CartServiceImpl implements CartService {
                 CreateCartEvent.builder()
                         .cartId(cart.getCartId())
                         .userId(cart.getUserId())
+                        .createdAt(cart.getCreatedAt())
+                        .updatedAt(cart.getUpdatedAt())
                         .createCartItemEventList(
                                 cart.getCartItems().stream().map(cartItem -> CreateCartItemEvent.builder()
                                         .cartItemId(cartItem.getCartItemId())

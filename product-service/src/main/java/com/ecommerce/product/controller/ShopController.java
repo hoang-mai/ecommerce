@@ -9,7 +9,6 @@ import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.product.dto.ReqCreateShopDTO;
 import com.ecommerce.product.dto.ReqUpdateShopDTO;
 import com.ecommerce.product.dto.ReqUpdateShopStatusDTO;
-import com.ecommerce.product.dto.ResShopDTO;
 import com.ecommerce.product.service.ShopService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -79,83 +78,6 @@ public class ShopController {
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.UPDATE_SHOP_STATUS_SUCCESS))
-                .build());
-    }
-
-    /**
-     * Lấy danh sách shop với phân trang, filter và sort
-     *
-     * @param status Trạng thái của shop (optional)
-     * @param keyword Từ khóa tìm kiếm (optional)
-     * @param pageNo Số trang (mặc định là 0)
-     * @param pageSize Kích thước trang (mặc định là 10)
-     * @param sortBy Trường sắp xếp (mặc định là createdAt)
-     * @param sortDir Hướng sắp xếp (mặc định là desc)
-     * @return Danh sách shop phù hợp
-     */
-    @GetMapping("/search")
-    public ResponseEntity<BaseResponse<PageResponse<ResShopDTO>>> getShops(
-            @RequestParam(required = false) ShopStatus status,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "createdAt", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
-
-        PageResponse<ResShopDTO> pageResponse = shopService.getShops(
-                 status, keyword, pageNo, pageSize, sortBy, sortDir);
-
-        return ResponseEntity.ok(BaseResponse.<PageResponse<ResShopDTO>>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message(messageService.getMessage(MessageSuccess.GET_SHOP_SUCCESS))
-                .data(pageResponse)
-                .build());
-    }
-
-    /**
-     * Lấy danh sách shop của chủ nhân hiện tại với phân trang, filter và sort
-     *
-     * @param status Trạng thái của shop (optional)
-     * @param keyword Từ khóa tìm kiếm (optional)
-     * @param pageNo Số trang (mặc định là 0)
-     * @param pageSize Kích thước trang (mặc định là 10)
-     * @param sortBy Trường sắp xếp (mặc định là createdAt)
-     * @param sortDir Hướng sắp xếp (mặc định là desc)
-     * @return Danh sách shop của chủ nhân hiện tại
-     */
-    @GetMapping()
-    public ResponseEntity<BaseResponse<PageResponse<ResShopDTO>>> getShopsByCurrentOwner(
-            @RequestParam(required = false) ShopStatus status,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "createdAt", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
-
-        PageResponse<ResShopDTO> pageResponse = shopService.getShopsByCurrentOwner(
-                status, keyword, pageNo, pageSize, sortBy, sortDir);
-
-        return ResponseEntity.ok(BaseResponse.<PageResponse<ResShopDTO>>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message(messageService.getMessage(MessageSuccess.GET_SHOP_SUCCESS))
-                .data(pageResponse)
-                .build());
-    }
-
-    /**
-     * Lấy chi tiết shop theo ID
-     *
-     * @param shopId ID của shop
-     * @return Chi tiết shop
-     */
-    @GetMapping("/{shopId}")
-    public ResponseEntity<BaseResponse<ResShopDTO>> getShopById(@PathVariable Long shopId) {
-        ResShopDTO shopDTO = shopService.getShopById(shopId);
-        
-        return ResponseEntity.ok(BaseResponse.<ResShopDTO>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message(messageService.getMessage(MessageSuccess.GET_SHOP_SUCCESS))
-                .data(shopDTO)
                 .build());
     }
 

@@ -23,8 +23,8 @@ import lombok.Setter;
 public class Chat {
 
     @Id
-    @Field("chat_id")
-    private String chatId;
+    @Field("_id")
+    private String _id;
 
     @CreatedDate
     @Field("created_at")

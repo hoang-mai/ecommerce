@@ -21,14 +21,10 @@ public class GrpcUserService extends UserServiceGrpc.UserServiceImplBase {
 
     @Override
     public void createUser(ReqCreateUserDTO reqCreateUserDTO, StreamObserver<BaseResponse> responseObserver) {
-        Long userId = userService.createUser(reqCreateUserDTO);
-        ResCreateUserDTO resCreateAccountDTO = ResCreateUserDTO.newBuilder()
-                .setUserId(userId)
-                .build();
         BaseResponse response = BaseResponse.newBuilder()
                 .setStatusCode(201)
                 .setMessage(messageService.getMessage(MessageSuccess.USER_CREATED_SUCCESS))
-                .setData(Any.pack(resCreateAccountDTO))
+                .setData(Any.pack(userService.createUser(reqCreateUserDTO)))
                 .build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();

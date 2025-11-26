@@ -36,23 +36,6 @@ public interface ProductService {
     void updateProductVariantStatus(Long productVariantId, ReqUpdateProductVariantStatusDTO request);
 
     /**
-     * Tìm kiếm sản phẩm với nhiều bộ lọc
-     *
-     * @param shopId ID của shop (optional)
-     * @param categoryId ID của category (optional)
-     * @param status Trạng thái sản phẩm (optional)
-     * @param keyword Từ khóa tìm kiếm (optional)
-     * @param pageNo Số trang
-     * @param pageSize Kích thước trang
-     * @param sortBy Trường sắp xếp
-     * @param sortDir Hướng sắp xếp
-     * @return Danh sách sản phẩm phù hợp
-     */
-    PageResponse<ResProductDTO> searchProducts(Long shopId, Long categoryId, ProductVariantStatus status,
-                                                String keyword, int pageNo, int pageSize,
-                                                String sortBy, String sortDir);
-
-    /**
      * Cập nhật trạng thái sản phẩm theo ID sản phẩm
      * @param productId ID của sản phẩm
      * @param status Trạng thái mới

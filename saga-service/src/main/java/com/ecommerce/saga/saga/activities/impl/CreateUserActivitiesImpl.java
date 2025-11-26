@@ -42,7 +42,7 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
                             .setFirstName(createUserData.getFirstName())
                             .setMiddleName(createUserData.getMiddleName())
                             .setLastName(createUserData.getLastName())
-                            .setGender(FnCommon.isNotNull(createUserData.getGender()) ? FnCommon.convertGenderToGenderProto(createUserData.getGender()) : Gender.GENDER_UNSPECIFIED )
+                            .setGender(FnCommon.isNotNull(createUserData.getGender()) ? FnCommon.convertGenderToGenderProto(createUserData.getGender()) : Gender.GENDER_UNSPECIFIED)
                             .setRole(FnCommon.convertRoleToRoleProto(createUserData.getRole()))
                             .setWard(createUserData.getWard())
                             .setProvince(createUserData.getProvince())
@@ -56,6 +56,8 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
                 try {
                     ResCreateUserDTO res = baseResponse.getData().unpack(ResCreateUserDTO.class);
                     createUserData.setUserId(res.getUserId());
+                    createUserData.setCreatedAt(FnCommon.convertTimestampToLocalDateTime(res.getCreatedAt()));
+                    createUserData.setUpdatedAt(FnCommon.convertTimestampToLocalDateTime(res.getUpdatedAt()));
                     return createUserData;
                 } catch (InvalidProtocolBufferException e) {
                     throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
@@ -110,6 +112,8 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
                 .lastName(createUserData.getLastName())
                 .accountStatus(createUserData.getAccountStatus())
                 .role(createUserData.getRole())
+                .createdAt(createUserData.getCreatedAt())
+                .updatedAt(createUserData.getUpdatedAt())
                 .build());
     }
 

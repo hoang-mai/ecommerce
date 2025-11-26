@@ -2,6 +2,7 @@ package com.ecommerce.read.entity;
 
 import com.ecommerce.library.enumeration.OrderStatus;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -15,14 +16,14 @@ import java.util.List;
 @Document(collection = "order_views")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderView extends BaseEntity {
 
     @Id
-    @Field(name = "orderId")
-    private String orderId;
+    @Field(name = "_id")
+    private String _id;
 
     @Field(name = "userId")
     private String userId;
@@ -60,8 +61,8 @@ public class OrderView extends BaseEntity {
     public static class OrderItem {
 
         @Id
-        @Field(name = "orderItemId")
-        private String orderItemId;
+        @Field(name = "_id")
+        private String _id;
 
         @Field(name = "productId")
         private String productId;
@@ -87,8 +88,8 @@ public class OrderView extends BaseEntity {
     public static class ProductVariant {
 
         @Id
-        @Field(name = "productVariantId")
-        private String productVariantId;
+        @Field(name = "_id")
+        private String _id;
 
         @Field(name = "price")
         private BigDecimal price;
@@ -125,8 +126,8 @@ public class OrderView extends BaseEntity {
     public static class ProductImage {
 
         @Id
-        @Field(name = "productImageId")
-        private String productImageId;
+        @Field(name = "_id")
+        private String _id;
 
         @Field(name = "imageUrl")
         private String imageUrl;

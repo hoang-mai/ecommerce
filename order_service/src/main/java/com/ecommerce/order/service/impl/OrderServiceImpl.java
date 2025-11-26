@@ -80,6 +80,8 @@ public class OrderServiceImpl implements OrderService {
                         .receiverName(order.getReceiverName())
                         .address(order.getAddress())
                         .phoneNumber(order.getPhoneNumber())
+                        .createdAt(order.getCreatedAt())
+                        .updatedAt(order.getUpdatedAt())
                         .createOrderItemEventList(order.getItems().stream()
                                 .map(item -> CreateOrderItemEvent.builder()
                                         .orderItemId(item.getOrderItemId())

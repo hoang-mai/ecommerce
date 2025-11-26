@@ -1,0 +1,102 @@
+package com.ecommerce.read.controller;
+
+import com.ecommerce.library.component.MessageService;
+import com.ecommerce.library.enumeration.ShopStatus;
+import com.ecommerce.library.utils.BaseResponse;
+import com.ecommerce.library.utils.Constant;
+import com.ecommerce.library.utils.MessageSuccess;
+import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.entity.ShopView;
+import com.ecommerce.read.service.ShopViewService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping(value = Constant.SHOP_VIEW)
+@RequiredArgsConstructor
+public class ShopViewController {
+
+    private final MessageService messageService;
+    private final ShopViewService shopViewService;
+
+    /**
+     * Lấy danh sách shop của chủ nhân hiện tại với phân trang, filter và sort
+     *
+     * @param status   Trạng thái của shop (optional)
+     * @param keyword  Từ khóa tìm kiếm (optional)
+     * @param pageNo   Số trang (mặc định là 0)
+     * @param pageSize Kích thước trang (mặc định là 10)
+     * @param sortBy   Trường sắp xếp (mặc định là createdAt)
+     * @param sortDir  Hướng sắp xếp (mặc định là desc)
+     * @return Danh sách shop của chủ nhân hiện tại
+     */
+    @GetMapping()
+    public ResponseEntity<BaseResponse<PageResponse<ShopView>>> getShopsByCurrentOwner(
+            @RequestParam(required = false) ShopStatus status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = "createdAt", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
+
+        PageResponse<ShopView> pageResponse = shopViewService.getShopsByCurrentOwner(
+                status, keyword, pageNo, pageSize, sortBy, sortDir);
+
+        return ResponseEntity.ok(BaseResponse.<PageResponse<ShopView>>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_SHOP_SUCCESS))
+                .data(pageResponse)
+                .build());
+    }
+
+    /**
+     * Lấy danh sách shop với phân trang, filter và sort
+     *
+     * @param status   Trạng thái của shop (optional)
+     * @param keyword  Từ khóa tìm kiếm (optional)
+     * @param pageNo   Số trang (mặc định là 0)
+     * @param pageSize Kích thước trang (mặc định là 10)
+     * @param sortBy   Trường sắp xếp (mặc định là createdAt)
+     * @param sortDir  Hướng sắp xếp (mặc định là desc)
+     * @return Danh sách shop phù hợp
+     */
+    @GetMapping("/search")
+    public ResponseEntity<BaseResponse<PageResponse<ShopView>>> getShops(
+            @RequestParam(required = false) ShopStatus status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = "createdAt", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
+
+        PageResponse<ShopView> pageResponse = shopViewService.getShops(
+                status, keyword, pageNo, pageSize, sortBy, sortDir);
+
+        return ResponseEntity.ok(BaseResponse.<PageResponse<ShopView>>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_SHOP_SUCCESS))
+                .data(pageResponse)
+                .build());
+    }
+
+    /**
+     * Lấy chi tiết shop theo ID
+     *
+     * @param shopId ID của shop
+     * @return Chi tiết shop
+     */
+    @GetMapping("/{shopId}")
+    public ResponseEntity<BaseResponse<ShopView>> getShopById(
+            @PathVariable Long shopId,
+            @RequestParam(value = "isOwner", defaultValue = "false", required = false) boolean isOwner) {
+        ShopView shopDTO = shopViewService.getShopById(shopId,isOwner);
+
+        return ResponseEntity.ok(BaseResponse.<ShopView>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_SHOP_SUCCESS))
+                .data(shopDTO)
+                .build());
+    }
+}

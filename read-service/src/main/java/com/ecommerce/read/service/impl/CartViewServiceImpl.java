@@ -32,16 +32,18 @@ public class CartViewServiceImpl implements CartViewService {
     @Override
     public void createCart(CreateCartEvent event) {
         CartView cartView = CartView.builder()
-                .cartId(String.valueOf(event.getCartId()))
+                ._id(String.valueOf(event.getCartId()))
                 .userId(String.valueOf(event.getUserId()))
+                .createdAt(event.getCreatedAt())
+                .updatedAt(event.getUpdatedAt())
                 .cartItems(
                         event.getCreateCartItemEventList().stream().map(
                                 itemEvent -> CartView.CartItem.builder()
-                                        .cartItemId(String.valueOf(itemEvent.getCartItemId()))
+                                        ._id(String.valueOf(itemEvent.getCartItemId()))
                                         .productId(String.valueOf(itemEvent.getProductId()))
                                         .productCartItems(itemEvent.getCreateProductCartItemEvents().stream().map(
                                                 productCartItemEvent -> CartView.ProductCartItem.builder()
-                                                        .productCartItemId(String.valueOf(productCartItemEvent.getProductCartItemId()))
+                                                        ._id(String.valueOf(productCartItemEvent.getProductCartItemId()))
                                                         .productVariantId(String.valueOf(productCartItemEvent.getProductVariantId()))
                                                         .quantity(productCartItemEvent.getQuantity())
                                                         .build()
@@ -72,7 +74,7 @@ public class CartViewServiceImpl implements CartViewService {
         CartView cartView = cartViewRepository.findById(String.valueOf(event.getCartId())).orElse(null);
         if (FnCommon.isNotNull(cartView)) {
             CartView.CartItem cartItemToRemove = cartView.getCartItems().stream()
-                    .filter(item -> item.getCartItemId().equals(String.valueOf(event.getCartItemId())))
+                    .filter(item -> item.get_id().equals(String.valueOf(event.getCartItemId())))
                     .findFirst()
                     .orElse(null);
             if (FnCommon.isNotNull(cartItemToRemove)) {

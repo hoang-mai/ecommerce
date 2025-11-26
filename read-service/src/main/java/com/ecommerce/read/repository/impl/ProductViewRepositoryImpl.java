@@ -1,6 +1,7 @@
 package com.ecommerce.read.repository.impl;
 
 import com.ecommerce.library.enumeration.ProductStatus;
+import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
@@ -28,7 +29,7 @@ public class ProductViewRepositoryImpl {
     private final MongoTemplate mongoTemplate;
 
     public void updateProductVariantStatus(UpdateProductVariantStatusEvent event) {
-        Query query = new Query(Criteria.where("productId")
+        Query query = new Query(Criteria.where("_id")
                 .is(String.valueOf(event.getProductId()))
                 .and("productVariants.productVariantId")
                 .is(String.valueOf(event.getProductVariantId())));
@@ -43,13 +44,19 @@ public class ProductViewRepositoryImpl {
         }
     }
 
-    public Page<ProductView> getProductView(Long shopId, Long categoryId, ProductStatus status, String keyword, Pageable pageable) {
+    public Page<ProductView> getProductView(Long ownerId, Long shopId, Long categoryId, ProductStatus status, ShopStatus shopStatus, String keyword, Pageable pageable) {
         List<Criteria> criteriaList = new ArrayList<>();
+        if (FnCommon.isNotNull(ownerId)) {
+            criteriaList.add(Criteria.where("ownerId").is(String.valueOf(ownerId)));
+        }
         if (FnCommon.isNotNull(shopId)) {
-            criteriaList.add(Criteria.where("shopId").is(shopId));
+            criteriaList.add(Criteria.where("shopId").is(String.valueOf(shopId)));
+        }
+        if( FnCommon.isNotNull(shopStatus)) {
+            criteriaList.add(Criteria.where("shopStatus").is(shopStatus));
         }
         if (FnCommon.isNotNull(categoryId)) {
-            criteriaList.add(Criteria.where("categoryId").is(categoryId));
+            criteriaList.add(Criteria.where("categoryId").is(String.valueOf(categoryId)));
         }
         if (FnCommon.isNotNull(status)) {
             criteriaList.add(Criteria.where("productStatus").is(status));
@@ -64,7 +71,7 @@ public class ProductViewRepositoryImpl {
         Query query = new Query(finalCriteria);
         long total = mongoTemplate.count(query, ProductView.class);
         query.with(pageable);
-        List<ProductView> userViews = mongoTemplate.find(query, ProductView.class);
-        return new PageImpl<>(userViews, pageable, total);
+        List<ProductView> productViews = mongoTemplate.find(query, ProductView.class);
+        return new PageImpl<>(productViews, pageable, total);
     }
 }

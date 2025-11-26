@@ -24,7 +24,7 @@ public class CartViewRepositoryImpl {
     private final MongoTemplate mongoTemplate;
 
     public void updateCartItem(UpdateProductCartItemEvent event) {
-        Query query = new Query(Criteria.where("cartId")
+        Query query = new Query(Criteria.where("_id")
                 .is(String.valueOf(event.getCartId())));
 
         Update update = new Update();

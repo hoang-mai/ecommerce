@@ -6,6 +6,7 @@ import com.ecommerce.library.enumeration.Role;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -29,5 +30,6 @@ public class CreateUserData {
     private Boolean isDefault;
     private Role role;
     private AccountStatus accountStatus;
-
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

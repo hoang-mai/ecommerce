@@ -30,16 +30,18 @@ public class OrderViewServiceImpl implements OrderViewService {
     @Override
     public void createOrderView(CreateOrderEvent createOrderViewEvent) {
         orderViewRepository.save(OrderView.builder()
-                .orderId(String.valueOf(createOrderViewEvent.getOrderId()))
+                ._id(String.valueOf(createOrderViewEvent.getOrderId()))
                 .userId(String.valueOf(createOrderViewEvent.getUserId()))
                 .orderStatus(createOrderViewEvent.getOrderStatus())
                 .totalPrice(createOrderViewEvent.getTotalPrice())
                 .receiverName(createOrderViewEvent.getReceiverName())
                 .address(createOrderViewEvent.getAddress())
                 .phoneNumber(createOrderViewEvent.getPhoneNumber())
+                .createdAt(createOrderViewEvent.getCreatedAt())
+                .updatedAt(createOrderViewEvent.getUpdatedAt())
                 .orderItems(createOrderViewEvent.getCreateOrderItemEventList().stream().map(
                         orderItemEvent -> OrderView.OrderItem.builder()
-                                .orderItemId(String.valueOf(orderItemEvent.getOrderItemId()))
+                                ._id(String.valueOf(orderItemEvent.getOrderItemId()))
                                 .productId(String.valueOf(orderItemEvent.getProductId()))
                                 .productName(orderItemEvent.getProductName())
                                 .productImageList(orderItemEvent.getCreateProductImageList().stream().map(
@@ -48,7 +50,7 @@ public class OrderViewServiceImpl implements OrderViewService {
                                                 .build()).toList())
                                 .productVariants(orderItemEvent.getCreateProductOrderItemEvents().stream().map(
                                         productVariantEvent -> OrderView.ProductVariant.builder()
-                                                .productVariantId(String.valueOf(productVariantEvent.getProductVariantId()))
+                                                ._id(String.valueOf(productVariantEvent.getProductVariantId()))
                                                 .quantity(productVariantEvent.getQuantity())
                                                 .price(productVariantEvent.getPrice())
                                                 .productAttributes(productVariantEvent.getCreateProductAttributeList().stream().map(
@@ -59,7 +61,7 @@ public class OrderViewServiceImpl implements OrderViewService {
                                                 .build()).toList())
                                 .build()).toList())
                 .build());
-        if(createOrderViewEvent.getOrderStatus()== OrderStatus.PAID){
+        if (createOrderViewEvent.getOrderStatus() == OrderStatus.PAID) {
             cartViewService.clearCartViewByUserId(String.valueOf(createOrderViewEvent.getUserId()));
             productViewService.updateStockAfterCreateOrder(createOrderViewEvent);
         }

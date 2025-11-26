@@ -38,9 +38,6 @@ public class Shop extends BaseEntity {
     @Column(name = "banner_url")
     private String bannerUrl;
 
-    @Column(name = "rating")
-    private Double rating;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "shop_status")
     private ShopStatus shopStatus;
@@ -61,9 +58,5 @@ public class Shop extends BaseEntity {
     @Builder.Default
     private List<Product> products = new ArrayList<>();
 
-    public void addProduct(Product product) {
-        products.add(product);
-        product.setShop(this);
-    }
 
 }

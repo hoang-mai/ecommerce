@@ -1,4 +1,4 @@
-package com.ecommerce.library.kafka.event.product;
+package com.ecommerce.library.kafka.event.shop;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,5 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProductAttributeValueEvent {
-    private Long productAttributeValueId;
-    private String value;
+public class UpdateShopEvent {
 }

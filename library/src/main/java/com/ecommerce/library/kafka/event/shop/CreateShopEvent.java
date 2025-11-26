@@ -1,15 +1,19 @@
-package com.ecommerce.product.dto;
+package com.ecommerce.library.kafka.event.shop;
 
 import com.ecommerce.library.enumeration.ShopStatus;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
-@Getter
 @Builder
-public class ResShopDTO {
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class CreateShopEvent {
 
     private Long shopId;
     private Long ownerId;
@@ -17,7 +21,6 @@ public class ResShopDTO {
     private String description;
     private String logoUrl;
     private String bannerUrl;
-    private Double rating;
     private ShopStatus shopStatus;
     private String province;
     private String ward;
@@ -26,4 +29,3 @@ public class ResShopDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
-

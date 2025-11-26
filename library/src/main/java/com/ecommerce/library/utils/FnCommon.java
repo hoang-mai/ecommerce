@@ -5,8 +5,11 @@ import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Gender;
 import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.enumeration.UserVerificationStatus;
+import com.google.protobuf.Timestamp;
 import io.grpc.Status;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
@@ -125,7 +128,7 @@ public final class FnCommon {
      * Chuyển đổi Gender proto sang Gender java
      *
      * @param gender đại diện cho Gender trong proto
-     *               @return gender đại diện cho Gender trong java
+     * @return gender đại diện cho Gender trong java
      */
     public static Gender convertGenderProtoToGender(com.ecommerce.enumeration.Gender gender) {
         return switch (gender) {
@@ -193,6 +196,39 @@ public final class FnCommon {
             default -> throw new IllegalArgumentException(MessageError.INVALID_USER_VERIFICATION_STATUS);
         };
     }
+
+    /**
+     * Chuyển đổi Timestamp gRPC sang LocalDateTime
+     *
+     * @param timestamp đối tượng Timestamp từ gRPC
+     * @return đối tượng LocalDateTime tương ứng
+     */
+    public static LocalDateTime convertTimestampToLocalDateTime(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        return LocalDateTime.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos(), ZoneOffset.UTC);
+    }
+
+    /**
+     * Chuyển đổi LocalDateTime sang Timestamp gRPC
+     *
+     * @param localDateTime đối tượng LocalDateTime
+     * @return đối tượng Timestamp tương ứng
+     */
+    public static Timestamp convertLocalDateTimeToTimestamp(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+        long seconds = localDateTime.toEpochSecond(ZoneOffset.UTC);
+        int nanos = localDateTime.getNano();
+        return Timestamp.newBuilder()
+                .setSeconds(seconds)
+                .setNanos(nanos)
+                .build();
+    }
+
+
     /**
      * Chuyển đổi status code từ gRPC sang HTTP
      *
