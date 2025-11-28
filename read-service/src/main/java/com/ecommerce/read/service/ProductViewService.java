@@ -7,7 +7,7 @@ import com.ecommerce.library.kafka.event.product.UpdateProductStatusEvent;
 import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.read.dto.ProductViewDTO;
+import com.ecommerce.read.entity.ProductView;
 
 
 public interface ProductViewService {
@@ -17,9 +17,9 @@ public interface ProductViewService {
 
     void updateProductVariantStatus(UpdateProductVariantStatusEvent event);
 
-    PageResponse<ProductViewDTO> searchProducts(boolean isOwner, Long shopId, Long categoryId, ProductStatus status, String keyword, int pageNo, int pageSize, String sortBy, String sortDir);
+    PageResponse<ProductView> searchProducts(Boolean isOwner, Long shopId, Long categoryId, ProductStatus status, String keyword, Integer star, Double startPrice, Double endPrice, int pageNo, int pageSize, String sortBy, String sortDir);
 
-    ProductViewDTO getProductById(Long productId,boolean isOwner);
+    ProductView getProductById(Long productId,boolean isOwner);
 
     void updateStockAfterCreateOrder(CreateOrderEvent createOrderViewEvent);
 

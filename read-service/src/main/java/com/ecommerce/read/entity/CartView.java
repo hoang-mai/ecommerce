@@ -1,5 +1,6 @@
 package com.ecommerce.read.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
@@ -19,6 +20,7 @@ public class CartView extends BaseEntity {
 
     @Id
     @Field("_id")
+    @JsonProperty("cartId")
     private String _id;
 
     @Field("userId")
@@ -27,10 +29,6 @@ public class CartView extends BaseEntity {
     @Builder.Default
     @Field("cartItems")
     private List<CartItem> cartItems = new ArrayList<>();
-
-    public void addCartItem(CartItem cartItem) {
-        cartItems.add(cartItem);
-    }
 
     public void removeCartItem(CartItem cartItem) {
         cartItems.remove(cartItem);
@@ -48,6 +46,7 @@ public class CartView extends BaseEntity {
     public static class CartItem {
         @Id
         @Field("_id")
+        @JsonProperty("cartItemId")
         private String _id;
 
         @Field("productId")
@@ -57,9 +56,6 @@ public class CartView extends BaseEntity {
         @Field("productCartItems")
         private List<ProductCartItem> productCartItems = new ArrayList<>();
 
-        public void addProductCartItem(ProductCartItem productCartItem) {
-            productCartItems.add(productCartItem);
-        }
     }
     @Getter
     @Setter
@@ -69,6 +65,7 @@ public class CartView extends BaseEntity {
     public static class ProductCartItem{
         @Id
         @Field("_id")
+        @JsonProperty("productCartItemId")
         private String _id;
 
         @Field("productVariantId")

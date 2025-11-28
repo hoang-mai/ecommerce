@@ -26,8 +26,8 @@ public class WebSecurityConfig {
                                 "/api-docs-json/**"
                         ).permitAll()
                         .requestMatchers("api/v1/product-view/**").permitAll()
-                        .requestMatchers("api/v1/shop-view/search").permitAll()
                         .requestMatchers("api/v1/shop-view").hasAuthority("OWNER")
+                        .requestMatchers("api/v1/shop-view/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )

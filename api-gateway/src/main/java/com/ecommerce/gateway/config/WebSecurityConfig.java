@@ -30,10 +30,10 @@ public class WebSecurityConfig {
                                 "ws/**"
                         ).permitAll()
                         .pathMatchers("/api/v1/product-view/**").permitAll()
+                        .pathMatchers("/api/v1/shop-view/**").permitAll()
                         .pathMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
                         .pathMatchers(HttpMethod.POST,"/api/v1/saga/register").permitAll()
                         .pathMatchers(HttpMethod.POST,"/api/v1/auth/refresh-token").permitAll()
-                        .pathMatchers("api/v1/shop-view/search").permitAll()
                         .pathMatchers(HttpMethod.PATCH, "/api/v1/auth/{userId}").hasAuthority("ADMIN")
                         .pathMatchers("/api/v1/address","/api/v1/address/**").hasAnyAuthority("USER", "OWNER")
                         .pathMatchers("/api/v1/user-verification").hasAnyAuthority("USER")

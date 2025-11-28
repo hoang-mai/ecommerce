@@ -4,7 +4,7 @@ import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.kafka.event.user.*;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.read.dto.UserViewDto;
+import com.ecommerce.read.entity.UserView;
 
 public interface UserViewService {
 
@@ -40,7 +40,7 @@ public interface UserViewService {
      * @param sortDir Hướng sắp xếp (mặc định là desc)
      * @return Trang chứa danh sách User View
      */
-    PageResponse<UserViewDto> getUserViews(AccountStatus accountStatus, Role role, String keyword, int pageNo, int pageSize, String sortBy, String sortDir);
+    PageResponse<UserView> getUserViews(AccountStatus accountStatus, Role role, String keyword, int pageNo, int pageSize, String sortBy, String sortDir);
 
 
     void updateAvatarUser(UpdateAvatarUserEvent updateAvatarUserEvent);

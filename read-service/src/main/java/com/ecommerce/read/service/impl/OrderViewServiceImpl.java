@@ -1,7 +1,7 @@
 package com.ecommerce.read.service.impl;
 
+import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.OrderStatus;
-import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
@@ -9,6 +9,7 @@ import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.OrderView;
 import com.ecommerce.read.repository.OrderViewRepository;
+import com.ecommerce.read.repository.impl.OrderViewRepositoryImpl;
 import com.ecommerce.read.service.CartViewService;
 import com.ecommerce.read.service.OrderViewService;
 import com.ecommerce.read.service.ProductViewService;
@@ -24,8 +25,10 @@ import org.springframework.stereotype.Service;
 public class OrderViewServiceImpl implements OrderViewService {
 
     private final OrderViewRepository orderViewRepository;
+    private final OrderViewRepositoryImpl orderViewRepositoryImpl;
     private final CartViewService cartViewService;
     private final ProductViewService productViewService;
+    private final UserHelper userHelper;
 
     @Override
     public void createOrderView(CreateOrderEvent createOrderViewEvent) {
@@ -80,12 +83,13 @@ public class OrderViewServiceImpl implements OrderViewService {
 
     @Override
     public PageResponse<OrderView> getOrderViews(OrderStatus orderStatus, String keyword, int pageNo, int pageSize, String sortBy, String sortDir) {
+        Long currentUserId = userHelper.getCurrentUserId();
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        Page<OrderView> orderViewPage = orderViewRepository.getOrderView(orderStatus, keyword, pageable);
+        Page<OrderView> orderViewPage = orderViewRepositoryImpl.getOrderView(currentUserId,orderStatus, keyword, pageable);
 
         return PageResponse.<OrderView>builder()
                 .data(orderViewPage.getContent())
@@ -93,6 +97,8 @@ public class OrderViewServiceImpl implements OrderViewService {
                 .pageSize(orderViewPage.getSize())
                 .totalElements(orderViewPage.getTotalElements())
                 .totalPages(orderViewPage.getTotalPages())
+                .hasNextPage(orderViewPage.hasNext())
+                .hasPreviousPage(orderViewPage.hasPrevious())
                 .build();
     }
 }

@@ -5,7 +5,6 @@ import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.read.dto.CartViewDTO;
-import com.ecommerce.read.entity.CartView;
 import com.ecommerce.read.service.CartViewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

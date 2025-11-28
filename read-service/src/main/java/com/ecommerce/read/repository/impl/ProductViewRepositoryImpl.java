@@ -7,7 +7,6 @@ import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.read.entity.ProductView;
-import com.ecommerce.read.entity.UserView;
 import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,7 +43,7 @@ public class ProductViewRepositoryImpl {
         }
     }
 
-    public Page<ProductView> getProductView(Long ownerId, Long shopId, Long categoryId, ProductStatus status, ShopStatus shopStatus, String keyword, Pageable pageable) {
+    public Page<ProductView> getProductView(Long ownerId, Long shopId, Long categoryId, ProductStatus status, ShopStatus shopStatus, String keyword, Integer star, Double startPrice, Double endPrice, Pageable pageable) {
         List<Criteria> criteriaList = new ArrayList<>();
         if (FnCommon.isNotNull(ownerId)) {
             criteriaList.add(Criteria.where("ownerId").is(String.valueOf(ownerId)));
@@ -62,7 +61,21 @@ public class ProductViewRepositoryImpl {
             criteriaList.add(Criteria.where("productStatus").is(status));
         }
         if (FnCommon.isNotNullOrEmpty(keyword)) {
-            criteriaList.add(Criteria.where("productName").regex(keyword, "i"));
+            criteriaList.add(Criteria.where("name").regex(keyword, "i"));
+        }
+
+        if (FnCommon.isNotNull(star)) {
+            criteriaList.add(Criteria.where("rating").gte(star.doubleValue()));
+        }
+
+        if (FnCommon.isNotNull(startPrice) || FnCommon.isNotNull(endPrice)) {
+            if (FnCommon.isNotNull(startPrice) && FnCommon.isNotNull(endPrice)) {
+                criteriaList.add(Criteria.where("productVariants.price").gte(startPrice).lte(endPrice));
+            } else if (FnCommon.isNotNull(startPrice)) {
+                criteriaList.add(Criteria.where("productVariants.price").gte(startPrice));
+            } else {
+                criteriaList.add(Criteria.where("productVariants.price").lte(endPrice));
+            }
         }
         Criteria finalCriteria = new Criteria();
         if (!criteriaList.isEmpty()) {

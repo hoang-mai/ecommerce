@@ -1,6 +1,7 @@
 package com.ecommerce.read.entity;
 
 import com.ecommerce.library.enumeration.ShopStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 public class ShopView extends BaseEntity {
     @Id
     @Field(name = "_id")
+    @JsonProperty("shopId")
     private String _id;
 
     @Field(name = "ownerId")

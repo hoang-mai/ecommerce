@@ -1,6 +1,7 @@
 package com.ecommerce.read.entity;
 
 import com.ecommerce.library.enumeration.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
@@ -23,6 +24,7 @@ public class OrderView extends BaseEntity {
 
     @Id
     @Field(name = "_id")
+    @JsonProperty("orderId")
     private String _id;
 
     @Field(name = "userId")
@@ -62,6 +64,7 @@ public class OrderView extends BaseEntity {
 
         @Id
         @Field(name = "_id")
+        @JsonProperty("orderItemId")
         private String _id;
 
         @Field(name = "productId")
@@ -89,6 +92,7 @@ public class OrderView extends BaseEntity {
 
         @Id
         @Field(name = "_id")
+        @JsonProperty("productVariantId")
         private String _id;
 
         @Field(name = "price")
@@ -127,6 +131,7 @@ public class OrderView extends BaseEntity {
 
         @Id
         @Field(name = "_id")
+        @JsonProperty("productImageId")
         private String _id;
 
         @Field(name = "imageUrl")

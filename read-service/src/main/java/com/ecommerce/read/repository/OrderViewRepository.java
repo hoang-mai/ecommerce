@@ -11,18 +11,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OrderViewRepository extends MongoRepository<OrderView, String> {
 
-
-    @Query("""
-            { $and: [
-                { 'orderStatus': ?0 },
-                {
-                    $or: [
-                        { 'orderId': { $regex: ?1, $options: 'i' } },
-                        { 'address': { $regex: ?1, $options: 'i' } },
-                        { 'phoneNumber': { $regex: ?1, $options: 'i' } }
-                    ]
-                }
-            ] }
-            """)
-    Page<OrderView> getOrderView(OrderStatus orderStatus, String keyword, Pageable pageable);
 }

@@ -88,7 +88,7 @@ public class PushSubscriptionServiceImpl implements PushSubscriptionService {
 
     private PushSubscriptionDto convertToDto(PushSubscription pushSubscription) {
         return PushSubscriptionDto.builder()
-                .pushSubscriptionId(pushSubscription.getPushSubscriptionId())
+                .pushSubscriptionId(pushSubscription.get_id())
                 .userId(pushSubscription.getUserId())
                 .endpoint(pushSubscription.getEndpoint())
                 .p256dh(pushSubscription.getP256dh())

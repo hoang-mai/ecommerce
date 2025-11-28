@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @Field("_id")
@@ -32,12 +32,4 @@ public class User {
 
     @Field("last_name")
     private String lastName;
-
-    @Field("created_at")
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @Field("updated_at")
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
 }

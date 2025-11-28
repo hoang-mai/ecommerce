@@ -13,8 +13,8 @@ public class ReqUpdateProductAttributeDTO {
     private Long productAttributeId;
 
     @Schema(description = "Name of the attribute", example = "Color")
-    private String attributeName;
+    private String productAttributeName;
 
     @Valid
-    private List<ReqUpdateProductAttributeValueDTO> attributeValues;
+    private List<ReqUpdateProductAttributeValueDTO> productAttributeValues;
 }

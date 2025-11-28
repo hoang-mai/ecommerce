@@ -16,12 +16,15 @@ public class UserChat {
     @Field("_id")
     private String _id;
 
-    @Field("user_id")
+    @Field("userId")
     private String userId;
 
-    @Field("chat_id")
+    @Field("shopId")
+    private String shopId;
+
+    @Field("chatId")
     private String chatId;
 
-    @Field("is_read")
+    @Field("isRead")
     private Boolean isRead;
 }

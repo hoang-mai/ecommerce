@@ -21,36 +21,28 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Message {
+public class Message extends BaseEntity{
 
     @Id
     @Field("_id")
     private String _id;
 
-    @Field("message_type")
+    @Field("messageType")
     private MessageType messageType;
 
-    @Field("message_content")
+    @Field("messageContent")
     private String messageContent;
 
-    @Field("is_updated")
+    @Field("isUpdated")
     private Boolean isUpdated;
 
-    @Field("is_deleted")
+    @Field("isDeleted")
     private Boolean isDeleted;
 
-    @Field("user_chat_id")
+    @Field("userChatId")
     private String userChatId;
 
-    @Field("chat_id")
+    @Field("chatId")
     private String chatId;
-
-    @Field("created_at")
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @Field("updated_at")
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
 
 }

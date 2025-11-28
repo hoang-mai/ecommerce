@@ -8,7 +8,6 @@ import com.ecommerce.library.kafka.event.cart.DeleteCartItemEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.read.dto.CartViewDTO;
-import com.ecommerce.read.dto.ProductViewDTO;
 import com.ecommerce.read.entity.CartView;
 import com.ecommerce.read.repository.CartViewRepository;
 import com.ecommerce.read.repository.impl.CartViewRepositoryImpl;
@@ -89,16 +88,8 @@ public class CartViewServiceImpl implements CartViewService {
         CartViewDTO cartViewDTO= cartViewRepositoryImpl.findCartViewDTOByUserId(String.valueOf(userHelper.getCurrentUserId()));
         if(cartViewDTO != null){
             cartViewDTO.getCartItems().forEach(cartItemDTO -> {
-                if(cartItemDTO.getProductViewDTO() != null && cartItemDTO.getProductViewDTO().getProductImages() != null){
-                    List<ProductViewDTO.ProductImageDTO> productImageDTOs = new ArrayList<>();
-                    cartItemDTO.getProductViewDTO().getProductImages().forEach(imageDTO -> {
-                        String imageUrl = fileService.getPresignedUrl(imageDTO.getUrl());
-                        productImageDTOs.add(ProductViewDTO.ProductImageDTO.builder()
-                                ._id(imageDTO.get_id())
-                                .url(imageUrl)
-                                .build());
-                    });
-                    cartItemDTO.getProductViewDTO().setProductImages(productImageDTOs);
+                if(cartItemDTO.getProductView() != null && cartItemDTO.getProductView().getProductImages() != null){
+                    cartItemDTO.getProductView().getProductImages().forEach(productImage -> productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl())));
                 }
             });
         }

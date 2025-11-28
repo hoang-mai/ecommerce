@@ -139,6 +139,7 @@ public class ProductServiceImpl implements ProductService {
                         .productName(product.getName())
                         .productId(product.getProductId())
                         .ownerId(ownerId)
+                        .productStatus(product.getProductStatus())
                         .description(product.getDescription())
                         .discount(product.getDiscount())
                         .discountStartDate(product.getDiscountStartDate())
@@ -181,7 +182,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-
     @Override
     @Transactional
     public void updateProduct(Long productId, ReqUpdateProductDTO request, List<MultipartFile> files) {
@@ -189,7 +189,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
 
-        if(!product.getShop().getOwnerId().equals(ownerId)) {
+        if (!product.getShop().getOwnerId().equals(ownerId)) {
             throw new NotFoundException(MessageError.PRODUCT_NOT_FOUND);
         }
         if (FnCommon.isNotNull(request.getCategoryId())) {
@@ -238,13 +238,13 @@ public class ProductServiceImpl implements ProductService {
                             .findFirst()
                             .orElse(null);
 
-                    if (existingAttr != null && FnCommon.isNotNullOrEmptyList(attrReq.getAttributeValues())) {
+                    if (existingAttr != null && FnCommon.isNotNullOrEmptyList(attrReq.getProductAttributeValues())) {
 
                         // Xử lý attribute values: nếu có ID thì bỏ qua (không cập nhật), không có ID thì thêm mới
-                        attrReq.getAttributeValues().forEach(valReq -> {
-                            if (valReq.getAttributeValueId() == null && valReq.getAttributeValue() != null) {
+                        attrReq.getProductAttributeValues().forEach(valReq -> {
+                            if (valReq.getProductAttributeValueId() == null && valReq.getProductAttributeValue() != null) {
                                 ProductAttributeValue newValue = ProductAttributeValue.builder()
-                                        .value(valReq.getAttributeValue())
+                                        .value(valReq.getProductAttributeValue())
                                         .build();
                                 existingAttr.addAttributeValue(newValue);
                             }
@@ -253,13 +253,13 @@ public class ProductServiceImpl implements ProductService {
                 } else {
                     // KHÔNG CÓ ID -> THÊM MỚI attribute
                     ProductAttribute newAttribute = ProductAttribute.builder()
-                            .attributeName(attrReq.getAttributeName())
+                            .attributeName(attrReq.getProductAttributeName())
                             .build();
 
-                    if (FnCommon.isNotNullOrEmptyList(attrReq.getAttributeValues())) {
-                        attrReq.getAttributeValues().forEach(valReq -> {
+                    if (FnCommon.isNotNullOrEmptyList(attrReq.getProductAttributeValues())) {
+                        attrReq.getProductAttributeValues().forEach(valReq -> {
                             ProductAttributeValue newValue = ProductAttributeValue.builder()
-                                    .value(valReq.getAttributeValue())
+                                    .value(valReq.getProductAttributeValue())
                                     .build();
                             newAttribute.addAttributeValue(newValue);
                         });
@@ -325,13 +325,20 @@ public class ProductServiceImpl implements ProductService {
         );
         productEventProducer.send(
                 CreateProductEvent.builder()
+                        .shopId(product.getShop().getShopId())
+                        .categoryId(product.getCategory().getCategoryId())
+                        .categoryName(product.getCategory().getCategoryName())
+                        .shopStatus(product.getShop().getShopStatus())
                         .productName(product.getName())
                         .productId(product.getProductId())
+                        .ownerId(ownerId)
+                        .productStatus(product.getProductStatus())
                         .description(product.getDescription())
                         .discount(product.getDiscount())
                         .discountStartDate(product.getDiscountStartDate())
                         .discountEndDate(product.getDiscountEndDate())
                         .totalSold(product.getTotalSold())
+                        .createdAt(product.getCreatedAt())
                         .productImages(product.getProductImages().stream()
                                 .map(productImage -> CreateProductEvent.CreateProductImageEvent.builder()
                                         .productImageId(productImage.getProductImageId())
@@ -372,7 +379,7 @@ public class ProductServiceImpl implements ProductService {
         ProductVariant productVariant = productVariantRepository.findById(productVariantId)
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
 
-        if(!productVariant.getProduct().getShop().getOwnerId().equals(ownerId)) {
+        if (!productVariant.getProduct().getShop().getOwnerId().equals(ownerId)) {
             throw new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND);
         }
         productVariant.setProductVariantStatus(request.getProductVariantStatus());
@@ -392,7 +399,7 @@ public class ProductServiceImpl implements ProductService {
     public void updateProductStatusByProductId(Long productId, ReqUpdateProductStatusDTO status) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
-        if(!product.getShop().getOwnerId().equals(userHelper.getCurrentUserId())) {
+        if (!product.getShop().getOwnerId().equals(userHelper.getCurrentUserId())) {
             throw new NotFoundException(MessageError.PRODUCT_NOT_FOUND);
         }
         product.setProductStatus(status.getProductStatus());
@@ -460,7 +467,7 @@ public class ProductServiceImpl implements ProductService {
             });
         });
 
-        if(isOutOfStock.get()) {
+        if (isOutOfStock.get()) {
             orderEventProducer.send(
                     OrderStatusEvent.builder()
                             .userId(createOrderEvent.getUserId())
@@ -472,7 +479,7 @@ public class ProductServiceImpl implements ProductService {
             createOrderEvent.setOrderStatus(OrderStatus.CANCELLED);
             createOrderEvent.setReason(messageService.getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK));
             orderEventProducer.send(createOrderEvent);
-        } else{
+        } else {
 
             createOrderEvent.getCreateOrderItemEventList().forEach(orderItem -> {
                 Product product = productRepository.findById(orderItem.getProductId())

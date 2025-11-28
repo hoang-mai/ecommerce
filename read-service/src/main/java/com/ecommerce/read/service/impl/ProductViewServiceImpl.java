@@ -12,7 +12,6 @@ import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.read.dto.ProductViewDTO;
 import com.ecommerce.read.entity.ProductView;
 import com.ecommerce.read.repository.ProductViewRepository;
 import com.ecommerce.read.repository.impl.ProductViewRepositoryImpl;
@@ -26,7 +25,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +56,7 @@ public class ProductViewServiceImpl implements ProductViewService {
                 .productImages(event.getProductImages() == null ? null : event.getProductImages().stream()
                         .map(img -> ProductView.ProductImage.builder()
                                 ._id(String.valueOf(img.getProductImageId()))
-                                .url(img.getImageUrl())
+                                .imageUrl(img.getImageUrl())
                                 .build())
                         .toList())
                 .productAttributes(event.getProductAttributes() == null ? null : event.getProductAttributes().stream()
@@ -108,10 +106,10 @@ public class ProductViewServiceImpl implements ProductViewService {
     }
 
     @Override
-    public PageResponse<ProductViewDTO> searchProducts(boolean isOwner, Long shopId, Long categoryId, ProductStatus status, String keyword, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public PageResponse<ProductView> searchProducts(Boolean isOwner, Long shopId, Long categoryId, ProductStatus status, String keyword, Integer star, Double startPrice, Double endPrice, int pageNo, int pageSize, String sortBy, String sortDir) {
         Long ownerId = null;
         ShopStatus shopStatus = null;
-        if (isOwner) {
+        if (Boolean.TRUE.equals(isOwner)) {
             ownerId = userHelper.getCurrentUserId();
         } else {
             status = ProductStatus.ACTIVE;
@@ -123,10 +121,13 @@ public class ProductViewServiceImpl implements ProductViewService {
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(ownerId, shopId, categoryId,  status,  shopStatus,  keyword,  pageable);
+        Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(ownerId, shopId, categoryId,  status,  shopStatus,  keyword, star, startPrice, endPrice, pageable);
 
-        return PageResponse.<ProductViewDTO>builder()
-                .data(productsPage.getContent().stream().map(this::toDTO).collect(Collectors.toList()))
+        return PageResponse.<ProductView>builder()
+                .data(productsPage.getContent().stream().peek(productView ->
+                        productView.getProductImages().forEach(productImage ->
+                                productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
+                        )).toList())
                 .pageNo(productsPage.getNumber())
                 .pageSize(productsPage.getSize())
                 .totalElements(productsPage.getTotalElements())
@@ -135,16 +136,22 @@ public class ProductViewServiceImpl implements ProductViewService {
     }
 
     @Override
-    public ProductViewDTO getProductById(Long productId,boolean isOwner) {
+    public ProductView getProductById(Long productId,boolean isOwner) {
         if(isOwner){
             Long ownerId = userHelper.getCurrentUserId();
             ProductView productView = productViewRepository.findBy_idAndOwnerId(String.valueOf(productId), String.valueOf(ownerId))
                     .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
-            return toDTO(productView);
+            productView.getProductImages().forEach(productImage ->
+                    productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
+            );
+            return productView;
         }
         ProductView productView = productViewRepository.findBy_idAndProductStatusAndShopStatus(String.valueOf(productId), ProductStatus.ACTIVE, ShopStatus.ACTIVE)
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
-        return toDTO(productView);
+        productView.getProductImages().forEach(productImage ->
+                productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
+        );
+        return productView;
     }
 
     @Override
@@ -190,49 +197,4 @@ public class ProductViewServiceImpl implements ProductViewService {
         productViewRepository.saveAll(productViews);
     }
 
-    private ProductViewDTO toDTO(ProductView productView) {
-
-        return ProductViewDTO.builder()
-                ._id(productView.get_id())
-                .shopId(productView.getShopId())
-                .rating(productView.getRating())
-                .name(productView.getName())
-                .description(productView.getDescription())
-                .productStatus(productView.getProductStatus())
-                .totalSold(productView.getTotalSold())
-                .discount(productView.getDiscount())
-                .discountStartDate(productView.getDiscountStartDate())
-                .discountEndDate(productView.getDiscountEndDate())
-                .categoryId(productView.getCategoryId())
-                .categoryName(productView.getCategoryName())
-                .shopStatus(productView.getShopStatus())
-                .createdAt(productView.getCreatedAt())
-                .updatedAt(productView.getUpdatedAt())
-                .productImages(productView.getProductImages().stream().map(img -> ProductViewDTO.ProductImageDTO.builder()
-                        ._id(img.get_id())
-                        .url(fileService.getPresignedUrl(img.getUrl()))
-                        .build()).collect(Collectors.toList()))
-                .productAttributes(productView.getProductAttributes().stream().map(attr -> ProductViewDTO.ProductAttributeDTO.builder()
-                        ._id(attr.get_id())
-                        .productAttributeName(attr.getProductAttributeName())
-                        .productAttributeValues(attr.getProductAttributeValues().stream().map(val -> ProductViewDTO.ProductAttributeValueDTO.builder()
-                                ._id(val.get_id())
-                                .productAttributeValue(val.getProductAttributeValue())
-                                .build()).collect(Collectors.toList()))
-                        .build()).collect(Collectors.toList()))
-                .productVariants(productView.getProductVariants().stream().map(variant -> ProductViewDTO.ProductVariantDTO.builder()
-                        ._id(variant.get_id())
-                        .productVariantStatus(variant.getProductVariantStatus())
-                        .price(variant.getPrice())
-                        .stockQuantity(variant.getStockQuantity())
-                        .sold(variant.getSold())
-                        .isDefault(variant.getIsDefault())
-                        .productVariantAttributeValues(variant.getProductVariantAttributeValues().stream().map(val -> ProductViewDTO.ProductVariantAttributeValueDTO.builder()
-                                ._id(val.get_id())
-                                .productAttributeId(val.getProductAttributeId())
-                                .productAttributeValueId(val.getProductAttributeValueId())
-                                .build()).collect(Collectors.toList()))
-                        .build()).collect(Collectors.toList()))
-                .build();
-    }
 }

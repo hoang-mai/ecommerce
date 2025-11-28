@@ -6,17 +6,13 @@ import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.read.dto.ProductViewDTO;
 import com.ecommerce.read.entity.ProductView;
 import com.ecommerce.read.service.ProductViewService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = Constant.PRODUCT_VIEW)
@@ -31,6 +27,10 @@ public class ProductViewController {
      * @param shopId     ID của shop (optional)
      * @param categoryId ID của category (optional)
      * @param status     Trạng thái sản phẩm (optional)
+     * @param star       Đánh giá sao tối thiểu (optional)
+     * @param startPrice Giá bắt đầu (optional)
+     * @param endPrice   Giá kết thúc (optional)
+     * @param isOwner    Xác định người dùng hiện tại có phải là chủ sở hữu sản phẩm không (mặc định là false)
      * @param keyword    Từ khóa tìm kiếm (optional)
      * @param pageNo     Số trang (mặc định là 0)
      * @param pageSize   Kích thước trang (mặc định là 10)
@@ -40,20 +40,23 @@ public class ProductViewController {
      */
     @GetMapping()
     @Operation(summary = "Search products", description = "Search products with multiple filters")
-    public ResponseEntity<BaseResponse<PageResponse<ProductViewDTO>>> searchProducts(
+    public ResponseEntity<BaseResponse<PageResponse<ProductView>>> searchProducts(
             @RequestParam(required = false) Long shopId,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) ProductStatus status,
             @RequestParam(required = false) String keyword,
-            @RequestParam(value = "isOwner", defaultValue = "false", required = false) boolean isOwner,
+            @RequestParam(required = false) Integer star,
+            @RequestParam(required = false) Double startPrice,
+            @RequestParam(required = false) Double endPrice,
+            @RequestParam(required = false) Boolean isOwner,
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = "createdAt", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
-        PageResponse<ProductViewDTO> page = productViewService.searchProducts(isOwner,shopId, categoryId, status, keyword, pageNo, pageSize, sortBy, sortDir);
+        PageResponse<ProductView> page = productViewService.searchProducts(isOwner, shopId, categoryId, status, keyword, star, startPrice, endPrice, pageNo, pageSize, sortBy, sortDir);
 
         return ResponseEntity.ok(
-                BaseResponse.<PageResponse<ProductViewDTO>>builder()
+                BaseResponse.<PageResponse<ProductView>>builder()
                         .statusCode(HttpStatus.OK.value())
                         .message(messageService.getMessage(MessageSuccess.PRODUCT_RETRIEVED_SUCCESS))
                         .data(page)
@@ -69,13 +72,13 @@ public class ProductViewController {
      */
     @GetMapping("/{productId}")
     @Operation(summary = "Get product by ID", description = "Retrieve product details by product ID")
-    public ResponseEntity<BaseResponse<ProductViewDTO>> getProductById(
+    public ResponseEntity<BaseResponse<ProductView>> getProductById(
             @PathVariable Long productId,
             @RequestParam(value = "isOwner", defaultValue = "false", required = false) boolean isOwner
-            ) {
-        ProductViewDTO productResponse = productViewService.getProductById(productId, isOwner);
+    ) {
+        ProductView productResponse = productViewService.getProductById(productId, isOwner);
 
-        return ResponseEntity.ok(BaseResponse.<ProductViewDTO>builder()
+        return ResponseEntity.ok(BaseResponse.<ProductView>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.PRODUCT_RETRIEVED_SUCCESS))
                 .data(productResponse)

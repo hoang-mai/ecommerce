@@ -71,7 +71,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private NotificationDto convertToResponse(Notification notification) {
         return NotificationDto.builder()
-                .notificationId(notification.getNotificationId())
+                .notificationId(notification.get_id())
                 .userId(notification.getUserId())
                 .title(notification.getTitle())
                 .message(notification.getMessage())

@@ -25,7 +25,7 @@ public class OrderViewController {
     private final MessageService messageService;
 
     /**
-     * Lấy thông tin đặt hàng theo orderId
+     * Lấy thông tin đặt hàng của người dùng hiện tại
      *
      * @param orderStatus Trạng thái đơn hàng (optional)
      * @param keyword Từ khóa tìm kiếm (optional)

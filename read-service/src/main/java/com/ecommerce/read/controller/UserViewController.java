@@ -7,9 +7,8 @@ import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.read.dto.UserViewDto;
+import com.ecommerce.read.entity.UserView;
 import com.ecommerce.read.service.UserViewService;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +35,7 @@ public class UserViewController {
      * @param sortDir Hướng sắp xếp (mặc định là desc)
      */
     @GetMapping()
-    public ResponseEntity<BaseResponse<PageResponse<UserViewDto>>> getUserView(
+    public ResponseEntity<BaseResponse<PageResponse<UserView>>> getUserView(
             @RequestParam(required = false) AccountStatus accountStatus,
             @RequestParam(required = false) Role role,
             @RequestParam(required = false) String keyword,
@@ -45,10 +44,10 @@ public class UserViewController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir
     ){
-        PageResponse<UserViewDto> userViews = userViewService.getUserViews(
+        PageResponse<UserView> userViews = userViewService.getUserViews(
                 accountStatus, role, keyword, pageNo, pageSize, sortBy, sortDir);
         return ResponseEntity.ok(
-                BaseResponse.<PageResponse<UserViewDto>>builder()
+                BaseResponse.<PageResponse<UserView>>builder()
                         .statusCode(200)
                         .message(messageService.getMessage(MessageSuccess.GET_INFO_USER_SUCCESS))
                         .data(userViews)

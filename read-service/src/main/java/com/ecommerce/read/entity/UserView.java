@@ -2,6 +2,7 @@ package com.ecommerce.read.entity;
 
 import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 public class UserView extends BaseEntity {
     @Id
     @Field(name = "_id")
+    @JsonProperty("userId")
     private String _id;
 
     @Field(name = "username")

@@ -57,7 +57,7 @@ public class CartViewRepositoryImpl {
                 Aggregation.group("_id")
                         .push(new Document()
                                 .append("_id", "$cartItems._id")
-                                .append("productViewDTO", "$product_views")
+                                .append("productView", "$product_views")
                                 .append("productCartItems", "$cartItems.productCartItems")
                         ).as("cartItems"),
                 Aggregation.project()

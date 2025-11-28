@@ -6,7 +6,6 @@ import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.user.*;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
-import com.ecommerce.read.dto.UserViewDto;
 import com.ecommerce.read.entity.UserView;
 import com.ecommerce.read.repository.UserViewRepository;
 import com.ecommerce.read.repository.impl.UserViewRepositoryImpl;
@@ -73,7 +72,7 @@ public class UserViewServiceImpl implements UserViewService {
     }
 
     @Override
-    public PageResponse<UserViewDto> getUserViews(AccountStatus accountStatus, Role role, String keyword, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public PageResponse<UserView> getUserViews(AccountStatus accountStatus, Role role, String keyword, int pageNo, int pageSize, String sortBy, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
@@ -81,8 +80,10 @@ public class UserViewServiceImpl implements UserViewService {
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
         Page<UserView> userViewPage = userViewRepositoryImpl.getUserView(accountStatus, role, keyword, pageable);
 
-        return PageResponse.<UserViewDto>builder()
-                .data(userViewPage.getContent().stream().map(this::mapToDto).toList())
+        return PageResponse.<UserView>builder()
+                .data(userViewPage.getContent().stream().peek(userView ->
+                        userView.setAvatarUrl(fileService.getPresignedUrl(userView.getAvatarUrl()))
+                ).toList())
                 .pageNo(userViewPage.getNumber())
                 .pageSize(userViewPage.getSize())
                 .totalElements(userViewPage.getTotalElements())
@@ -98,20 +99,4 @@ public class UserViewServiceImpl implements UserViewService {
         userViewRepository.save(userView);
     }
 
-    private UserViewDto mapToDto(UserView userView) {
-        return UserViewDto.builder()
-                .userId(Long.valueOf(userView.get_id()))
-                .username(userView.getUsername())
-                .email(userView.getEmail())
-                .accountStatus(userView.getAccountStatus())
-                .firstName(userView.getFirstName())
-                .middleName(userView.getMiddleName())
-                .lastName(userView.getLastName())
-                .phoneNumber(userView.getPhoneNumber())
-                .avatarUrl(fileService.getPresignedUrl(userView.getAvatarUrl()))
-                .role(userView.getRole())
-                .createdAt(userView.getCreatedAt())
-                .updatedAt(userView.getUpdatedAt())
-                .build();
-    }
 }

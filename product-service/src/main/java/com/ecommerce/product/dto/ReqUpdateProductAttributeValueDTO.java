@@ -7,9 +7,9 @@ import lombok.Getter;
 public class ReqUpdateProductAttributeValueDTO {
 
     @Schema(description = "Attribute value", example = "Đỏ")
-    private String attributeValue;
+    private String productAttributeValue;
 
     @Schema(description = "Attribute value ID (nếu có = update, không có = thêm mới)", example = "1")
-    private Long attributeValueId;
+    private Long productAttributeValueId;
 
 }

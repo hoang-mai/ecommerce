@@ -3,6 +3,7 @@ package com.ecommerce.read.entity;
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.enumeration.ShopStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
@@ -23,6 +24,7 @@ import java.util.List;
 public class ProductView extends BaseEntity {
     @Id
     @Field("_id")
+    @JsonProperty("productId")
     private String _id;
 
     @Field("rating")
@@ -79,22 +81,6 @@ public class ProductView extends BaseEntity {
     @Builder.Default
     private List<ProductVariant> productVariants = new ArrayList<>();
 
-    public void addProductImage(ProductImage productImage) {
-        productImages.add(productImage);
-    }
-
-    public void deleteProductImage(ProductImage productImage) {
-        productImages.remove(productImage);
-    }
-
-    public void addProductAttribute(ProductAttribute productAttribute) {
-        productAttributes.add(productAttribute);
-    }
-
-    public void addProductVariant(ProductVariant productVariant) {
-        productVariants.add(productVariant);
-    }
-
     public void addSold(Integer quantity) {
         totalSold += quantity;
     }
@@ -107,9 +93,10 @@ public class ProductView extends BaseEntity {
     public static class ProductImage {
         @Id
         @Field("_id")
+        @JsonProperty("productImageId")
         private String _id;
-        @Field("url")
-        private String url;
+        @Field("imageUrl")
+        private String imageUrl;
     }
 
     @Getter
@@ -120,6 +107,7 @@ public class ProductView extends BaseEntity {
     public static class ProductAttribute {
         @Id
         @Field("_id")
+        @JsonProperty("productAttributeId")
         private String _id;
 
         @Field("productAttributeName")
@@ -137,6 +125,7 @@ public class ProductView extends BaseEntity {
     public static class ProductAttributeValue {
         @Id
         @Field("_id")
+        @JsonProperty("productAttributeValueId")
         private String _id;
         @Field("productAttributeValue")
         private String productAttributeValue;
@@ -151,6 +140,7 @@ public class ProductView extends BaseEntity {
     public static class ProductVariant {
         @Id
         @Field("_id")
+        @JsonProperty("productVariantId")
         private String _id;
 
         @Field("productVariantStatus")
@@ -187,6 +177,7 @@ public class ProductView extends BaseEntity {
     public static class ProductVariantAttributeValue {
         @Id
         @Field("_id")
+        @JsonProperty("productVariantAttributeValueId")
         private String _id;
         @Field("productAttributeId")
         private String productAttributeId;
