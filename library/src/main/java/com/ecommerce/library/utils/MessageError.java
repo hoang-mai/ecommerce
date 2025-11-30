@@ -118,4 +118,7 @@ public final class MessageError {
     public static final String USER_CHAT_NOT_FOUND = "";
     public static final String TOKEN_EXPIRED = "";
     public static final String UNAUTHORIZED_ACTION = "";
+    public static final String ORDER_ITEM_NOT_FOUND = "";
+    public static final String SHOP_INACTIVE = "shop.inactive";
+    public static final String PRODUCT_INACTIVE = "";
 }

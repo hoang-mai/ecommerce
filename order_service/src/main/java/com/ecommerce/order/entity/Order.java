@@ -8,7 +8,6 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -27,8 +26,11 @@ public class Order extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @Column(name = "shop_id", nullable = false)
+    private Long shopId;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "order_status", nullable = false)
     private OrderStatus orderStatus;
 
     @Column(name = "reason")
@@ -56,6 +58,13 @@ public class Order extends BaseEntity {
     public void addOrderItem(OrderItem orderItem) {
         items.add(orderItem);
         orderItem.setOrder(this);
+    }
+
+    public void addTotalPrice(BigDecimal price) {
+        if (this.totalPrice == null) {
+            this.totalPrice = BigDecimal.ZERO;
+        }
+        this.totalPrice = this.totalPrice.add(price);
     }
 
 }

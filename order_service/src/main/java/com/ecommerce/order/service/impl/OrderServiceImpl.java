@@ -6,16 +6,18 @@ import com.ecommerce.library.exception.HttpRequestException;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderItemEvent;
-import com.ecommerce.library.kafka.event.order.CreateProductOrderItemEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.order.dto.ReqUpdateOrderStatus;
 import com.ecommerce.order.dto.ResCreateOrderDTO;
 import com.ecommerce.order.entity.Order;
 import com.ecommerce.order.entity.OrderItem;
-import com.ecommerce.order.entity.ProductOrderItem;
+import com.ecommerce.order.entity.ProductCache;
 import com.ecommerce.order.messaging.producer.OrderEventProducer;
+import com.ecommerce.order.repository.OrderItemRepository;
 import com.ecommerce.order.repository.OrderRepository;
+import com.ecommerce.order.repository.ProductCacheRepository;
+import com.ecommerce.order.repository.ShopCacheRepository;
 import com.ecommerce.order.service.CartService;
 import com.ecommerce.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,6 +36,8 @@ import java.util.Set;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductCacheRepository productCacheRepository;
+    private final ShopCacheRepository shopCacheRepository;
     private final UserHelper userHelper;
     private final OrderEventProducer orderEventProducer;
     private final CartService cartService;
@@ -40,68 +46,82 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void createOrder(ResCreateOrderDTO request) {
         Long userId = userHelper.getCurrentUserId();
-        BigDecimal totalPrice = request.getItems().stream()
-                .map(item -> item.getProductOrderItems().stream().map(
-                        productItem -> productItem.getPrice().multiply(BigDecimal.valueOf(productItem.getQuantity()))
-                ).reduce(BigDecimal.ZERO, BigDecimal::add)).reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<Order> orders = new ArrayList<>();
 
-        // Create order
-        Order order = Order.builder()
-                .userId(userId)
-                .orderStatus(OrderStatus.PENDING)
-                .totalPrice(totalPrice)
-                .receiverName(request.getReceiverName())
-                .address(request.getAddress())
-                .phoneNumber(request.getPhoneNumber())
-                .build();
 
         request.getItems().forEach(item -> {
-            OrderItem orderItem = OrderItem.builder()
-                    .productId(item.getProductId())
+            if (!shopCacheRepository.existsById(item.getShopId())) {
+                throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
+            }
+            Order order = Order.builder()
+                    .userId(userId)
+                    .shopId(item.getShopId())
+                    .orderStatus(OrderStatus.PENDING)
+                    .receiverName(request.getReceiverName())
+                    .address(request.getAddress())
+                    .phoneNumber(request.getPhoneNumber())
                     .build();
-            item.getProductOrderItems().forEach(productItem -> {
-                ProductOrderItem productOrderItem = ProductOrderItem.builder()
-                        .productVariantId(productItem.getProductVariantId())
-                        .quantity(productItem.getQuantity())
-                        .price(productItem.getPrice())
+            item.getProductOrderItems().forEach(productOrderItem -> {
+
+                ProductCache productCache = productCacheRepository.findById(productOrderItem.getProductId())
+                        .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+
+                if (!productCache.getProductVariantIds().contains(productOrderItem.getProductVariantId())) {
+                    throw new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND);
+                }
+
+                BigDecimal totalPrice = productOrderItem.getPrice().multiply(BigDecimal.valueOf(productOrderItem.getQuantity()));
+                BigDecimal totalDiscount = totalPrice.multiply(BigDecimal.valueOf(productOrderItem.getDiscount()));
+                BigDecimal totalFinalPrice = totalPrice.subtract(totalDiscount);
+                OrderItem orderItem = OrderItem.builder()
+                        .productId(productOrderItem.getProductId())
+                        .productVariantId(productOrderItem.getProductVariantId())
+                        .totalPrice(totalPrice)
+                        .totalDiscount(totalDiscount)
+                        .totalFinalPrice(totalFinalPrice)
+                        .price(productOrderItem.getPrice())
+                        .quantity(productOrderItem.getQuantity())
                         .build();
-                orderItem.addProductOrderItem(productOrderItem);
+                order.addTotalPrice(orderItem.getTotalFinalPrice());
+                order.addOrderItem(orderItem);
             });
-            order.addOrderItem(orderItem);
+            orders.add(order);
         });
-        orderRepository.save(order);
+        orderRepository.saveAll(orders);
         cartService.clearCartByUserId(userId);
-        orderEventProducer.send(
-                CreateOrderEvent.builder()
-                        .orderId(order.getOrderId())
-                        .userId(userId)
-                        .orderStatus(order.getOrderStatus())
-                        .totalPrice(order.getTotalPrice())
-                        .receiverName(order.getReceiverName())
-                        .address(order.getAddress())
-                        .phoneNumber(order.getPhoneNumber())
-                        .createdAt(order.getCreatedAt())
-                        .updatedAt(order.getUpdatedAt())
-                        .createOrderItemEventList(order.getItems().stream()
-                                .map(item -> CreateOrderItemEvent.builder()
-                                        .orderItemId(item.getOrderItemId())
-                                        .productId(item.getProductId())
-                                        .createProductOrderItemEvents(item.getProductOrderItems().stream()
-                                                .map(productItem -> CreateProductOrderItemEvent.builder()
-                                                        .productVariantId(productItem.getProductVariantId())
-                                                        .quantity(productItem.getQuantity())
-                                                        .price(productItem.getPrice())
-                                                        .build()).toList())
-                                        .build()).toList())
-                        .build()
-        );
+
+        orderEventProducer.send(orders.stream().map(order -> CreateOrderEvent.builder()
+                .orderId(order.getOrderId())
+                .userId(order.getUserId())
+                .shopId(order.getShopId())
+                .orderStatus(order.getOrderStatus())
+                .totalPrice(order.getTotalPrice())
+                .receiverName(order.getReceiverName())
+                .address(order.getAddress())
+                .phoneNumber(order.getPhoneNumber())
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .createOrderItemEventList(
+                        order.getItems().stream().map(orderItem -> CreateOrderItemEvent.builder()
+                                .orderItemId(orderItem.getOrderItemId())
+                                .productId(orderItem.getProductId())
+                                .productVariantId(orderItem.getProductVariantId())
+                                .quantity(orderItem.getQuantity())
+                                .price(orderItem.getPrice())
+                                .totalPrice(orderItem.getTotalPrice())
+                                .totalDiscount(orderItem.getTotalDiscount())
+                                .totalFinalPrice(orderItem.getTotalFinalPrice())
+                                .build()
+                        ).toList()
+                )
+                .build()).toList(), userId);
     }
 
 
     @Override
     public void updateOrderStatus(Long orderId, ReqUpdateOrderStatus reqUpdateOrderStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_ITEM_NOT_FOUND));
 
         OrderStatus currentStatus = order.getOrderStatus();
         OrderStatus newStatus = reqUpdateOrderStatus.getOrderStatus();
@@ -126,14 +146,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void updateOrderStatus( OrderStatusEvent orderStatusEvent) {
-        Order order = orderRepository.findById(orderStatusEvent.getOrderId())
-                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
-        order.setOrderStatus(orderStatusEvent.getOrderStatus());
-        if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
-            order.setReason(orderStatusEvent.getReason());
-        }
-        orderRepository.save(order);
+    public void updateOrderStatus(List<OrderStatusEvent> orderStatusEventList) {
+        orderStatusEventList.forEach(orderStatusEvent -> {
+            Order order = orderRepository.findById(orderStatusEvent.getOrderId())
+                    .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+            order.setOrderStatus(orderStatusEvent.getOrderStatus());
+            if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
+                order.setReason(orderStatusEvent.getReason());
+            }
+            orderRepository.save(order);
+        });
+
     }
 
     private static final Map<OrderStatus, Set<OrderStatus>> transitions = Map.of(

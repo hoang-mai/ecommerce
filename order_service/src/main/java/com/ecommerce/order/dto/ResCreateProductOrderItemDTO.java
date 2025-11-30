@@ -12,6 +12,13 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class ResCreateProductOrderItemDTO {
+
+    @NotNull(message = MessageError.PRODUCT_NOT_NULL)
+    @Schema(description = "Product ID", example = "1")
+    private Long productId;
+
+    private Double discount;
+
     @NotNull(message = MessageError.PRODUCT_VARIANT_NOT_NULL)
     @Schema(description = "Product variant ID", example = "1")
     private Long productVariantId;

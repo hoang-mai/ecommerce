@@ -18,6 +18,9 @@ public class ProductCartItem extends BaseEntity {
     @Column(name = "product_cart_item_id")
     private Long productCartItemId;
 
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
+
     @Column(name = "product_variant_id", nullable = false)
     private Long productVariantId;
 

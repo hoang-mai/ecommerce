@@ -1,10 +1,10 @@
 package com.ecommerce.order.entity;
 
+import com.ecommerce.library.entity.BaseEntity;
+import com.ecommerce.library.enumeration.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "order_items")
@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItem {
+public class OrderItem extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -27,17 +27,21 @@ public class OrderItem {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<ProductOrderItem> productOrderItems = new ArrayList<>();
+    @Column(name = "product_variant_id", nullable = false)
+    private Long productVariantId;
 
-    public void addProductOrderItem(ProductOrderItem productOrderItem) {
-        productOrderItems.add(productOrderItem);
-        productOrderItem.setOrderItem(this);
-    }
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity;
 
+    @Column(name = "price", precision = 15, scale = 2, nullable = false)
+    private BigDecimal price;
 
+    @Column(name = "total_price", nullable = false)
+    private BigDecimal totalPrice;
+
+    @Column(name = "total_discount", nullable = false)
+    private BigDecimal totalDiscount;
+
+    @Column(name = "total_final_price", nullable = false)
+    private BigDecimal totalFinalPrice;
 }
-
-
-

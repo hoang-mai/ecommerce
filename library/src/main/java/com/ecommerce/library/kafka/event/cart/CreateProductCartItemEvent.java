@@ -9,10 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateProductCartItemEvent {
+    private Long productId;
     private Long productCartItemId;
-
     private Long productVariantId;
-
     private Integer quantity;
-
 }

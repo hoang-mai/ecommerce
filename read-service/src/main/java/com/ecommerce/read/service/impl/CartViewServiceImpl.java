@@ -39,10 +39,11 @@ public class CartViewServiceImpl implements CartViewService {
                         event.getCreateCartItemEventList().stream().map(
                                 itemEvent -> CartView.CartItem.builder()
                                         ._id(String.valueOf(itemEvent.getCartItemId()))
-                                        .productId(String.valueOf(itemEvent.getProductId()))
+                                        .shopId(String.valueOf(itemEvent.getShopId()))
                                         .productCartItems(itemEvent.getCreateProductCartItemEvents().stream().map(
                                                 productCartItemEvent -> CartView.ProductCartItem.builder()
                                                         ._id(String.valueOf(productCartItemEvent.getProductCartItemId()))
+                                                        .productId(String.valueOf(productCartItemEvent.getProductId()))
                                                         .productVariantId(String.valueOf(productCartItemEvent.getProductVariantId()))
                                                         .quantity(productCartItemEvent.getQuantity())
                                                         .build()

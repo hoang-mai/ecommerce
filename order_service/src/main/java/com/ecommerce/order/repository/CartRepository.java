@@ -15,9 +15,10 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     boolean existsByUserId(Long userId);
 
     @Query("""
-            SELECT COUNT(ci)
+            SELECT COUNT(pci)
             FROM Cart c
             JOIN c.cartItems ci
+            JOIN ci.productCartItems pci
             WHERE c.userId = :userId
             """)
     Integer countCartItemsByUserId(Long userId);

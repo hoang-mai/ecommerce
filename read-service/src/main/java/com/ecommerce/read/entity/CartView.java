@@ -49,8 +49,8 @@ public class CartView extends BaseEntity {
         @JsonProperty("cartItemId")
         private String _id;
 
-        @Field("productId")
-        private String productId;
+        @Field("shopId")
+        private String shopId;
 
         @Builder.Default
         @Field("productCartItems")
@@ -67,6 +67,9 @@ public class CartView extends BaseEntity {
         @Field("_id")
         @JsonProperty("productCartItemId")
         private String _id;
+
+        @Field("productId")
+        private String productId;
 
         @Field("productVariantId")
         private String productVariantId;

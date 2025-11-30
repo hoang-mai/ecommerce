@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static com.ecommerce.library.kafka.Constant.ORDER_SERVICE_GROUP;
 import static com.ecommerce.library.kafka.Constant.UPDATE_ORDER_STATUS_TOPIC;
 
@@ -16,7 +18,7 @@ public class OrderEventConsumer {
     private final OrderService orderService;
 
     @KafkaListener(topics = UPDATE_ORDER_STATUS_TOPIC, groupId = ORDER_SERVICE_GROUP)
-    public void listen(OrderStatusEvent orderStatusEvent) {
-        orderService.updateOrderStatus(orderStatusEvent);
+    public void listen(List<OrderStatusEvent> orderStatusEventList) {
+        orderService.updateOrderStatus(orderStatusEventList);
     }
 }

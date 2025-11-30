@@ -4,9 +4,7 @@ import com.ecommerce.library.enumeration.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -29,6 +27,15 @@ public class OrderView extends BaseEntity {
 
     @Field(name = "userId")
     private String userId;
+
+    @Field(name = "shopId")
+    private String shopId;
+
+    @Field(name = "shopName")
+    private String shopName;
+
+    @Field(name = "shopLogoUrl")
+    private String shopLogoUrl;
 
     @Field(name = "orderStatus")
     private OrderStatus orderStatus;
@@ -73,33 +80,27 @@ public class OrderView extends BaseEntity {
         @Field(name = "productName")
         private String productName;
 
-        @Field(name = "product")
-        @Builder.Default
-        private List<ProductImage> productImageList = new ArrayList<>();
+        @Field(name = "productImageUrl")
+        private String productImageUrl;
 
-
-        @Field(name = "productVariants")
-        @Builder.Default
-        private List<ProductVariant> productVariants = new ArrayList<>();
-    }
-
-    @Getter
-    @Setter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ProductVariant {
-
-        @Id
-        @Field(name = "_id")
-        @JsonProperty("productVariantId")
-        private String _id;
+        @Field(name = "productVariantId")
+        private String productVariantId;
 
         @Field(name = "price")
         private BigDecimal price;
 
         @Field(name = "quantity")
         private Integer quantity;
+
+        @Field(name = "totalPrice")
+        private BigDecimal totalPrice;
+
+        @Field(name = "totalDiscount")
+        private BigDecimal totalDiscount;
+
+        @Field(name = "totalFinalPrice")
+        private BigDecimal totalFinalPrice;
+
 
         @Field(name = "productAttributes")
         @Builder.Default
@@ -120,21 +121,5 @@ public class OrderView extends BaseEntity {
         @Field(name = "attributeValue")
         private String attributeValue;
 
-    }
-
-    @Getter
-    @Setter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ProductImage {
-
-        @Id
-        @Field(name = "_id")
-        @JsonProperty("productImageId")
-        private String _id;
-
-        @Field(name = "imageUrl")
-        private String imageUrl;
     }
 }

@@ -15,9 +15,9 @@ import java.util.List;
 @Setter
 public class ResCreateOrderItemDTO {
 
-    @NotNull(message = MessageError.PRODUCT_NOT_NULL)
-    @Schema(description = "Product ID", example = "1")
-    private Long productId;
+    @NotNull(message = MessageError.SHOP_NOT_NULL)
+    @Schema(description = "Shop ID", example = "1")
+    private Long shopId;
 
     @Valid
     @NotNull(message = MessageError.PRODUCT_ORDER_ITEMS_NOT_NULL)

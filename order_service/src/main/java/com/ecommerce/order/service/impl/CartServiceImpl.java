@@ -3,18 +3,13 @@ package com.ecommerce.order.service.impl;
 import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.cart.*;
+import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.order.dto.ReqAddToCartDTO;
 import com.ecommerce.order.dto.ReqUpdateCartItemDTO;
-import com.ecommerce.order.entity.Cart;
-import com.ecommerce.order.entity.CartItem;
-import com.ecommerce.order.entity.ProductCache;
-import com.ecommerce.order.entity.ProductCartItem;
+import com.ecommerce.order.entity.*;
 import com.ecommerce.order.messaging.producer.CartEventProducer;
-import com.ecommerce.order.repository.CartItemRepository;
-import com.ecommerce.order.repository.CartRepository;
-import com.ecommerce.order.repository.ProductCacheRepository;
-import com.ecommerce.order.repository.ProductCartItemRepository;
+import com.ecommerce.order.repository.*;
 import com.ecommerce.order.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +29,7 @@ public class CartServiceImpl implements CartService {
     private final UserHelper userHelper;
     private final ProductCartItemRepository productCartItemRepository;
     private final ProductCacheRepository productCacheRepository;
+    private final ShopCacheRepository shopCacheRepository;
     private final CartEventProducer cartEventProducer;
 
     @Override
@@ -41,6 +37,9 @@ public class CartServiceImpl implements CartService {
 
         Long userId = userHelper.getCurrentUserId();
 
+        if(!shopCacheRepository.existsById(request.getShopId())){
+            throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
+        }
         ProductCache productCache = productCacheRepository.findById(request.getProductId())
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
 
@@ -51,22 +50,22 @@ public class CartServiceImpl implements CartService {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseGet(() -> createNewCart(userId));
 
-        // Check if item already exists in cart
         CartItem existingItem = cart.getCartItems().stream()
-                .filter(item -> item.getProductId().equals(request.getProductId()))
+                .filter(item -> item.getShopId().equals(request.getShopId()))
                 .findFirst()
                 .orElse(null);
 
-        if (existingItem != null) {
-            // Update quantity if item exists
+        if (FnCommon.isNotNull(existingItem)) {
+
             ProductCartItem productCartItem = existingItem.getProductCartItems().stream()
                     .filter(pci -> pci.getProductVariantId().equals(request.getProductVariantId()))
                     .findFirst()
                     .orElse(null);
-            if (productCartItem != null) {
+            if (FnCommon.isNotNull(productCartItem)) {
                 productCartItem.setQuantity(productCartItem.getQuantity() + request.getQuantity());
             } else {
                 ProductCartItem newProductCartItem = ProductCartItem.builder()
+                        .productId(request.getProductId())
                         .productVariantId(request.getProductVariantId())
                         .quantity(request.getQuantity())
                         .build();
@@ -76,10 +75,11 @@ public class CartServiceImpl implements CartService {
         } else {
             CartItem newItem = CartItem.builder()
                     .cart(cart)
-                    .productId(request.getProductId())
+                    .shopId(request.getShopId())
                     .build();
 
             ProductCartItem productCartItem = ProductCartItem.builder()
+                    .productId(request.getProductId())
                     .productVariantId(request.getProductVariantId())
                     .quantity(request.getQuantity())
                     .build();
@@ -96,9 +96,10 @@ public class CartServiceImpl implements CartService {
                         .createCartItemEventList(
                                 cart.getCartItems().stream().map(cartItem -> CreateCartItemEvent.builder()
                                         .cartItemId(cartItem.getCartItemId())
-                                        .productId(cartItem.getProductId())
+                                        .shopId(cartItem.getShopId())
                                         .createProductCartItemEvents(cartItem.getProductCartItems().stream().map(productCartItem -> CreateProductCartItemEvent.builder()
                                                 .productCartItemId(productCartItem.getProductCartItemId())
+                                                .productId(productCartItem.getProductId())
                                                 .productVariantId(productCartItem.getProductVariantId())
                                                 .quantity(productCartItem.getQuantity())
                                                 .build()).toList())

@@ -9,6 +9,8 @@ import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.ProductView;
 
+import java.util.List;
+
 
 public interface ProductViewService {
     void createProductEvent(CreateProductEvent createProductEvent);
@@ -21,7 +23,7 @@ public interface ProductViewService {
 
     ProductView getProductById(Long productId,boolean isOwner);
 
-    void updateStockAfterCreateOrder(CreateOrderEvent createOrderViewEvent);
+    void updateStockAfterCreateOrder(List<CreateOrderEvent> createOrderEventList);
 
     void updateShopStatusInProductViews(UpdateShopStatusEvent updateShopStatusEvent);
 }

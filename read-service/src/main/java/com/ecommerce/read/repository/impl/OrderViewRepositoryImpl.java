@@ -24,13 +24,14 @@ public class OrderViewRepositoryImpl {
         List<Criteria> criteriaList = new ArrayList<>();
         criteriaList.add(Criteria.where("userId").is(String.valueOf(currentUserId)));
         if(FnCommon.isNotNull(orderStatus)){
-            criteriaList.add(Criteria.where("orderStatus").is(orderStatus));
+            criteriaList.add(Criteria.where("orderItems.orderStatus").is(orderStatus));
         }
         if (FnCommon.isNotNullOrEmpty(keyword)) {
             criteriaList.add(new Criteria().orOperator(
                     Criteria.where("receiverName").regex(keyword, "i"),
                     Criteria.where("address").regex(keyword, "i"),
-                    Criteria.where("phoneNumber").regex(keyword, "i")
+                    Criteria.where("phoneNumber").regex(keyword, "i"),
+                    Criteria.where("orderItems.productName").regex(keyword, "i")
             ));
         }
         Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));

@@ -1,6 +1,7 @@
 package com.ecommerce.library.kafka.event.order;
 
 import com.ecommerce.library.enumeration.OrderStatus;
+
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -15,12 +16,15 @@ import java.util.List;
 public class CreateOrderEvent {
     private Long orderId;
     private Long userId;
+    private Long shopId;
+    private String shopName;
+    private String shopLogoUrl;
     private OrderStatus orderStatus;
+    private String reason;
     private BigDecimal totalPrice;
     private String receiverName;
     private String address;
     private String phoneNumber;
-    private String reason;
     private List<CreateOrderItemEvent> createOrderItemEventList;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

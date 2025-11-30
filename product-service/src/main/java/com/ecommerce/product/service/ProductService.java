@@ -42,6 +42,6 @@ public interface ProductService {
      */
     void updateProductStatusByProductId(Long productId, ReqUpdateProductStatusDTO status);
 
-    void handleCreateOrderEvent(CreateOrderEvent createOrderEvent);
+    void handleCreateOrderEvent(List<CreateOrderEvent> createOrderEventList);
 }
 

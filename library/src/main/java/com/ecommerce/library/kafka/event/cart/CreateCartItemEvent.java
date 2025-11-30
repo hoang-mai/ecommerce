@@ -11,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateCartItemEvent {
     private Long cartItemId;
-    private Long productId;
+    private Long shopId;
     private List<CreateProductCartItemEvent> createProductCartItemEvents;
 }

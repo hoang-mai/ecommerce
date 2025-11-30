@@ -43,7 +43,7 @@ public class WebSecurityConfig {
                         .pathMatchers(HttpMethod.POST,"/api/v1/shop").hasAuthority("OWNER")
                         .pathMatchers(HttpMethod.PATCH,"/api/v1/shop/{shopId}").hasAuthority("OWNER")
                         .pathMatchers(HttpMethod.PATCH,"/api/v1/shop/{shopId}/status").hasAnyAuthority("ADMIN", "OWNER")
-
+                        .pathMatchers("api/v1/order-view/**").hasAnyAuthority("OWNER", "USER")
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyExchange().authenticated()
                 )

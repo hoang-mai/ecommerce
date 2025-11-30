@@ -6,8 +6,10 @@ import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.OrderView;
 
+import java.util.List;
+
 public interface OrderViewService {
-    void createOrderView(CreateOrderEvent createOrderViewEvent);
+    void createOrderView(List<CreateOrderEvent> createOrderEventList);
 
     void updateOrderStatusView(OrderStatusEvent orderStatusEvent);
 

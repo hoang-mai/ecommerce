@@ -41,7 +41,7 @@ public class ProductVariant extends BaseEntity {
     @Builder.Default
     private Boolean isDefault = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 

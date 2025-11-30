@@ -1,9 +1,7 @@
 package com.ecommerce.read.controller;
 
 import com.ecommerce.library.component.MessageService;
-import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.OrderStatus;
-import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;

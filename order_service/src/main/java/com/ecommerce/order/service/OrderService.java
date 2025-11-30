@@ -1,9 +1,10 @@
 package com.ecommerce.order.service;
 
-import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.order.dto.ReqUpdateOrderStatus;
 import com.ecommerce.order.dto.ResCreateOrderDTO;
+
+import java.util.List;
 
 public interface OrderService {
 
@@ -20,7 +21,7 @@ public interface OrderService {
     /**
      * Update order status
      */
-    void updateOrderStatus(OrderStatusEvent orderStatusEvent);
+    void updateOrderStatus(List<OrderStatusEvent> orderStatusEventList);
 
 }
 

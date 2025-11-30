@@ -4,6 +4,7 @@ import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.exception.NotFoundException;
+import com.ecommerce.library.kafka.event.shop.CreateShopCacheEvent;
 import com.ecommerce.library.kafka.event.shop.CreateShopEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
@@ -85,6 +86,11 @@ public class ShopServiceImpl implements ShopService {
                         .phoneNumber(shop.getPhoneNumber())
                         .createdAt(shop.getCreatedAt())
                         .updatedAt(shop.getUpdatedAt())
+                        .build()
+        );
+        shopEventProducer.send(
+                CreateShopCacheEvent.builder()
+                        .shopId(shop.getShopId())
                         .build()
         );
     }

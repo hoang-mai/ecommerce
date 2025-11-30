@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static com.ecommerce.library.kafka.Constant.CREATE_ORDER_TOPIC;
 import static com.ecommerce.library.kafka.Constant.PRODUCT_SERVICE_GROUP;
 
@@ -16,7 +18,7 @@ public class OrderEventConsumer {
     private final ProductService productService;
 
     @KafkaListener(topics = CREATE_ORDER_TOPIC, groupId = PRODUCT_SERVICE_GROUP)
-    public void listen(CreateOrderEvent createOrderEvent){
-        productService.handleCreateOrderEvent(createOrderEvent);
+    public void listen(List<CreateOrderEvent> createOrderEventList){
+        productService.handleCreateOrderEvent(createOrderEventList);
     }
 }

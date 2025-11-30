@@ -10,6 +10,10 @@ import lombok.Getter;
 @Getter
 public class ReqAddToCartDTO {
 
+    @NotNull(message = MessageError.SHOP_NOT_NULL)
+    @Schema(description = "Shop ID", example = "1")
+    private Long shopId;
+
     @NotNull(message = MessageError.PRODUCT_NOT_NULL)
     @Schema(description = "Product ID", example = "1")
     private Long productId;

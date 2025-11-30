@@ -1,6 +1,7 @@
 package com.ecommerce.read.service.impl;
 
 import com.ecommerce.library.component.UserHelper;
+import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ProductVariantStatus;
 import com.ecommerce.library.enumeration.ShopStatus;
@@ -121,7 +122,7 @@ public class ProductViewServiceImpl implements ProductViewService {
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(ownerId, shopId, categoryId,  status,  shopStatus,  keyword, star, startPrice, endPrice, pageable);
+        Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(ownerId, shopId, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
 
         return PageResponse.<ProductView>builder()
                 .data(productsPage.getContent().stream().peek(productView ->
@@ -136,8 +137,8 @@ public class ProductViewServiceImpl implements ProductViewService {
     }
 
     @Override
-    public ProductView getProductById(Long productId,boolean isOwner) {
-        if(isOwner){
+    public ProductView getProductById(Long productId, boolean isOwner) {
+        if (isOwner) {
             Long ownerId = userHelper.getCurrentUserId();
             ProductView productView = productViewRepository.findBy_idAndOwnerId(String.valueOf(productId), String.valueOf(ownerId))
                     .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
@@ -155,16 +156,17 @@ public class ProductViewServiceImpl implements ProductViewService {
     }
 
     @Override
-    public void updateStockAfterCreateOrder(CreateOrderEvent createOrderViewEvent) {
+    public void updateStockAfterCreateOrder(List<CreateOrderEvent> createOrderEventList) {
 
-        createOrderViewEvent.getCreateOrderItemEventList().forEach(orderItem -> {
+        createOrderEventList.forEach(createOrderEvent -> {
+            if (OrderStatus.CANCELLED.equals(createOrderEvent.getOrderStatus())) {
+                return;
+            }
+            createOrderEvent.getCreateOrderItemEventList().forEach(createOrderItemEvent -> {
+                ProductView productView = productViewRepository.findById(String.valueOf(createOrderItemEvent.getProductId()))
+                        .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
 
-            ProductView productView = productViewRepository.findById(String.valueOf(orderItem.getProductId()))
-                    .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
-
-            orderItem.getCreateProductOrderItemEvents().forEach(productOrderItemEvent -> {
-
-                String variantId = String.valueOf(productOrderItemEvent.getProductVariantId());
+                String variantId = String.valueOf(createOrderItemEvent.getProductVariantId());
 
                 ProductView.ProductVariant matchedVariant = productView.getProductVariants().stream()
                         .filter(v -> variantId.equals(v.get_id()))
@@ -172,7 +174,7 @@ public class ProductViewServiceImpl implements ProductViewService {
                         .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
 
                 int currentStock = matchedVariant.getStockQuantity() == null ? 0 : matchedVariant.getStockQuantity();
-                int quantity = productOrderItemEvent.getQuantity() == null ? 0 : productOrderItemEvent.getQuantity();
+                int quantity = createOrderItemEvent.getQuantity() == null ? 0 : createOrderItemEvent.getQuantity();
                 int updatedStock = currentStock - quantity;
 
                 if (updatedStock <= 0) {
@@ -184,17 +186,17 @@ public class ProductViewServiceImpl implements ProductViewService {
 
                 matchedVariant.addSold(quantity);
                 productView.addSold(quantity);
+                productViewRepository.save(productView);
             });
-
-            productViewRepository.save(productView);
         });
-    }
 
-    @Override
-    public void updateShopStatusInProductViews(UpdateShopStatusEvent updateShopStatusEvent) {
-        List<ProductView> productViews = productViewRepository.findByShopId(String.valueOf(updateShopStatusEvent.getShopId()));
-        productViews.forEach(productView -> productView.setShopStatus(updateShopStatusEvent.getShopStatus()));
-        productViewRepository.saveAll(productViews);
-    }
+}
+
+@Override
+public void updateShopStatusInProductViews(UpdateShopStatusEvent updateShopStatusEvent) {
+    List<ProductView> productViews = productViewRepository.findByShopId(String.valueOf(updateShopStatusEvent.getShopId()));
+    productViews.forEach(productView -> productView.setShopStatus(updateShopStatusEvent.getShopStatus()));
+    productViewRepository.saveAll(productViews);
+}
 
 }

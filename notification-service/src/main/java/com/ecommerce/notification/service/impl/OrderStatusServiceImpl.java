@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class OrderStatusServiceImpl implements OrderStatusService {
@@ -21,30 +23,30 @@ public class OrderStatusServiceImpl implements OrderStatusService {
     private final MessageService messageService;
 
     @Override
-    public void sendOrderStatusMessage(OrderStatusEvent orderStatusEvent) {
+    public void sendOrderStatusMessage(List<OrderStatusEvent> orderStatusEventList) {
+        if (orderStatusEventList == null || orderStatusEventList.isEmpty()) {
+            return;
+        }
+
+        boolean hasCancelled = orderStatusEventList.stream()
+                .anyMatch(e -> e.getOrderStatus() == OrderStatus.CANCELLED);
+        NotificationType type = hasCancelled ? NotificationType.ERROR : NotificationType.SUCCESS;
+        String title = messageService.getMessage(hasCancelled ? MessageSuccess.ORDER_CANCELLED_TITLE : MessageSuccess.ORDER_SUCCESS_TITLE);
+        String message = messageService.getMessage(hasCancelled ? MessageSuccess.ORDER_CANCELLED_MESSAGE : MessageSuccess.ORDER_SUCCESS_MESSAGE);
+
+
+        Long userId = orderStatusEventList.get(0).getUserId();
         Notification notification = Notification.builder()
-                .userId(orderStatusEvent.getUserId())
-                .notificationType(
-                        orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED
-                                ? NotificationType.ERROR
-                                : NotificationType.SUCCESS
-                )
+                .userId(userId)
+                .notificationType(type)
                 .isRead(false)
                 .sentRealtime(true)
-                .title(messageService.getMessage(orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED
-                        ? MessageSuccess.ORDER_CANCELLED_TITLE
-                        : MessageSuccess.ORDER_SUCCESS_TITLE)
-                )
-                .message(messageService.getMessage(orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED
-                        ? MessageSuccess.ORDER_CANCELLED_MESSAGE
-                        : MessageSuccess.ORDER_SUCCESS_MESSAGE)
-                )
+                .title(title)
+                .message(message)
                 .build();
-
-
         notificationRepository.save(notification);
         simpMessagingTemplate.convertAndSendToUser(
-                String.valueOf(orderStatusEvent.getUserId()),
+                String.valueOf(userId),
                 "/queue/notify",
                 notification
         );
