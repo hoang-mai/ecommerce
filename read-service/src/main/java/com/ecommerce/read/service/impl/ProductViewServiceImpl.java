@@ -1,10 +1,7 @@
 package com.ecommerce.read.service.impl;
 
 import com.ecommerce.library.component.UserHelper;
-import com.ecommerce.library.enumeration.OrderStatus;
-import com.ecommerce.library.enumeration.ProductStatus;
-import com.ecommerce.library.enumeration.ProductVariantStatus;
-import com.ecommerce.library.enumeration.ShopStatus;
+import com.ecommerce.library.enumeration.*;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.product.CreateProductEvent;
@@ -205,7 +202,7 @@ public class ProductViewServiceImpl implements ProductViewService {
 
 
     @Override
-    public void updateRating(Long productId, Double rating, Boolean isUpdate, Double oldRating, Boolean isDelete) {
+    public void updateRating(Long productId, RatingNumber rating, Boolean isUpdate, RatingNumber oldRating, Boolean isDelete) {
         productViewRepositoryImpl.updateRating(productId, rating, isUpdate, oldRating, isDelete);
         ProductView productView = productViewRepository.findById(String.valueOf(productId))
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));

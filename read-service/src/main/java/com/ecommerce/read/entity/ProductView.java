@@ -2,6 +2,7 @@ package com.ecommerce.read.entity;
 
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ProductVariantStatus;
+import com.ecommerce.library.enumeration.RatingNumber;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "product_views")
 @Getter
@@ -31,9 +33,23 @@ public class ProductView extends BaseEntity {
     @Builder.Default
     private Double rating = 0.0;
 
+    @Field("numberOfRatings")
+    @Builder.Default
+    private Integer numberOfRatings = 0;
+
     @Field("numberOfReviews")
     @Builder.Default
     private Integer numberOfReviews = 0;
+
+    @Field("ratingStatistics")
+    @Builder.Default
+    private Map<RatingNumber, Integer> ratingStatistics = Map.of(
+            RatingNumber.ONE, 0,
+            RatingNumber.TWO, 0,
+            RatingNumber.THREE, 0,
+            RatingNumber.FOUR, 0,
+            RatingNumber.FIVE, 0
+    );
 
     @Field("name")
     private String name;

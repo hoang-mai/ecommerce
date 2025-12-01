@@ -78,7 +78,7 @@ public class ReviewViewServiceImpl implements ReviewViewService {
         ReviewView rv = opt.get();
         productViewService.updateRating(
                 Long.parseLong(rv.getProductId()),
-                0.0,
+                null,
                 true,
                 rv.getRating(),
                 true

@@ -1,5 +1,6 @@
 package com.ecommerce.library.kafka.event.review;
 
+import com.ecommerce.library.enumeration.RatingNumber;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +20,7 @@ public class CreateReviewViewEvent {
     private Long productId;
     private Long productVariantId;
     private Long userId;
-    private Double rating;
+    private RatingNumber rating;
     private String comment;
     private List<String> imageUrls;
     private Map<String, String> attributes;

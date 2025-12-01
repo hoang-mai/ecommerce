@@ -1,10 +1,10 @@
 package com.ecommerce.read.repository.impl;
 
 import com.ecommerce.library.enumeration.ProductStatus;
+import com.ecommerce.library.enumeration.RatingNumber;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent;
-import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.read.entity.ProductView;
@@ -89,20 +89,48 @@ public class ProductViewRepositoryImpl {
         return new PageImpl<>(productViews, pageable, total);
     }
 
-    public void updateRating(Long productId, Double rating, Boolean isUpdate, Double oldRating, Boolean isDelete) {
+    public void updateRating(Long productId, RatingNumber rating, Boolean isUpdate, RatingNumber oldRating, Boolean isDelete) {
         Query query = new Query(Criteria.where("_id").is(String.valueOf(productId)));
         Update update;
         if (Boolean.TRUE.equals(isDelete)) {
             update = new Update()
-                .inc("numberOfReviews", -1)
-                .inc("rating", -oldRating);
+                .inc("numberOfReviews", -1);
+            if(FnCommon.isNotNull(oldRating)){
+                update.inc("numberOfRatings", -1)
+                        .inc("rating", -oldRating.getValue())
+                        .inc("ratingStatistics." + oldRating.name(), -1);
+            }
         } else if (Boolean.TRUE.equals(isUpdate)) {
-            update = new Update()
-                .inc("rating", rating - oldRating);
+            Integer updateValue;
+            if(FnCommon.isNotNull(oldRating) && FnCommon.isNotNull(rating)){
+                updateValue = rating.getValue() - oldRating.getValue();
+                update = new Update()
+                    .inc("rating", updateValue)
+                    .inc("ratingStatistics." + oldRating.name(), -1)
+                    .inc("ratingStatistics." + rating.name(), 1);
+            } else if(FnCommon.isNotNull(oldRating)){
+                updateValue = - oldRating.getValue();
+                update = new Update()
+                    .inc("rating", updateValue)
+                    .inc("ratingStatistics." + oldRating.name(), -1);
+            } else if(FnCommon.isNotNull(rating)){
+                updateValue = rating.getValue();
+                update = new Update()
+                    .inc("rating", updateValue)
+                    .inc("ratingStatistics." + rating.name(), 1);
+            } else {
+                updateValue = 0;
+                update = new Update()
+                    .inc("rating", updateValue);
+            }
         } else {
             update = new Update()
-                .inc("numberOfReviews", 1)
-                .inc("rating", rating);
+                    .inc("numberOfReviews", 1);
+            if(FnCommon.isNotNull(rating)){
+                update.inc("numberOfRatings", 1)
+                      .inc("rating", rating.getValue())
+                      .inc("ratingStatistics." + rating.name(), 1);
+            }
         }
         mongoTemplate.updateFirst(query, update, ProductView.class);
     }

@@ -1,7 +1,9 @@
 package com.ecommerce.read.repository.impl;
 
+import com.ecommerce.library.enumeration.RatingNumber;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
+import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.read.entity.ShopView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -64,20 +66,36 @@ public class ShopViewRepositoryImpl {
         return new PageImpl<>(shopViews, pageable, total);
     }
 
-    public void updateRating(String shopId, Double rating, Boolean isUpdate, Double oldRating, Boolean isDelete) {
+    public void updateRating(String shopId, RatingNumber rating, Boolean isUpdate, RatingNumber oldRating, Boolean isDelete) {
         Query query = new Query(Criteria.where("_id").is(shopId));
         Update update;
         if (Boolean.TRUE.equals(isDelete)) {
             update = new Update()
-                .inc("numberOfReviews", -1)
-                .inc("rating", -oldRating);
+                    .inc("numberOfReviews", -1);
+            if(FnCommon.isNotNull(oldRating)){
+                update.inc("numberOfRatings", -1)
+                        .inc("rating", -oldRating.getValue());
+            }
         } else if (Boolean.TRUE.equals(isUpdate)) {
+            Integer updateValue;
+            if(FnCommon.isNotNull(oldRating) && FnCommon.isNotNull(rating)){
+                updateValue = rating.getValue() - oldRating.getValue();
+            } else if(FnCommon.isNotNull(oldRating)){
+                updateValue = - oldRating.getValue();
+            } else if(FnCommon.isNotNull(rating)){
+                updateValue = rating.getValue();
+            } else {
+                updateValue = 0;
+            }
             update = new Update()
-                .inc("rating", rating - oldRating);
+                    .inc("rating", updateValue);
         } else {
             update = new Update()
-                .inc("numberOfReviews", 1)
-                .inc("rating", rating);
+                    .inc("numberOfReviews", 1);
+            if(FnCommon.isNotNull(rating)){
+                update.inc("numberOfRatings", 1)
+                        .inc("rating", rating.getValue());
+            }
         }
         mongoTemplate.updateFirst(query, update, ShopView.class);
     }

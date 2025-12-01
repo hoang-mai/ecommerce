@@ -1,5 +1,6 @@
 package com.ecommerce.read.entity;
 
+import com.ecommerce.library.enumeration.RatingNumber;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -36,7 +37,7 @@ public class ReviewView extends BaseEntity {
     private String userId;
 
     @Field("rating")
-    private Double rating;
+    private RatingNumber rating;
 
     @Field("comment")
     private String comment;

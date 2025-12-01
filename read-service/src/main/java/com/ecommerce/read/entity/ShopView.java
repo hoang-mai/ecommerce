@@ -2,10 +2,7 @@ package com.ecommerce.read.entity;
 
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -70,7 +67,12 @@ public class ShopView extends BaseEntity {
     @Field("rating")
     private Double rating;
 
+    @Field("numberOfRatings")
+    @Builder.Default
+    private Integer numberOfRatings = 0;
+
     @Field("numberOfReviews")
-    private Integer numberOfReviews;
+    @Builder.Default
+    private Integer numberOfReviews = 0;
 
 }
