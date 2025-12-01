@@ -36,4 +36,7 @@ public final class Constant {
     public static final String CART_VIEW = REQUEST_MAPPING + "/cart-view";
     public static final String PRODUCT_VIEW = REQUEST_MAPPING + "/product-view";
     public static final String SHOP_VIEW = REQUEST_MAPPING + "/shop-view";
+    public static final String REVIEW = REQUEST_MAPPING + "/review";
+    public static final String REVIEW_VIEW = REQUEST_MAPPING + "/review-view";
+    public static final String REVIEW_REPLY = REQUEST_MAPPING + "/review-reply";
 }

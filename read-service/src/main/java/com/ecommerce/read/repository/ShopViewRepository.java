@@ -12,4 +12,6 @@ public interface ShopViewRepository extends MongoRepository<ShopView,String> {
     Optional<ShopView> findBy_idAndOwnerId(String _id, String ownerId);
 
     Optional<ShopView> findBy_idAndShopStatus(String _id, ShopStatus shopStatus);
+
+    boolean existsBy_idAndOwnerId(String id, String ownerId);
 }

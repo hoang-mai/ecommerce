@@ -10,14 +10,17 @@ import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.product.CreateProductEvent;
 import com.ecommerce.library.kafka.event.product.UpdateProductStatusEvent;
 import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent;
+import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.ProductView;
 import com.ecommerce.read.repository.ProductViewRepository;
 import com.ecommerce.read.repository.impl.ProductViewRepositoryImpl;
+import com.ecommerce.read.repository.impl.ShopViewRepositoryImpl;
 import com.ecommerce.read.service.FileService;
 import com.ecommerce.read.service.ProductViewService;
+import com.ecommerce.read.service.ShopViewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +33,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ProductViewServiceImpl implements ProductViewService {
+    private final ShopViewRepositoryImpl shopViewRepositoryImpl;
     private final ProductViewRepository productViewRepository;
     private final ProductViewRepositoryImpl productViewRepositoryImpl;
     private final FileService fileService;
@@ -190,13 +194,23 @@ public class ProductViewServiceImpl implements ProductViewService {
             });
         });
 
+    }
+
+    @Override
+    public void updateShopStatusInProductViews(UpdateShopStatusEvent updateShopStatusEvent) {
+        List<ProductView> productViews = productViewRepository.findByShopId(String.valueOf(updateShopStatusEvent.getShopId()));
+        productViews.forEach(productView -> productView.setShopStatus(updateShopStatusEvent.getShopStatus()));
+        productViewRepository.saveAll(productViews);
+    }
+
+
+    @Override
+    public void updateRating(Long productId, Double rating, Boolean isUpdate, Double oldRating, Boolean isDelete) {
+        productViewRepositoryImpl.updateRating(productId, rating, isUpdate, oldRating, isDelete);
+        ProductView productView = productViewRepository.findById(String.valueOf(productId))
+                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+        shopViewRepositoryImpl.updateRating(productView.getShopId(), rating, isUpdate, oldRating, isDelete);
+    }
+
 }
 
-@Override
-public void updateShopStatusInProductViews(UpdateShopStatusEvent updateShopStatusEvent) {
-    List<ProductView> productViews = productViewRepository.findByShopId(String.valueOf(updateShopStatusEvent.getShopId()));
-    productViews.forEach(productView -> productView.setShopStatus(updateShopStatusEvent.getShopStatus()));
-    productViewRepository.saveAll(productViews);
-}
-
-}

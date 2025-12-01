@@ -87,12 +87,11 @@ public class CartViewServiceImpl implements CartViewService {
     @Override
     public CartViewDTO getCurrentUserCart() {
         CartViewDTO cartViewDTO= cartViewRepositoryImpl.findCartViewDTOByUserId(String.valueOf(userHelper.getCurrentUserId()));
-        if(cartViewDTO != null){
-            cartViewDTO.getCartItems().forEach(cartItemDTO -> {
-                if(cartItemDTO.getProductView() != null && cartItemDTO.getProductView().getProductImages() != null){
-                    cartItemDTO.getProductView().getProductImages().forEach(productImage -> productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl())));
-                }
-            });
+        if(FnCommon.isNotNull(cartViewDTO)){
+            cartViewDTO.getCartItems().forEach(cartItemDTO -> cartItemDTO.getProductCartItems().forEach(productCartItemDTO -> {
+                String productImageUrl = fileService.getPresignedUrl(productCartItemDTO.getProductView().getProductImages().get(0).getImageUrl());
+                productCartItemDTO.getProductView().getProductImages().get(0).setImageUrl(productImageUrl);
+            }));
         }
         return cartViewDTO;
     }

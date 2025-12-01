@@ -2,6 +2,7 @@ package com.ecommerce.read.dto;
 
 
 import com.ecommerce.read.entity.ProductView;
+import com.ecommerce.read.entity.ShopView;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -23,7 +24,7 @@ public class CartViewDTO {
     public static class CartItemViewDTO {
         @JsonProperty("cartItemId")
         private String _id;
-        private ProductView productView;
+        private ShopView shopView;
         private List<ProductCartItemViewDTO> productCartItems;
     }
 
@@ -34,6 +35,8 @@ public class CartViewDTO {
     public static class ProductCartItemViewDTO {
         @JsonProperty("productCartItemId")
         private String _id;
+
+        private ProductView productView;
 
         private String productVariantId;
 

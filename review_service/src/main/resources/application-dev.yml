@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: review-service
+  kafka:
+    bootstrap-servers: localhost:19092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/auth/realms/ecommerce
+  datasource:
+    url: jdbc:mysql://localhost:3306/review_service
+    username: review_service
+    password: review_service
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+minio:
+  url: http://localhost:9000
+  access-key: root
+  secret-key: password
+  bucket-name: ecommerce
+
+server:
+  port: 8092
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    metadata-map:
+      grpc-port: ${spring.grpc.server.port}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+openapi:
+  service:
+    api-docs: Review-Service-API-docs
+    serverUrl: http://localhost:${server.port}
+    serverName: server dev
+    title: Review Service API
+    version: 1.0.0
+    description: API document

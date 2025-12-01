@@ -34,6 +34,7 @@ public class OrderViewController {
      */
     @GetMapping()
     public ResponseEntity<BaseResponse<PageResponse<OrderView>>> getOrderView(
+            @RequestParam(required = false) String shopId,
             @RequestParam(required = false) OrderStatus orderStatus,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int pageNo,
@@ -42,7 +43,7 @@ public class OrderViewController {
             @RequestParam(defaultValue = "desc") String sortDir
     ){
         PageResponse<OrderView> orderViews = orderViewService.getOrderViews(
-                orderStatus, keyword, pageNo, pageSize, sortBy, sortDir);
+                shopId, orderStatus, keyword, pageNo, pageSize, sortBy, sortDir);
         return ResponseEntity.ok(
                 BaseResponse.<PageResponse<OrderView>>builder()
                         .statusCode(200)

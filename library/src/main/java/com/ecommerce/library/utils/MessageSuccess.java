@@ -81,4 +81,11 @@ public final class MessageSuccess {
     public static final String PUSH_UNSUBSCRIPTION_SUCCESS = "";
     public static final String GET_CART_ITEM_COUNT_SUCCESS = "";
     public static final String CART_RETRIEVED_SUCCESS = "";
+    public static final String REVIEW_CREATED_SUCCESS = "";
+    public static final String REVIEW_UPDATED_SUCCESS = "";
+    public static final String REVIEW_DELETED_SUCCESS = "";
+    public static final String REVIEW_VIEW_GET_SUCCESS = "";
+    public static final String REVIEW_REPLY_CREATED_SUCCESS = "";
+    public static final String REVIEW_REPLY_UPDATED_SUCCESS = "";
+    public static final String REVIEW_REPLY_DELETED_SUCCESS = "";
 }

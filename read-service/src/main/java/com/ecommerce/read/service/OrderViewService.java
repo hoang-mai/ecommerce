@@ -13,5 +13,5 @@ public interface OrderViewService {
 
     void updateOrderStatusView(OrderStatusEvent orderStatusEvent);
 
-    PageResponse<OrderView> getOrderViews(OrderStatus orderStatus, String keyword, int pageNo, int pageSize, String sortBy, String sortDir);
+    PageResponse<OrderView> getOrderViews(String shopId, OrderStatus orderStatus, String keyword, int pageNo, int pageSize, String sortBy, String sortDir);
 }

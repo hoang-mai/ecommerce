@@ -5,6 +5,7 @@ import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.product.CreateProductEvent;
 import com.ecommerce.library.kafka.event.product.UpdateProductStatusEvent;
 import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent;
+import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.ProductView;
@@ -26,4 +27,6 @@ public interface ProductViewService {
     void updateStockAfterCreateOrder(List<CreateOrderEvent> createOrderEventList);
 
     void updateShopStatusInProductViews(UpdateShopStatusEvent updateShopStatusEvent);
+
+    void updateRating(Long productId, Double rating, Boolean isUpdate, Double oldRating, Boolean isDelete);
 }

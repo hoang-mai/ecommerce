@@ -31,6 +31,10 @@ public class ProductView extends BaseEntity {
     @Builder.Default
     private Double rating = 0.0;
 
+    @Field("numberOfReviews")
+    @Builder.Default
+    private Integer numberOfReviews = 0;
+
     @Field("name")
     private String name;
 

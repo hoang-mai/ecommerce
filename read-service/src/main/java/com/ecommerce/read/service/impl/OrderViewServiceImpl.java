@@ -5,10 +5,12 @@ import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
+import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.OrderView;
 import com.ecommerce.read.repository.OrderViewRepository;
+import com.ecommerce.read.repository.ShopViewRepository;
 import com.ecommerce.read.repository.impl.OrderViewRepositoryImpl;
 import com.ecommerce.read.service.CartViewService;
 import com.ecommerce.read.service.FileService;
@@ -27,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderViewServiceImpl implements OrderViewService {
 
+    private final ShopViewRepository shopViewRepository;
     private final OrderViewRepository orderViewRepository;
     private final OrderViewRepositoryImpl orderViewRepositoryImpl;
     private final CartViewService cartViewService;
@@ -87,14 +90,20 @@ public class OrderViewServiceImpl implements OrderViewService {
     }
 
     @Override
-    public PageResponse<OrderView> getOrderViews(OrderStatus orderStatus, String keyword, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public PageResponse<OrderView> getOrderViews(String shopId, OrderStatus orderStatus, String keyword, int pageNo, int pageSize, String sortBy, String sortDir) {
+
         Long currentUserId = userHelper.getCurrentUserId();
+        if(FnCommon.isNotNullOrEmpty(shopId)){
+            if(!shopViewRepository.existsBy_idAndOwnerId(shopId, String.valueOf(currentUserId))){
+                throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
+            }
+        }
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        Page<OrderView> orderViewPage = orderViewRepositoryImpl.getOrderView(currentUserId, orderStatus, keyword, pageable);
+        Page<OrderView> orderViewPage = orderViewRepositoryImpl.getOrderView(shopId, currentUserId, orderStatus, keyword, pageable);
 
         return PageResponse.<OrderView>builder()
                 .data(orderViewPage.getContent().stream().peek(

@@ -121,4 +121,13 @@ public final class MessageError {
     public static final String ORDER_ITEM_NOT_FOUND = "";
     public static final String SHOP_INACTIVE = "shop.inactive";
     public static final String PRODUCT_INACTIVE = "";
+    public static final String COMMENT_NOT_BLANK = "";
+    public static final String ORDER_ITEM_ID_NOT_NULL = "";
+    public static final String ORDER_ITEM_ID_POSITIVE = "";
+    public static final String PRODUCT_ID_NOT_NULL = "";
+    public static final String PRODUCT_ID_POSITIVE = "";
+    public static final String PRODUCT_VARIANT_ID_NOT_NULL = "";
+    public static final String PRODUCT_VARIANT_ID_POSITIVE = "";
+    public static final String REVIEW_NOT_FOUND = "";
+    public static final String REVIEW_REPLY_NOT_FOUND = "";
 }

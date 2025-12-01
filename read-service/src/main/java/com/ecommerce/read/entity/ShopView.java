@@ -67,8 +67,10 @@ public class ShopView extends BaseEntity {
     @Field("totalRevenue")
     private BigDecimal totalRevenue;
 
-    @Field("averageRating")
-    private Double averageRating;
+    @Field("rating")
+    private Double rating;
 
+    @Field("numberOfReviews")
+    private Integer numberOfReviews;
 
 }

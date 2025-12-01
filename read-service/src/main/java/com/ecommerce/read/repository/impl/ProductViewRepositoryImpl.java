@@ -4,6 +4,7 @@ import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent;
+import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.read.entity.ProductView;
@@ -51,7 +52,7 @@ public class ProductViewRepositoryImpl {
         if (FnCommon.isNotNull(shopId)) {
             criteriaList.add(Criteria.where("shopId").is(String.valueOf(shopId)));
         }
-        if( FnCommon.isNotNull(shopStatus)) {
+        if (FnCommon.isNotNull(shopStatus)) {
             criteriaList.add(Criteria.where("shopStatus").is(shopStatus));
         }
         if (FnCommon.isNotNull(categoryId)) {
@@ -86,5 +87,23 @@ public class ProductViewRepositoryImpl {
         query.with(pageable);
         List<ProductView> productViews = mongoTemplate.find(query, ProductView.class);
         return new PageImpl<>(productViews, pageable, total);
+    }
+
+    public void updateRating(Long productId, Double rating, Boolean isUpdate, Double oldRating, Boolean isDelete) {
+        Query query = new Query(Criteria.where("_id").is(String.valueOf(productId)));
+        Update update;
+        if (Boolean.TRUE.equals(isDelete)) {
+            update = new Update()
+                .inc("numberOfReviews", -1)
+                .inc("rating", -oldRating);
+        } else if (Boolean.TRUE.equals(isUpdate)) {
+            update = new Update()
+                .inc("rating", rating - oldRating);
+        } else {
+            update = new Update()
+                .inc("numberOfReviews", 1)
+                .inc("rating", rating);
+        }
+        mongoTemplate.updateFirst(query, update, ProductView.class);
     }
 }

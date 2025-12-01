@@ -30,4 +30,10 @@ CREATE DATABASE IF NOT EXISTS order_service;
 CREATE USER IF NOT EXISTS 'order_service'@'%' IDENTIFIED BY 'order_service';
 GRANT ALL PRIVILEGES ON order_service.* TO 'order_service'@'%';
 
+-- Tạo database cho review-service
+CREATE DATABASE IF NOT EXISTS review_service;
+CREATE USER IF NOT EXISTS 'review_service'@'%' IDENTIFIED BY 'review_service';
+GRANT ALL PRIVILEGES ON review_service.* TO 'review_service'@'%';
+
+
 FLUSH PRIVILEGES;

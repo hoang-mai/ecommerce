@@ -20,9 +20,14 @@ import java.util.List;
 public class OrderViewRepositoryImpl {
     private final MongoTemplate mongoTemplate;
 
-    public Page<OrderView> getOrderView(Long currentUserId, OrderStatus orderStatus, String keyword, Pageable pageable) {
+    public Page<OrderView> getOrderView(String shopId, Long currentUserId, OrderStatus orderStatus, String keyword, Pageable pageable) {
         List<Criteria> criteriaList = new ArrayList<>();
-        criteriaList.add(Criteria.where("userId").is(String.valueOf(currentUserId)));
+        if(FnCommon.isNotNullOrEmpty(shopId)){
+            criteriaList.add(Criteria.where("shopId").is(shopId));
+        }else{
+            criteriaList.add(Criteria.where("userId").is(String.valueOf(currentUserId)));
+        }
+
         if(FnCommon.isNotNull(orderStatus)){
             criteriaList.add(Criteria.where("orderItems.orderStatus").is(orderStatus));
         }

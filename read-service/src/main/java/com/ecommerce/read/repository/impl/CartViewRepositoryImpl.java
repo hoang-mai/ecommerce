@@ -52,14 +52,25 @@ public class CartViewRepositoryImpl {
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("userId").is(currentUserId)),
                 Aggregation.unwind("cartItems"),
-                Aggregation.lookup("product_views", "cartItems.productId", "_id", "product_views"),
+                Aggregation.lookup("shop_views", "cartItems.shopId", "_id", "shop_views"),
+                Aggregation.unwind("shop_views"),
+                Aggregation.unwind("cartItems.productCartItems"),
+                Aggregation.lookup("product_views", "cartItems.productCartItems.productId", "_id", "product_views"),
                 Aggregation.unwind("product_views"),
                 Aggregation.group("_id")
-                        .push(new Document()
-                                .append("_id", "$cartItems._id")
-                                .append("productView", "$product_views")
-                                .append("productCartItems", "$cartItems.productCartItems")
+                        .push(
+                                new Document()
+                                        .append("_id", "$cartItems._id")
+                                        .append("shopView", "$shop_views")
+                                        .append("productCartItems",
+                                                new Document()
+                                                        .append("_id", "$cartItems.productCartItems._id")
+                                                        .append("productView", "$product_views")
+                                                        .append("productVariantId", "$cartItems.productCartItems.productVariantId")
+                                                        .append("quantity", "$cartItems.productCartItems.quantity")
+                                        )
                         ).as("cartItems"),
+
                 Aggregation.project()
                         .and("_id").as("_id")
                         .and("cartItems").as("cartItems")
