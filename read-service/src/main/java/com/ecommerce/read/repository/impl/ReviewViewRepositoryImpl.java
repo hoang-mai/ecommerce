@@ -18,14 +18,31 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReviewViewRepositoryImpl {
     private final MongoTemplate mongoTemplate;
-    public Page<ReviewView> getReviewsByProductId(String productId, Integer stars, Pageable pageable) {
+    public Page<ReviewView> getReviewsByProductId(Long productId, String stars, Long ownerId, Long shopId, Boolean isReply, Pageable pageable) {
         List<Criteria> criteriaList = new ArrayList<>();
-
-        criteriaList.add(Criteria.where("productId").is(productId));
-        if(FnCommon.isNotNull(stars)){
-            criteriaList.add(Criteria.where("stars").is(stars));
+        if(FnCommon.isNotNull(productId)){
+            criteriaList.add(Criteria.where("productId").is(String.valueOf(productId)));
         }
-        Criteria finalCriteria =  new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        if(FnCommon.isNotNull(stars)){
+            criteriaList.add(Criteria.where("rating").is(stars));
+        }
+        if(FnCommon.isNotNull(ownerId)){
+            criteriaList.add(Criteria.where("ownerId").is(String.valueOf(ownerId)));
+        }
+        if(FnCommon.isNotNull(shopId)){
+            criteriaList.add(Criteria.where("shopId").is(String.valueOf(shopId)));
+        }
+        if (FnCommon.isNotNull(isReply)) {
+            if (isReply) {
+                criteriaList.add(Criteria.where("reviewReplyView").ne(null));
+            } else {
+                criteriaList.add(Criteria.where("reviewReplyView").is(null));
+            }
+        }
+        Criteria finalCriteria =  new Criteria();
+        if(!criteriaList.isEmpty()){
+            finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        }
         Query query = new Query(finalCriteria);
         long total = mongoTemplate.count(query, ReviewView.class);
         query.with(pageable);

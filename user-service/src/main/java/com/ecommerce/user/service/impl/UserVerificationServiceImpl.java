@@ -121,28 +121,13 @@ public class UserVerificationServiceImpl implements UserVerificationService {
                 .rejectReason(verification.getRejectReason())
                 .userVerificationStatus(verification.getUserVerificationStatus())
                 .userId(user != null ? user.getUserId() : null)
-                .userName(user != null ? buildFullName(user) : null)
+                .userName(user != null ? user.getFullName() : null)
                 .userEmail(user != null ? user.getEmail() : null)
                 .createdAt(verification.getCreatedAt())
                 .updatedAt(verification.getUpdatedAt())
                 .build();
     }
 
-    private String buildFullName(User user) {
-        StringBuilder fullName = new StringBuilder();
-        if (FnCommon.isNotNullOrEmpty(user.getFirstName())) {
-            fullName.append(user.getFirstName());
-        }
-        if (FnCommon.isNotNullOrEmpty(user.getLastName())) {
-            if (!fullName.isEmpty()) fullName.append(" ");
-            fullName.append(user.getMiddleName());
-        }
-        if (FnCommon.isNotNullOrEmpty(user.getLastName())) {
-            if (!fullName.isEmpty()) fullName.append(" ");
-            fullName.append(user.getLastName());
-        }
-        return !fullName.isEmpty() ? fullName.toString() : null;
-    }
     private String maskAccountNumber(String accountNumber) {
         if (accountNumber == null) return null;
         int len = accountNumber.length();

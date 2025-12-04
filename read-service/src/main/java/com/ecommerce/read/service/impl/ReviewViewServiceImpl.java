@@ -1,5 +1,6 @@
 package com.ecommerce.read.service.impl;
 
+import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.kafka.event.review.DeleteReviewViewEvent;
 import com.ecommerce.library.kafka.event.review.UpdateReviewViewEvent;
@@ -13,6 +14,12 @@ import com.ecommerce.read.repository.impl.ReviewViewRepositoryImpl;
 import com.ecommerce.read.service.FileService;
 import com.ecommerce.read.service.ProductViewService;
 import com.ecommerce.read.service.ReviewViewService;
+import com.ecommerce.read.repository.UserViewRepository;
+import com.ecommerce.read.entity.UserView;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,22 +37,29 @@ public class ReviewViewServiceImpl implements ReviewViewService {
     private final ProductViewService productViewService;
     private final ReviewViewRepositoryImpl reviewViewRepositoryImpl;
     private final FileService fileService;
+    private final UserHelper userHelper;
+    private final UserViewRepository userViewRepository;
 
     @Override
     public void createReviewView(CreateReviewViewEvent createReviewViewEvent) {
         if (createReviewViewEvent == null) return;
         ReviewView rv = ReviewView.builder()
-                ._id(String.valueOf(createReviewViewEvent.getReviewId()))
-                .orderItemId(String.valueOf(createReviewViewEvent.getOrderItemId()))
-                .productId(String.valueOf(createReviewViewEvent.getProductId()))
-                .productVariantId(String.valueOf(createReviewViewEvent.getProductVariantId()))
-                .userId(String.valueOf(createReviewViewEvent.getUserId()))
-                .rating(createReviewViewEvent.getRating())
-                .comment(createReviewViewEvent.getComment())
-                .imageUrls(createReviewViewEvent.getImageUrls())
-                .attributes(createReviewViewEvent.getAttributes())
-                .createdAt(createReviewViewEvent.getCreatedAt())
-                .build();
+            ._id(String.valueOf(createReviewViewEvent.getReviewId()))
+            .orderItemId(String.valueOf(createReviewViewEvent.getOrderItemId()))
+            .productId(String.valueOf(createReviewViewEvent.getProductId()))
+            .productName(createReviewViewEvent.getProductName())
+            .productVariantId(String.valueOf(createReviewViewEvent.getProductVariantId()))
+            .userId(String.valueOf(createReviewViewEvent.getUserId()))
+            .fullName(createReviewViewEvent.getFullName())
+            .avatarUrl(createReviewViewEvent.getAvatarUrl())
+            .ownerId(String.valueOf(createReviewViewEvent.getOwnerId()))
+            .shopId(String.valueOf(createReviewViewEvent.getShopId()))
+            .rating(createReviewViewEvent.getRating())
+            .comment(createReviewViewEvent.getComment())
+            .imageUrls(createReviewViewEvent.getImageUrls())
+            .attributes(createReviewViewEvent.getAttributes())
+            .createdAt(createReviewViewEvent.getCreatedAt())
+            .build();
         reviewViewRepository.save(rv);
         productViewService.updateRating(createReviewViewEvent.getProductId(), createReviewViewEvent.getRating(), false, null, false);
     }
@@ -57,16 +71,17 @@ public class ReviewViewServiceImpl implements ReviewViewService {
         if (opt.isEmpty()) return;
         ReviewView rv = opt.get();
         productViewService.updateRating(
-                Long.parseLong(rv.getProductId()),
-                updateReviewViewEvent.getRating(),
-                true,
-                rv.getRating(),
-                false
+            Long.parseLong(rv.getProductId()),
+            updateReviewViewEvent.getRating(),
+            true,
+            rv.getRating(),
+            false
         );
         rv.setRating(updateReviewViewEvent.getRating());
         rv.setComment(updateReviewViewEvent.getComment());
         rv.setImageUrls(updateReviewViewEvent.getImageUrls());
         rv.setAttributes(updateReviewViewEvent.getAttributes());
+        rv.setIsUpdated(true);
         reviewViewRepository.save(rv);
     }
 
@@ -77,11 +92,11 @@ public class ReviewViewServiceImpl implements ReviewViewService {
         if (opt.isEmpty()) return;
         ReviewView rv = opt.get();
         productViewService.updateRating(
-                Long.parseLong(rv.getProductId()),
-                null,
-                true,
-                rv.getRating(),
-                true
+            Long.parseLong(rv.getProductId()),
+            null,
+            true,
+            rv.getRating(),
+            true
         );
         reviewViewRepository.deleteById(String.valueOf(deleteReviewViewEvent.getReviewId()));
     }
@@ -94,10 +109,11 @@ public class ReviewViewServiceImpl implements ReviewViewService {
         if (opt.isEmpty()) return;
         ReviewView rv = opt.get();
         ReviewView.ReviewReplyView replyView = ReviewView.ReviewReplyView.builder()
-                .replyId(String.valueOf(createReviewReplyEvent.getReplyId()))
-                .replierId(String.valueOf(createReviewReplyEvent.getReplierId()))
-                .content(createReviewReplyEvent.getContent())
-                .build();
+            .replyId(String.valueOf(createReviewReplyEvent.getReplyId()))
+            .replierId(String.valueOf(createReviewReplyEvent.getReplierId()))
+            .content(createReviewReplyEvent.getContent())
+            .createdAt(createReviewReplyEvent.getCreatedAt())
+            .build();
         rv.setReviewReplyView(replyView);
         reviewViewRepository.save(rv);
     }
@@ -133,30 +149,78 @@ public class ReviewViewServiceImpl implements ReviewViewService {
     }
 
     @Override
-    public PageResponse<ReviewView> getReviewsByProductId(Long productId, Integer stars, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public PageResponse<ReviewView> getReviewsByProductId(Long productId, String stars, Boolean isOwner, Long shopId, Boolean isReply, int pageNo, int pageSize, String sortBy, String sortDir) {
+        Long ownerId = null;
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+            ? Sort.by(sortBy).ascending()
+            : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-
+        if (Boolean.TRUE.equals(isOwner)) {
+            ownerId = userHelper.getCurrentUserId();
+        }
         Page<ReviewView> reviewViewPage = reviewViewRepositoryImpl.getReviewsByProductId(
-                String.valueOf(productId),
-                stars,
-                pageable
+            productId,
+            stars,
+            ownerId,
+            shopId,
+            isReply,
+            pageable
         );
         return PageResponse.<ReviewView>builder()
-                .data(reviewViewPage.getContent().stream().peek(reviewView -> reviewView.setImageUrls(
-                        reviewView.getImageUrls().stream()
-                                .map(fileService::getPresignedUrl)
-                                .toList()
-                )).toList())
-                .pageNo(reviewViewPage.getNumber())
-                .pageSize(reviewViewPage.getSize())
-                .totalElements(reviewViewPage.getTotalElements())
-                .totalPages(reviewViewPage.getTotalPages())
-                .hasNextPage(reviewViewPage.hasNext())
-                .hasPreviousPage(reviewViewPage.hasPrevious())
-                .build();
+            .data(reviewViewPage.getContent().stream().peek(reviewView -> {
+                // If review's updatedAt is older than 10 days, refresh fullName and avatarUrl from user view
+                LocalDateTime threshold = LocalDateTime.now().minusDays(10);
+                if (reviewView.getUpdatedAt() == null || reviewView.getUpdatedAt().isBefore(threshold)) {
+                    userViewRepository.findById(reviewView.getUserId()).ifPresent(userView -> {
+                        String fullName = userView.getFullName();
+                        if (!fullName.isBlank()) reviewView.setFullName(fullName);
+                        reviewView.setAvatarUrl(userView.getAvatarUrl());
+                        // persist refreshed fields
+                        reviewViewRepository.save(reviewView);
+                    });
+                }
+                // presign avatar and image urls
+                reviewView.setAvatarUrl(fileService.getPresignedUrl(reviewView.getAvatarUrl()));
+                reviewView.setImageUrls(
+                    reviewView.getImageUrls().stream()
+                        .map(fileService::getPresignedUrl)
+                        .toList()
+                );
+            }).toList())
+            .pageNo(reviewViewPage.getNumber())
+            .pageSize(reviewViewPage.getSize())
+            .totalElements(reviewViewPage.getTotalElements())
+            .totalPages(reviewViewPage.getTotalPages())
+            .hasNextPage(reviewViewPage.hasNext())
+            .hasPreviousPage(reviewViewPage.hasPrevious())
+            .build();
+    }
+
+    @Override
+    public ReviewView getReviewByOrderItemId(Long orderItemId) {
+        Optional<ReviewView> reviewViewOptional = reviewViewRepository.findByOrderItemId(String.valueOf(orderItemId));
+        if (reviewViewOptional.isPresent()) {
+            ReviewView reviewView = reviewViewOptional.get();
+            // refresh fullName/avatar if review is older than 10 days
+            LocalDateTime threshold = LocalDateTime.now().minusDays(10);
+            if (reviewView.getUpdatedAt() == null || reviewView.getUpdatedAt().isBefore(threshold)) {
+                userViewRepository.findById(reviewView.getUserId()).ifPresent(userView -> {
+                    String fullName = userView.getFullName();
+                    if (!fullName.isBlank()) reviewView.setFullName(fullName);
+                    reviewView.setAvatarUrl(userView.getAvatarUrl());
+                    reviewViewRepository.save(reviewView);
+                });
+            }
+            reviewView.setImageUrls(
+                reviewView.getImageUrls().stream()
+                    .map(fileService::getPresignedUrl)
+                    .toList()
+            );
+            return reviewView;
+        } else {
+            return null;
+        }
+
     }
 }

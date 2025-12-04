@@ -23,7 +23,9 @@ public class ReviewViewController {
      * Lấy rating của product theo productId
      *
      * @param stars     Số sao đánh giá (optionnal)
-     * @param productId ID của product
+     * @param productId ID của product (optional)
+     * @param isOwner  Xác định người dùng hiện tại có phải là chủ sở hữu shop không (optional)
+     * @param shopId    ID của shop (optional)
      * @param pageNo    Trang hiện tại
      * @param pageSize  Số phần tử trên mỗi trang
      * @param sortBy    Thuộc tính để sắp xếp
@@ -31,10 +33,13 @@ public class ReviewViewController {
      * @return Danh sách rating của product
      *
      */
-    @GetMapping("/{productId}")
+    @GetMapping()
     public ResponseEntity<BaseResponse<PageResponse<ReviewView>>> getProductRating(
-            @PathVariable Long productId,
-            @RequestParam(required = false) Integer stars,
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) String stars,
+            @RequestParam(required = false) Boolean isOwner,
+            @RequestParam(required = false) Long shopId,
+            @RequestParam(required = false) Boolean isReply,
             @RequestParam(required = false, defaultValue = "0") int pageSize,
             @RequestParam(required = false, defaultValue = "0") int pageNo,
             @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
@@ -44,7 +49,25 @@ public class ReviewViewController {
                 BaseResponse.<PageResponse<ReviewView>>builder()
                         .message(messageService.getMessage(MessageSuccess.REVIEW_VIEW_GET_SUCCESS))
                         .statusCode(HttpStatus.OK.value())
-                        .data(reviewViewService.getReviewsByProductId(productId, stars, pageNo, pageSize, sortBy, sortDir))
+                        .data(reviewViewService.getReviewsByProductId(productId, stars, isOwner, shopId, isReply, pageNo, pageSize, sortBy, sortDir))
+                        .build()
+        );
+    }
+
+    /**
+     * Lấy đánh giá theo orderItemId
+     * @param orderItemId ID của order item
+     * @return Đánh giá tương ứng với order item
+     */
+    @GetMapping("/{orderItemId}")
+    public ResponseEntity<BaseResponse<ReviewView>> getReviewByOrderItemId(
+            @PathVariable Long orderItemId
+    ) {
+        return ResponseEntity.ok(
+                BaseResponse.<ReviewView>builder()
+                        .message(messageService.getMessage(MessageSuccess.REVIEW_VIEW_GET_SUCCESS))
+                        .statusCode(HttpStatus.OK.value())
+                        .data(reviewViewService.getReviewByOrderItemId(orderItemId))
                         .build()
         );
     }

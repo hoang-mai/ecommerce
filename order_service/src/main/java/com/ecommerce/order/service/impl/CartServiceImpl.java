@@ -126,17 +126,41 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void removeCartItem(Long cartItemId) {
+    public void removeProductCartItem(Long productCartItemId) {
+        ProductCartItem productCartItem = productCartItemRepository.findById(productCartItemId)
+                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_CART_ITEM_NOT_FOUND));
 
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new NotFoundException(MessageError.CART_ITEM_NOT_FOUND));
-        cartItemRepository.delete(cartItem);
-        cartEventProducer.send(
-                DeleteCartItemEvent.builder()
-                        .cartId(cartItem.getCart().getCartId())
-                        .cartItemId(cartItem.getCartItemId())
-                        .build()
-        );
+        CartItem cartItem = productCartItem.getCartItem();
+        Long cartId = cartItem.getCart().getCartId();
+        Long cartItemId = cartItem.getCartItemId();
+
+
+        cartItem.getProductCartItems().remove(productCartItem);
+        productCartItemRepository.delete(productCartItem);
+
+        boolean shouldDeleteCartItem = cartItem.getProductCartItems().isEmpty();
+
+        if (shouldDeleteCartItem) {
+            cartItemRepository.delete(cartItem);
+            cartEventProducer.send(
+                    DeleteProductCartItemEvent.builder()
+                            .cartId(cartId)
+                            .cartItemId(cartItemId)
+                            .productCartItemId(productCartItemId)
+                            .isDeleteCartItem(true)
+                            .build()
+            );
+        } else {
+            cartItemRepository.save(cartItem);
+            cartEventProducer.send(
+                    DeleteProductCartItemEvent.builder()
+                            .cartId(cartId)
+                            .cartItemId(cartItemId)
+                            .productCartItemId(productCartItemId)
+                            .isDeleteCartItem(false)
+                            .build()
+            );
+        }
     }
 
     @Override

@@ -39,9 +39,7 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
         try {
             BaseResponse baseResponse = userServiceBlockingStub.createUser(
                     ReqCreateUserDTO.newBuilder()
-                            .setFirstName(createUserData.getFirstName())
-                            .setMiddleName(createUserData.getMiddleName())
-                            .setLastName(createUserData.getLastName())
+                            .setFullName(createUserData.getFullName())
                             .setGender(FnCommon.isNotNull(createUserData.getGender()) ? FnCommon.convertGenderToGenderProto(createUserData.getGender()) : Gender.GENDER_UNSPECIFIED)
                             .setRole(FnCommon.convertRoleToRoleProto(createUserData.getRole()))
                             .setWard(createUserData.getWard())
@@ -107,9 +105,7 @@ public class CreateUserActivitiesImpl implements CreateUserActivities {
         userEventProducer.send(CreateUserEvent.builder()
                 .userId(createUserData.getUserId())
                 .username(createUserData.getUsername())
-                .firstName(createUserData.getFirstName())
-                .middleName(createUserData.getMiddleName())
-                .lastName(createUserData.getLastName())
+                .fullName(createUserData.getFullName())
                 .accountStatus(createUserData.getAccountStatus())
                 .role(createUserData.getRole())
                 .createdAt(createUserData.getCreatedAt())

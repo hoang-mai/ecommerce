@@ -1,5 +1,6 @@
 package com.ecommerce.review.service.impl;
 
+import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderItemEvent;
 import com.ecommerce.review.entity.OrderItemCache;
@@ -15,15 +16,17 @@ public class OrderItemCacheServiceImpl implements OrderItemCacheService {
     private final OrderItemCacheRepository orderItemCacheRepository;
 
     @Override
-    public void createOrderItemCache(CreateOrderEvent createOrderEvent) {
-        if (createOrderEvent == null || createOrderEvent.getCreateOrderItemEventList() == null) return;
-        for (CreateOrderItemEvent item : createOrderEvent.getCreateOrderItemEventList()) {
-            orderItemCacheRepository.save(OrderItemCache.builder()
-                    .orderItemId(item.getOrderItemId())
-                    .productId(item.getProductId())
-                    .productVariantId(item.getProductVariantId())
-                    .userId(createOrderEvent.getUserId())
-                    .build());
+    public void createOrderItemCache(CreateListOrderEvent createListOrderEvent) {
+        for (CreateOrderEvent createOrderEvent : createListOrderEvent.getCreateOrderEventList()) {
+            for (CreateOrderItemEvent createOrderItemEvent : createOrderEvent.getCreateOrderItemEventList()) {
+                OrderItemCache orderItemCache = OrderItemCache.builder()
+                    .orderItemId(createOrderItemEvent.getOrderItemId())
+                    .productId(createOrderItemEvent.getProductId())
+                    .productVariantId(createOrderItemEvent.getProductVariantId())
+                    .userId(createListOrderEvent.getUserId())
+                    .build();
+                orderItemCacheRepository.save(orderItemCache);
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.ecommerce.notification.messaging.consumer;
 
+import com.ecommerce.library.kafka.event.order.CreateListOrderStatusEvent;
 import com.ecommerce.notification.service.OrderStatusService;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,8 @@ public class OrderStatusEventConsumer {
     private final OrderStatusService orderStatusService;
 
     @KafkaListener(topics = ORDER_STATUS_TOPIC, groupId = NOTIFICATION_SERVICE_GROUP)
-    public void listen(List<OrderStatusEvent> orderStatusEventList) {
-        orderStatusService.sendOrderStatusMessage(orderStatusEventList);
+    public void listen(CreateListOrderStatusEvent createListOrderStatusEvent) {
+        orderStatusService.sendOrderStatusMessage(createListOrderStatusEvent);
     }
 
 }

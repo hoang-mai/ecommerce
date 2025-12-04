@@ -37,14 +37,8 @@ public class UserView extends BaseEntity {
     @Field(name = "avatarUrl")
     private String avatarUrl;
 
-    @Field(name = "firstName")
-    private String firstName;
-
-    @Field(name = "middleName")
-    private String middleName;
-
-    @Field(name = "lastName")
-    private String lastName;
+    @Field(name = "fullName")
+    private String fullName;
 
     @Field(name = "phoneNumber")
     private String phoneNumber;

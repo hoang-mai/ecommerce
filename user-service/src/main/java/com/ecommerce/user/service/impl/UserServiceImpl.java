@@ -136,9 +136,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResCreateUserDTO createUser(ReqCreateUserDTO reqCreateUserDTO) {
         User user = User.builder()
-                .firstName(reqCreateUserDTO.getFirstName())
-                .middleName(reqCreateUserDTO.getMiddleName())
-                .lastName(reqCreateUserDTO.getLastName())
+                .fullName(reqCreateUserDTO.getFullName())
                 .role(FnCommon.convertRoleProtoToRole(reqCreateUserDTO.getRole()))
                 .gender(FnCommon.convertGenderProtoToGender(reqCreateUserDTO.getGender()))
                 .build();
@@ -174,9 +172,7 @@ public class UserServiceImpl implements UserService {
             user.setEmail(reqUpdateUserDTO.getEmail());
         }
         user.setDescription(reqUpdateUserDTO.getDescription());
-        user.setFirstName(reqUpdateUserDTO.getFirstName());
-        user.setMiddleName(reqUpdateUserDTO.getMiddleName());
-        user.setLastName(reqUpdateUserDTO.getLastName());
+        user.setFullName(reqUpdateUserDTO.getFullName());
         user.setPhoneNumber(reqUpdateUserDTO.getPhoneNumber());
         user.setGender(reqUpdateUserDTO.getGender());
         user.setDateOfBirth(reqUpdateUserDTO.getDateOfBirth());
@@ -184,9 +180,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         userEventProducer.send(UpdateUserEvent.builder()
                 .userId(user.getUserId())
-                .firstName(user.getFirstName())
-                .middleName(user.getMiddleName())
-                .lastName(user.getLastName())
+                .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .build());
@@ -202,9 +196,7 @@ public class UserServiceImpl implements UserService {
                 .userId(user.getUserId())
                 .email(user.getEmail())
                 .description(user.getDescription())
-                .firstName(user.getFirstName())
-                .middleName(user.getMiddleName())
-                .lastName(user.getLastName())
+                .fullName(user.getFullName())
                 .phoneNumber(user.getPhoneNumber())
                 .dateOfBirth(user.getDateOfBirth())
                 .avatarUrl(fileService.getPresignedUrl(user.getAvatarUrl()))

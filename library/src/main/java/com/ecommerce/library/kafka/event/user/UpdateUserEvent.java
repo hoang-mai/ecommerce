@@ -11,9 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateUserEvent {
     private Long userId;
-    private String firstName;
-    private String middleName;
-    private String lastName;
+    private String fullName;
     private String email;
     private String phoneNumber;
 }

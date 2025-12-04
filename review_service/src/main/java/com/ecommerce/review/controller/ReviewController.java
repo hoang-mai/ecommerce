@@ -25,30 +25,30 @@ public class ReviewController {
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<BaseResponse<Void>> createReview(
-            @RequestPart(value = "imageUrls") List<MultipartFile> imageUrls,
-            @Valid @RequestPart ReqReviewDTO reqReviewDTO
+        @RequestPart(value = "imageUrls", required = false) List<MultipartFile> imageUrls,
+        @Valid @RequestPart(value = "reqReviewDTO") ReqReviewDTO reqReviewDTO
     ) {
         reviewService.createReview(reqReviewDTO, imageUrls);
         return ResponseEntity.ok(
-                BaseResponse.<Void>builder()
-                        .statusCode(201)
-                        .message(messageService.getMessage(MessageSuccess.REVIEW_CREATED_SUCCESS))
-                        .build()
+            BaseResponse.<Void>builder()
+                .statusCode(201)
+                .message(messageService.getMessage(MessageSuccess.REVIEW_CREATED_SUCCESS))
+                .build()
         );
     }
 
     @PatchMapping(value = "/{reviewId}", consumes = "multipart/form-data")
     public ResponseEntity<BaseResponse<Void>> updateReview(
-            @PathVariable Long reviewId,
-            @RequestPart ReqReviewDTO reqReviewDTO,
-            @RequestPart(value = "imageUrls") List<MultipartFile> imageUrls
-            ) {
+        @PathVariable Long reviewId,
+        @RequestPart ReqReviewDTO reqReviewDTO,
+        @RequestPart(value = "imageUrls") List<MultipartFile> imageUrls
+    ) {
         reviewService.updateReview(reviewId, reqReviewDTO, imageUrls);
         return ResponseEntity.ok(
-                BaseResponse.<Void>builder()
-                        .statusCode(200)
-                        .message(messageService.getMessage(MessageSuccess.REVIEW_UPDATED_SUCCESS))
-                        .build()
+            BaseResponse.<Void>builder()
+                .statusCode(200)
+                .message(messageService.getMessage(MessageSuccess.REVIEW_UPDATED_SUCCESS))
+                .build()
         );
     }
 
@@ -56,10 +56,10 @@ public class ReviewController {
     public ResponseEntity<BaseResponse<Void>> deleteReview(@PathVariable Long reviewId) {
         reviewService.deleteReview(reviewId);
         return ResponseEntity.ok(
-                BaseResponse.<Void>builder()
-                        .statusCode(200)
-                        .message(messageService.getMessage(MessageSuccess.REVIEW_DELETED_SUCCESS))
-                        .build()
+            BaseResponse.<Void>builder()
+                .statusCode(200)
+                .message(messageService.getMessage(MessageSuccess.REVIEW_DELETED_SUCCESS))
+                .build()
         );
     }
 }

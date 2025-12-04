@@ -20,10 +20,14 @@ public class CreateReviewViewEvent {
     private Long productId;
     private Long productVariantId;
     private Long userId;
+    private String fullName;
+    private String avatarUrl;
+    private Long ownerId;
+    private Long shopId;
+    private String productName;
     private RatingNumber rating;
     private String comment;
     private List<String> imageUrls;
     private Map<String, String> attributes;
     private LocalDateTime createdAt;
 }
-

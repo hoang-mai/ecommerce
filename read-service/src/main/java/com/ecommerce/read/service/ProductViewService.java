@@ -2,6 +2,7 @@ package com.ecommerce.read.service;
 
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.RatingNumber;
+import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.product.CreateProductEvent;
 import com.ecommerce.library.kafka.event.product.UpdateProductStatusEvent;
@@ -25,7 +26,7 @@ public interface ProductViewService {
 
     ProductView getProductById(Long productId,boolean isOwner);
 
-    void updateStockAfterCreateOrder(List<CreateOrderEvent> createOrderEventList);
+    void updateStockAfterCreateOrder(CreateListOrderEvent createListOrderEvent);
 
     void updateShopStatusInProductViews(UpdateShopStatusEvent updateShopStatusEvent);
 

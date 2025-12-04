@@ -32,9 +32,7 @@ public class UserViewServiceImpl implements UserViewService {
                 .username(createUserEvent.getUsername())
                 .email(createUserEvent.getEmail())
                 .accountStatus(createUserEvent.getAccountStatus())
-                .firstName(createUserEvent.getFirstName())
-                .middleName(createUserEvent.getMiddleName())
-                .lastName(createUserEvent.getLastName())
+                .fullName(createUserEvent.getFullName())
                 .phoneNumber(createUserEvent.getPhoneNumber())
                 .role(createUserEvent.getRole())
                 .createdAt(createUserEvent.getCreatedAt())
@@ -55,9 +53,7 @@ public class UserViewServiceImpl implements UserViewService {
     public void updateUserView(UpdateUserEvent updateUserEvent) {
         UserView userView = userViewRepository.findById(String.valueOf(updateUserEvent.getUserId()))
                 .orElseThrow(() -> new NotFoundException(MessageError.USER_NOT_FOUND));
-        userView.setFirstName(updateUserEvent.getFirstName());
-        userView.setMiddleName(updateUserEvent.getMiddleName());
-        userView.setLastName(updateUserEvent.getLastName());
+        userView.setFullName(updateUserEvent.getFullName());
         userView.setPhoneNumber(updateUserEvent.getPhoneNumber());
         userView.setEmail(updateUserEvent.getEmail());
         userViewRepository.save(userView);

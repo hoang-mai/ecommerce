@@ -16,9 +16,7 @@ public class CreateUserEvent {
     private String password;
     private String email;
     private AccountStatus accountStatus;
-    private String firstName;
-    private String middleName;
-    private String lastName;
+    private String fullName;
     private String phoneNumber;
     private Role role;
     private LocalDateTime createdAt;

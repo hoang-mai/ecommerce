@@ -35,9 +35,7 @@ public class UserViewRepositoryImpl  {
             criteriaList.add(new Criteria().orOperator(
                     Criteria.where("username").regex(keyword, "i"),
                     Criteria.where("email").regex(keyword, "i"),
-                    Criteria.where("firstName").regex(keyword, "i"),
-                    Criteria.where("middleName").regex(keyword, "i"),
-                    Criteria.where("lastName").regex(keyword, "i")
+                    Criteria.where("fullName").regex(keyword, "i")
             ));
         }
         Criteria finalCriteria = new Criteria();

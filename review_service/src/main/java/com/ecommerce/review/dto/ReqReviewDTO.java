@@ -28,6 +28,22 @@ public class ReqReviewDTO implements Serializable {
     @NotNull(message = MessageError.PRODUCT_ID_NOT_NULL)
     @Positive(message = MessageError.PRODUCT_ID_POSITIVE)
     private final Long productId;
+
+    @NotBlank(message = MessageError.PRODUCT_NAME_NOT_BLANK)
+    private final String productName;
+
+    @NotNull(message = MessageError.USER_ID_NOT_NULL)
+    @Positive(message = MessageError.USER_ID_POSITIVE)
+    private final Long ownerId;
+
+    @NotNull(message = MessageError.SHOP_NOT_NULL)
+    @Positive(message = MessageError.SHOP_ID_POSITIVE)
+    private final Long shopId;
+
+    @NotBlank(message = MessageError.USERNAME_NOT_BLANK)
+    private String fullName;
+    private String avatarUrl;
+
     @NotNull(message = MessageError.PRODUCT_VARIANT_ID_NOT_NULL)
     @Positive(message = MessageError.PRODUCT_VARIANT_ID_POSITIVE)
     private final Long productVariantId;

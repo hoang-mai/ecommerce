@@ -28,6 +28,9 @@ public class OrderView extends BaseEntity {
     @Field(name = "userId")
     private String userId;
 
+    @Field(name = "ownerId")
+    private String ownerId;
+
     @Field(name = "shopId")
     private String shopId;
 

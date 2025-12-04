@@ -58,11 +58,11 @@ public class CartController {
     /**
      * Remove item from cart
      */
-    @DeleteMapping("/{cartItemId}")
+    @DeleteMapping("/{productCartItemId}")
     @Operation(summary = "Remove cart item", description = "Remove item from shopping cart")
     public ResponseEntity<BaseResponse<Void>> removeCartItem(
-            @PathVariable Long cartItemId) {
-        cartService.removeCartItem(cartItemId);
+            @PathVariable Long productCartItemId) {
+        cartService.removeProductCartItem(productCartItemId);
 
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())

@@ -18,9 +18,7 @@ public interface UserVerificationRepository extends JpaRepository<UserVerificati
             SELECT uv FROM UserVerification uv LEFT JOIN FETCH uv.user u WHERE
             (:status IS NULL OR uv.userVerificationStatus = :status) AND
             (:keyword IS NULL OR LOWER(uv.verificationCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-             LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-             LOWER(u.middleName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-             LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+             LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
              LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
              LOWER(uv.accountNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
              LOWER(uv.bankName) LIKE LOWER(CONCAT('%', :keyword, '%')))
@@ -45,9 +43,7 @@ public interface UserVerificationRepository extends JpaRepository<UserVerificati
             SELECT uv FROM UserVerification uv LEFT JOIN uv.user u WHERE u.userId = :userId AND
             (:status IS NULL OR uv.userVerificationStatus = :status) AND
             (:keyword IS NULL OR LOWER(uv.verificationCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-             LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-             LOWER(u.middleName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-             LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+             LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
              LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
              LOWER(uv.accountNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
              LOWER(uv.bankName) LIKE LOWER(CONCAT('%', :keyword, '%')))

@@ -24,16 +24,12 @@ public class ReqCreateUserDTO {
     private String password;
 
 
-    @Schema(description = "First name must be between 1 and 10 characters", example = "John")
-    private String firstName;
 
-    @Schema(description = "Middle name is optional and can be up to 10 characters", example = "A")
-    private String middleName;
 
-    @NotBlank(message = MessageError.LAST_NAME_NOT_BLANK)
-    @Size(min = 1, max = 10, message = MessageError.NAME_SIZE)
+    @NotBlank(message = MessageError.FULL_NAME_NOT_BLANK)
+    @Size(min = 1, max = 30, message = MessageError.NAME_SIZE)
     @Schema(description = "Last name must be between 1 and 10 characters", example = "Doe")
-    private String lastName;
+    private String fullName;
 
     @Schema(description = "Gender must be one of the following: MALE, FEMALE, OTHER", example = "MALE")
     private Gender gender;

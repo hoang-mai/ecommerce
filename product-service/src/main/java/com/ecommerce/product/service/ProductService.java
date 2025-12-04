@@ -1,6 +1,7 @@
 package com.ecommerce.product.service;
 
 import com.ecommerce.library.enumeration.ProductVariantStatus;
+import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.product.dto.*;
@@ -42,6 +43,6 @@ public interface ProductService {
      */
     void updateProductStatusByProductId(Long productId, ReqUpdateProductStatusDTO status);
 
-    void handleCreateOrderEvent(List<CreateOrderEvent> createOrderEventList);
+    void handleCreateOrderEvent(CreateListOrderEvent createListOrderEvent);
 }
 

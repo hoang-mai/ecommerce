@@ -3,6 +3,7 @@ package com.ecommerce.read.service.impl;
 import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.*;
 import com.ecommerce.library.exception.NotFoundException;
+import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.product.CreateProductEvent;
 import com.ecommerce.library.kafka.event.product.UpdateProductStatusEvent;
@@ -157,9 +158,9 @@ public class ProductViewServiceImpl implements ProductViewService {
     }
 
     @Override
-    public void updateStockAfterCreateOrder(List<CreateOrderEvent> createOrderEventList) {
+    public void updateStockAfterCreateOrder(CreateListOrderEvent createListOrderEvent) {
 
-        createOrderEventList.forEach(createOrderEvent -> {
+        createListOrderEvent.getCreateOrderEventList().forEach(createOrderEvent -> {
             if (OrderStatus.CANCELLED.equals(createOrderEvent.getOrderStatus())) {
                 return;
             }

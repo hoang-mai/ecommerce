@@ -17,5 +17,7 @@ public interface ReviewViewService {
     void updateReviewReply(UpdateReviewReplyEvent updateReviewReplyEvent);
     void deleteReviewReply(DeleteReviewReplyEvent deleteReviewReplyEvent);
 
-    PageResponse<ReviewView> getReviewsByProductId(Long productId, Integer stars, int pageNo, int pageSize, String sortBy, String sortDir);
+    PageResponse<ReviewView> getReviewsByProductId(Long productId, String stars, Boolean isOwner, Long shopId, Boolean isReply, int pageNo, int pageSize, String sortBy, String sortDir);
+
+    ReviewView getReviewByOrderItemId(Long orderItemId);
 }

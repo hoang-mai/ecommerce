@@ -1,5 +1,6 @@
 package com.ecommerce.product.messaging.consumer;
 
+import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class OrderEventConsumer {
     private final ProductService productService;
 
     @KafkaListener(topics = CREATE_ORDER_TOPIC, groupId = PRODUCT_SERVICE_GROUP)
-    public void listen(List<CreateOrderEvent> createOrderEventList){
-        productService.handleCreateOrderEvent(createOrderEventList);
+    public void listen(CreateListOrderEvent createListOrderEvent){
+        productService.handleCreateOrderEvent(createListOrderEvent);
     }
 }

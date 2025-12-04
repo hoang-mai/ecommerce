@@ -408,14 +408,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Override
-    public void handleCreateOrderEvent(List<CreateOrderEvent> createOrderEventList) {
+    public void handleCreateOrderEvent(CreateListOrderEvent createListOrderEvent) {
 
         // Kiểm tra tồn kho trước khi cập nhật
-        createOrderEventList.forEach(createOrderEvent -> {
+        createListOrderEvent.getCreateOrderEventList().forEach(createOrderEvent -> {
             Shop shop = shopRepository.findById(createOrderEvent.getShopId())
                     .orElseThrow(() -> new NotFoundException(MessageError.SHOP_NOT_FOUND));
             createOrderEvent.setShopLogoUrl(shop.getLogoUrl());
             createOrderEvent.setShopName(shop.getShopName());
+            createOrderEvent.setOwnerId(shop.getOwnerId());
             if(!ShopStatus.ACTIVE.equals(shop.getShopStatus())){
                 createOrderEvent.setOrderStatus(OrderStatus.CANCELLED);
                 createOrderEvent.setReason(messageService.getMessage(MessageError.SHOP_INACTIVE, shop.getShopName()));
@@ -449,10 +450,11 @@ public class ProductServiceImpl implements ProductService {
 
 
         // Cập nhật tồn kho
-        createOrderEventList.forEach(createOrderEvent -> {
+        createListOrderEvent.getCreateOrderEventList().forEach(createOrderEvent -> {
             if (createOrderEvent.getOrderStatus() == OrderStatus.CANCELLED) {
                 return;
             }
+            createOrderEvent.setOrderStatus(OrderStatus.PAID);
             createOrderEvent.getCreateOrderItemEventList().forEach(createOrderItemEvent -> {
 
                 ProductVariant productVariant = productVariantRepository.findByIdForUpDate(createOrderItemEvent.getProductVariantId())
@@ -468,16 +470,19 @@ public class ProductServiceImpl implements ProductService {
             });
         });
 
-        orderEventProducer.send(createOrderEventList);
+        orderEventProducer.send(createListOrderEvent);
         orderEventProducer.sendStatus(
-                createOrderEventList.stream().map(createOrderEvent ->
-                        OrderStatusEvent.builder()
-                                .userId(createOrderEvent.getUserId())
-                                .orderId(createOrderEvent.getOrderId())
-                                .orderStatus(createOrderEvent.getOrderStatus())
-                                .reason(createOrderEvent.getReason())
-                                .build()
-                ).toList()
+                CreateListOrderStatusEvent.builder()
+                        .userId(createListOrderEvent.getUserId())
+                        .orderStatusEventList(createListOrderEvent.getCreateOrderEventList().stream().map(createOrderEvent ->
+                                OrderStatusEvent.builder()
+                                        .userId(createOrderEvent.getUserId())
+                                        .orderId(createOrderEvent.getOrderId())
+                                        .orderStatus(createOrderEvent.getOrderStatus())
+                                        .reason(createOrderEvent.getReason())
+                                        .build()
+                        ).toList())
+                        .build()
         );
 
     }

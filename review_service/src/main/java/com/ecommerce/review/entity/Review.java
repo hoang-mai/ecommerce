@@ -25,30 +25,40 @@ public class Review extends BaseEntity {
     private Long reviewId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="rating_number", nullable = false)
+    @Column(name = "rating_number", nullable = false)
     private RatingNumber ratingNumber;
 
-    @Column(name="comment", columnDefinition = "TEXT")
+    @Column(name = "comment", columnDefinition = "TEXT")
     private String comment;
 
-    @Column(name="order_item_id", nullable = false)
+    @Column(name = "order_item_id", nullable = false)
     private Long orderItemId;
 
-    @Column(name="product_id", nullable = false)
+    @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(name="product_variant_id", nullable = false)
+    @Column(name = "shop_id")
+    private Long shopId;
+
+    @Column(name = "owner_id")
+    private Long ownerId;
+
+    @Column(name = "product_variant_id", nullable = false)
     private Long productVariantId;
 
-    @Column(name="user_id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    @Column(name = "isUpdated", nullable = false)
+    @Builder.Default
+    private Boolean isUpdated = false;
 
     @CollectionTable(name = "review_images", joinColumns = @JoinColumn(name = "review_id"))
     @ElementCollection
     @Column(name = "image_url")
     @OrderColumn(name = "image_order")
     @Builder.Default
-    private List<String> imageUrls= new ArrayList<>();
+    private List<String> imageUrls = new ArrayList<>();
 
     @CollectionTable(name = "product_attribute", joinColumns = @JoinColumn(name = "review_id"))
     @ElementCollection

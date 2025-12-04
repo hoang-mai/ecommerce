@@ -19,7 +19,7 @@ public interface CartService {
     /**
      * Remove item from cart
      */
-    void removeCartItem( Long cartItemId);
+    void removeProductCartItem( Long productCartItemId);
 
     /**
      * Clear entire cart

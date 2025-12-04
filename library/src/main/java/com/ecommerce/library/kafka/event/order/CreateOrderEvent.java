@@ -16,6 +16,7 @@ import java.util.List;
 public class CreateOrderEvent {
     private Long orderId;
     private Long userId;
+    private Long ownerId;
     private Long shopId;
     private String shopName;
     private String shopLogoUrl;

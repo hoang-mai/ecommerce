@@ -1,5 +1,6 @@
 package com.ecommerce.review.messaging.consumer;
 
+import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.review.service.OrderItemCacheService;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +15,9 @@ public class OrderEventConsumer {
 
     private final OrderItemCacheService orderItemCacheService;
 
-    @KafkaListener(topics = CREATE_ORDER_TOPIC, groupId = READ_SERVICE_GROUP)
-    public void listenCreateOrder(CreateOrderEvent createOrderEvent) {
-        orderItemCacheService.createOrderItemCache(createOrderEvent);
+    @KafkaListener(topics = CREATE_ORDER_TOPIC, groupId = REVIEW_SERVICE_GROUP)
+    public void listenCreateOrder(CreateListOrderEvent createListOrderEvent) {
+        orderItemCacheService.createOrderItemCache(createListOrderEvent);
     }
 }
 

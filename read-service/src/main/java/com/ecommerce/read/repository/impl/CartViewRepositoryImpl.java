@@ -11,7 +11,6 @@ import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -57,23 +56,33 @@ public class CartViewRepositoryImpl {
                 Aggregation.unwind("cartItems.productCartItems"),
                 Aggregation.lookup("product_views", "cartItems.productCartItems.productId", "_id", "product_views"),
                 Aggregation.unwind("product_views"),
-                Aggregation.group("_id")
+                Aggregation.project()
+                        .and("_id").as("cartId")
+                        .and("cartItems._id").as("cartItemId")
+                        .and("shop_views").as("shopView")
+                        .and("cartItems.productCartItems._id").as("productCartItemId")
+                        .and("product_views").as("productView")
+                        .and("cartItems.productCartItems.productVariantId").as("productVariantId")
+                        .and("cartItems.productCartItems.quantity").as("quantity"),
+                Aggregation.group("cartId", "cartItemId")
+                        .first("cartId").as("cartId")
+                        .first("cartItemId").as("cartItemId")
+                        .first("shopView").as("shopView")
                         .push(
                                 new Document()
-                                        .append("_id", "$cartItems._id")
-                                        .append("shopView", "$shop_views")
-                                        .append("productCartItems",
-                                                new Document()
-                                                        .append("_id", "$cartItems.productCartItems._id")
-                                                        .append("productView", "$product_views")
-                                                        .append("productVariantId", "$cartItems.productCartItems.productVariantId")
-                                                        .append("quantity", "$cartItems.productCartItems.quantity")
-                                        )
-                        ).as("cartItems"),
-
-                Aggregation.project()
-                        .and("_id").as("_id")
-                        .and("cartItems").as("cartItems")
+                                        .append("_id", "$productCartItemId")
+                                        .append("productView", "$productView")
+                                        .append("productVariantId", "$productVariantId")
+                                        .append("quantity", "$quantity")
+                        )
+                        .as("productCartItems"),
+                Aggregation.group("cartId")
+                        .push(
+                                new Document()
+                                        .append("_id", "$cartItemId")
+                                        .append("shopView", "$shopView")
+                                        .append("productCartItems", "$productCartItems")
+                        ).as("cartItems")
         );
         AggregationResults<CartViewDTO> results = mongoTemplate.aggregate(
                 aggregation, "cart_views", CartViewDTO.class

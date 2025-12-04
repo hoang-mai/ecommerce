@@ -19,11 +19,10 @@ public class ReqUpdateUserDTO {
     private String email;
 
     private String description;
-    private String firstName;
-    private String middleName;
 
-    @Size(min = 1, max = 10, message = MessageError.NAME_SIZE)
-    private String lastName;
+
+    @Size(min = 1, max = 20, message = MessageError.NAME_SIZE)
+    private String fullName;
 
     @PhoneNumberFormat
     private String phoneNumber;

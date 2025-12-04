@@ -11,7 +11,7 @@ public final class MessageError {
     public static final String INVALID_ROLE = "invalid.role";
     public static final String PASSWORD_SIZE = "password.size";
     public static final String INVALID_OLD_PASSWORD = "invalid.old.password";
-    public static final String LAST_NAME_NOT_BLANK = "last.name.not.blank";
+    public static final String FULL_NAME_NOT_BLANK = "full.name.not.blank";
     public static final String NAME_SIZE = "name.size";
     public static final String INVALID_PHONE_NUMBER = "invalid.phone.number";
     public static final String ACCOUNT_ID_NOT_BLANK = "account.id.not.blank";
@@ -130,4 +130,8 @@ public final class MessageError {
     public static final String PRODUCT_VARIANT_ID_POSITIVE = "";
     public static final String REVIEW_NOT_FOUND = "";
     public static final String REVIEW_REPLY_NOT_FOUND = "";
+    public static final String PRODUCT_CART_ITEM_NOT_FOUND = "";
+    public static final String USER_ID_NOT_NULL = "";
+    public static final String USER_ID_POSITIVE = "";
+    public static final String SHOP_ID_POSITIVE = "";
 }

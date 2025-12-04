@@ -23,16 +23,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("""
             SELECT new com.ecommerce.user.dto.ResInfoPreviewUserDTO(
                 u.userId,
-                u.firstName,
-                u.middleName,
-                u.lastName,
+                u.fullName,
                 u.email,
                 u.avatarUrl
             )
             FROM User u
-            WHERE LOWER(u.firstName) LIKE LOWER(CONCAT('%', :query, '%'))
-               OR LOWER(u.middleName) LIKE LOWER(CONCAT('%', :query, '%'))
-               OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%'))
+            WHERE LOWER(u.fullName) LIKE LOWER(CONCAT('%', :query, '%'))
                OR LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))
             """)
     Page<ResInfoPreviewUserDTO> searchUsersByNameOrEmail(String query, Pageable pageable);

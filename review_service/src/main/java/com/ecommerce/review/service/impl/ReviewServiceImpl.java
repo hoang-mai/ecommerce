@@ -38,47 +38,54 @@ public class ReviewServiceImpl implements ReviewService {
     public void createReview(ReqReviewDTO reqReviewDTO, List<MultipartFile> imageUrls) {
 
         ProductCache productCache = productCacheRepository.findById(reqReviewDTO.getProductId())
-                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
-        if(!productCache.getProductVariantIds().contains(reqReviewDTO.getProductVariantId())){
+            .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+        if (!productCache.getProductVariantIds().contains(reqReviewDTO.getProductVariantId())) {
             throw new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND);
         }
 
-        if(!orderItemCacheRepository.existsByOrderItemIdAndUserId(
-                reqReviewDTO.getOrderItemId(),
-                userHelper.getCurrentUserId())) {
+        if (!orderItemCacheRepository.existsByOrderItemIdAndUserId(
+            reqReviewDTO.getOrderItemId(),
+            userHelper.getCurrentUserId())) {
             throw new NotFoundException(MessageError.ORDER_ITEM_NOT_FOUND);
         }
 
         Long userId = userHelper.getCurrentUserId();
         Review review = reviewRepository.save(
-                Review.builder()
-                        .ratingNumber(reqReviewDTO.getRating())
-                        .comment(reqReviewDTO.getComment())
-                        .orderItemId(reqReviewDTO.getOrderItemId())
-                        .productId(reqReviewDTO.getProductId())
-                        .productVariantId(reqReviewDTO.getProductVariantId())
-                        .userId(userId)
-                        .attributes(reqReviewDTO.getAttributes())
-                        .build()
+            Review.builder()
+                .ratingNumber(reqReviewDTO.getRating())
+                .comment(reqReviewDTO.getComment())
+                .orderItemId(reqReviewDTO.getOrderItemId())
+                .productId(reqReviewDTO.getProductId())
+                .productVariantId(reqReviewDTO.getProductVariantId())
+                .shopId(reqReviewDTO.getShopId())
+                .ownerId(reqReviewDTO.getOwnerId())
+                .userId(userId)
+                .attributes(reqReviewDTO.getAttributes())
+                .build()
         );
-        if(FnCommon.isNotNullOrEmptyList(imageUrls)) {
+        if (FnCommon.isNotNullOrEmptyList(imageUrls)) {
             List<String> uploadFiles = fileService.uploadFiles(imageUrls, "reviews/" + review.getReviewId());
             review.setImageUrls(uploadFiles);
             reviewRepository.save(review);
         }
 
         CreateReviewViewEvent event = CreateReviewViewEvent.builder()
-                .reviewId(review.getReviewId())
-                .orderItemId(review.getOrderItemId())
-                .productId(review.getProductId())
-                .productVariantId(review.getProductVariantId())
-                .userId(review.getUserId())
-                .rating(review.getRatingNumber())
-                .comment(review.getComment())
-                .imageUrls(review.getImageUrls())
-                .attributes(review.getAttributes())
-                .createdAt(LocalDateTime.now())
-                .build();
+            .reviewId(review.getReviewId())
+            .orderItemId(review.getOrderItemId())
+            .productId(review.getProductId())
+            .productVariantId(review.getProductVariantId())
+            .userId(review.getUserId())
+            .ownerId(reqReviewDTO.getOwnerId())
+            .shopId(reqReviewDTO.getShopId())
+            .productName(reqReviewDTO.getProductName())
+            .fullName(reqReviewDTO.getFullName())
+            .avatarUrl(reqReviewDTO.getAvatarUrl())
+            .rating(review.getRatingNumber())
+            .comment(review.getComment())
+            .imageUrls(review.getImageUrls())
+            .attributes(review.getAttributes())
+            .createdAt(LocalDateTime.now())
+            .build();
 
         reviewEventProducer.send(event);
 
@@ -88,28 +95,30 @@ public class ReviewServiceImpl implements ReviewService {
     public void updateReview(Long reviewId, ReqReviewDTO reqReviewDTO, List<MultipartFile> imageUrls) {
         Long userId = userHelper.getCurrentUserId();
         Review review = reviewRepository.findByUserIdAndReviewId(userId, reviewId)
-                .orElseThrow(() -> new NotFoundException(MessageError.REVIEW_NOT_FOUND));
+            .orElseThrow(() -> new NotFoundException(MessageError.REVIEW_NOT_FOUND));
         review.setRatingNumber(reqReviewDTO.getRating());
         review.setComment(reqReviewDTO.getComment());
-        if(FnCommon.isNotNullOrEmptyList(reqReviewDTO.getDeletedImageUrls())){
+        review.setIsUpdated(true);
+        if (FnCommon.isNotNullOrEmptyList(reqReviewDTO.getDeletedImageUrls())) {
             reqReviewDTO.getDeletedImageUrls().forEach(url -> {
                 fileService.deleteFile(url);
                 review.deleteImageUrl(url);
             });
         }
-        if(FnCommon.isNotNullOrEmptyList(imageUrls)) {
+        if (FnCommon.isNotNullOrEmptyList(imageUrls)) {
             List<String> uploadFiles = fileService.uploadFiles(imageUrls, "reviews/" + review.getReviewId());
             review.addImageUrls(uploadFiles);
         }
         reviewRepository.save(review);
 
         UpdateReviewViewEvent updateEvent = UpdateReviewViewEvent.builder()
-                .reviewId(review.getReviewId())
-                .rating(review.getRatingNumber())
-                .comment(review.getComment())
-                .imageUrls(review.getImageUrls())
-                .attributes(review.getAttributes())
-                .build();
+            .reviewId(review.getReviewId())
+            .rating(review.getRatingNumber())
+            .comment(review.getComment())
+            .imageUrls(review.getImageUrls())
+            .attributes(review.getAttributes())
+
+            .build();
         reviewEventProducer.sendUpdate(updateEvent);
     }
 
@@ -118,14 +127,14 @@ public class ReviewServiceImpl implements ReviewService {
     public void deleteReview(Long reviewId) {
         Long userId = userHelper.getCurrentUserId();
         Review review = reviewRepository.findByUserIdAndReviewId(userId, reviewId)
-                .orElseThrow(() -> new NotFoundException(MessageError.REVIEW_NOT_FOUND));
-        if(FnCommon.isNotNullOrEmptyList(review.getImageUrls())) {
+            .orElseThrow(() -> new NotFoundException(MessageError.REVIEW_NOT_FOUND));
+        if (FnCommon.isNotNullOrEmptyList(review.getImageUrls())) {
             review.getImageUrls().forEach(fileService::deleteFile);
         }
         reviewRepository.delete(review);
         DeleteReviewViewEvent deleteEvent = DeleteReviewViewEvent.builder()
-                .reviewId(review.getReviewId())
-                .build();
+            .reviewId(review.getReviewId())
+            .build();
         reviewEventProducer.sendDelete(deleteEvent);
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -30,11 +29,30 @@ public class ReviewView extends BaseEntity {
     @Field("productId")
     private String productId;
 
+    @Field("productName")
+    private String productName;
+
     @Field("productVariantId")
     private String productVariantId;
 
     @Field("userId")
     private String userId;
+
+    @Field("isUpdated")
+    @Builder.Default
+    private Boolean isUpdated = false;
+
+    @Field("fullName")
+    private String fullName;
+
+    @Field("avatarUrl")
+    private String avatarUrl;
+
+    @Field("ownerId")
+    private String ownerId;
+
+    @Field("shopId")
+    private String shopId;
 
     @Field("rating")
     private RatingNumber rating;
@@ -53,10 +71,10 @@ public class ReviewView extends BaseEntity {
 
     @Getter
     @Setter
-    @Builder
+    @SuperBuilder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ReviewReplyView extends  BaseEntity {
+    public static class ReviewReplyView extends BaseEntity {
         @Id
         @JsonProperty("replyId")
         private String replyId;

@@ -3,11 +3,13 @@ package com.ecommerce.read.service.impl;
 import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.exception.NotFoundException;
+import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.OrderViewStatisticDTO;
 import com.ecommerce.read.entity.OrderView;
 import com.ecommerce.read.repository.OrderViewRepository;
 import com.ecommerce.read.repository.ShopViewRepository;
@@ -23,7 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,11 +42,12 @@ public class OrderViewServiceImpl implements OrderViewService {
     private final FileService fileService;
 
     @Override
-    public void createOrderView(List<CreateOrderEvent> createOrderEventList) {
-        for (CreateOrderEvent createOrderViewEvent : createOrderEventList) {
+    public void createOrderView(CreateListOrderEvent createListOrderEvent) {
+        for (CreateOrderEvent createOrderViewEvent : createListOrderEvent.getCreateOrderEventList()) {
             OrderView orderView = OrderView.builder()
                     ._id(String.valueOf(createOrderViewEvent.getOrderId()))
                     .userId(String.valueOf(createOrderViewEvent.getUserId()))
+                    .ownerId(String.valueOf(createOrderViewEvent.getOwnerId()))
                     .shopId(String.valueOf(createOrderViewEvent.getShopId()))
                     .shopName(createOrderViewEvent.getShopName())
                     .shopLogoUrl(createOrderViewEvent.getShopLogoUrl())
@@ -74,8 +79,8 @@ public class OrderViewServiceImpl implements OrderViewService {
                     .build();
             orderViewRepository.save(orderView);
         }
-        cartViewService.clearCartViewByUserId(String.valueOf(createOrderEventList.get(0).getUserId()));
-        productViewService.updateStockAfterCreateOrder(createOrderEventList);
+        cartViewService.clearCartViewByUserId(String.valueOf(createListOrderEvent.getUserId()));
+        productViewService.updateStockAfterCreateOrder(createListOrderEvent);
     }
 
     @Override
@@ -90,7 +95,7 @@ public class OrderViewServiceImpl implements OrderViewService {
     }
 
     @Override
-    public PageResponse<OrderView> getOrderViews(String shopId, OrderStatus orderStatus, String keyword, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public PageResponse<OrderView> getOrderViews(String shopId,Boolean isOwner, OrderStatus orderStatus, String keyword, String productId, int pageNo, int pageSize, String sortBy, String sortDir) {
 
         Long currentUserId = userHelper.getCurrentUserId();
         if(FnCommon.isNotNullOrEmpty(shopId)){
@@ -103,7 +108,7 @@ public class OrderViewServiceImpl implements OrderViewService {
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        Page<OrderView> orderViewPage = orderViewRepositoryImpl.getOrderView(shopId, currentUserId, orderStatus, keyword, pageable);
+        Page<OrderView> orderViewPage = orderViewRepositoryImpl.getOrderView(shopId,isOwner, currentUserId, orderStatus, keyword, productId, pageable);
 
         return PageResponse.<OrderView>builder()
                 .data(orderViewPage.getContent().stream().peek(
@@ -121,4 +126,27 @@ public class OrderViewServiceImpl implements OrderViewService {
                 .hasPreviousPage(orderViewPage.hasPrevious())
                 .build();
     }
+
+    @Override
+    public Map<OrderStatus, Long> getOrderStatistics(String shopId, Boolean isOwner, Integer month, Integer year) {
+        Long currentUserId = userHelper.getCurrentUserId();
+        if (FnCommon.isNotNullOrEmpty(shopId)) {
+            if (!shopViewRepository.existsBy_idAndOwnerId(shopId, String.valueOf(currentUserId))) {
+                throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
+            }
+        }
+        return orderViewRepositoryImpl.getOrderCountByStatus(shopId, isOwner, currentUserId, month, year);
+    }
+
+    @Override
+    public List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, LocalDate fromDate, LocalDate toDate) {
+        Long currentUserId = userHelper.getCurrentUserId();
+        if (FnCommon.isNotNullOrEmpty(shopId)) {
+            if (!shopViewRepository.existsBy_idAndOwnerId(shopId, String.valueOf(currentUserId))) {
+                throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
+            }
+        }
+        return orderViewRepositoryImpl.getOrderStatisticsByDateRange(shopId, isOwner, currentUserId, fromDate, toDate);
+    }
 }
+

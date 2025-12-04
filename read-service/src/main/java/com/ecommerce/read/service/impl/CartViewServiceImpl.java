@@ -5,6 +5,7 @@ import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.cart.CreateCartEvent;
 import com.ecommerce.library.kafka.event.cart.UpdateProductCartItemEvent;
 import com.ecommerce.library.kafka.event.cart.DeleteCartItemEvent;
+import com.ecommerce.library.kafka.event.cart.DeleteProductCartItemEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.read.dto.CartViewDTO;
@@ -79,6 +80,36 @@ public class CartViewServiceImpl implements CartViewService {
                     .orElse(null);
             if (FnCommon.isNotNull(cartItemToRemove)) {
                 cartView.removeCartItem(cartItemToRemove);
+            }
+            cartViewRepository.save(cartView);
+        }
+    }
+
+    @Override
+    public void deleteProductCartItem(DeleteProductCartItemEvent event) {
+        CartView cartView = cartViewRepository.findById(String.valueOf(event.getCartId()))
+                .orElseThrow(() -> new NotFoundException(MessageError.CART_NOT_FOUND));
+
+        // Tìm cartItem chứa productCartItem cần xóa
+        CartView.CartItem cartItem = cartView.getCartItems().stream()
+                .filter(item -> item.get_id().equals(String.valueOf(event.getCartItemId())))
+                .findFirst()
+                .orElse(null);
+
+        if (FnCommon.isNotNull(cartItem)) {
+            if (event.getIsDeleteCartItem()) {
+                // Nếu cần xóa luôn cartItem (không còn sản phẩm nào)
+                cartView.removeCartItem(cartItem);
+            } else {
+                // Chỉ xóa productCartItem
+                CartView.ProductCartItem productCartItemToRemove = cartItem.getProductCartItems().stream()
+                        .filter(pci -> pci.get_id().equals(String.valueOf(event.getProductCartItemId())))
+                        .findFirst()
+                        .orElse(null);
+
+                if (FnCommon.isNotNull(productCartItemToRemove)) {
+                    cartItem.getProductCartItems().remove(productCartItemToRemove);
+                }
             }
             cartViewRepository.save(cartView);
         }

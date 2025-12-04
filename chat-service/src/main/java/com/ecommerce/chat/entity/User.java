@@ -1,9 +1,7 @@
 package com.ecommerce.chat.entity;
 
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -19,17 +17,35 @@ public class User extends BaseEntity {
 
     @Id
     @Field("_id")
-    private String _id;
+    private String id;
 
-    @Field("avatar_url")
     private String avatarUrl;
 
-    @Field("first_name")
-    private String firstName;
+    @Field("full_name")
+    private String fullName;
 
-    @Field("middle_name")
-    private String middleName;
+    @Field("email")
+    private String email;
 
-    @Field("last_name")
-    private String lastName;
+    @Field("phone_number")
+    private String phoneNumber;
+
+    @Field("is_online")
+    private Boolean isOnline;
+
+    @Field("last_seen")
+    private LocalDateTime lastSeen;
+
+    @Field("user_type")
+    private UserType userType;
+
+    @Field("is_active")
+    private Boolean isActive;
+
+    public enum UserType {
+        CUSTOMER,
+        SHOP_OWNER,
+        ADMIN
+    }
+
 }

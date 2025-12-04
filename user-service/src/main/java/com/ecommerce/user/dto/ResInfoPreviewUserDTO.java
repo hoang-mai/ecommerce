@@ -6,12 +6,11 @@ import lombok.Getter;
 
 @Getter
 @Builder
+@AllArgsConstructor
 public class ResInfoPreviewUserDTO {
 
     private Long userId;
-    private String firstName;
-    private String middleName;
-    private String lastName;
+    private String fullName;
     private String email;
     private String avatarUrl;
 }

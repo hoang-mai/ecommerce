@@ -4,9 +4,7 @@ import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.exception.HttpRequestException;
 import com.ecommerce.library.exception.NotFoundException;
-import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
-import com.ecommerce.library.kafka.event.order.CreateOrderItemEvent;
-import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
+import com.ecommerce.library.kafka.event.order.*;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.order.dto.ReqUpdateOrderStatus;
 import com.ecommerce.order.dto.ResCreateOrderDTO;
@@ -90,31 +88,36 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.saveAll(orders);
         cartService.clearCartByUserId(userId);
 
-        orderEventProducer.send(orders.stream().map(order -> CreateOrderEvent.builder()
-                .orderId(order.getOrderId())
-                .userId(order.getUserId())
-                .shopId(order.getShopId())
-                .orderStatus(order.getOrderStatus())
-                .totalPrice(order.getTotalPrice())
-                .receiverName(order.getReceiverName())
-                .address(order.getAddress())
-                .phoneNumber(order.getPhoneNumber())
-                .createdAt(order.getCreatedAt())
-                .updatedAt(order.getUpdatedAt())
-                .createOrderItemEventList(
-                        order.getItems().stream().map(orderItem -> CreateOrderItemEvent.builder()
-                                .orderItemId(orderItem.getOrderItemId())
-                                .productId(orderItem.getProductId())
-                                .productVariantId(orderItem.getProductVariantId())
-                                .quantity(orderItem.getQuantity())
-                                .price(orderItem.getPrice())
-                                .totalPrice(orderItem.getTotalPrice())
-                                .totalDiscount(orderItem.getTotalDiscount())
-                                .totalFinalPrice(orderItem.getTotalFinalPrice())
-                                .build()
-                        ).toList()
-                )
-                .build()).toList(), userId);
+        orderEventProducer.send(
+                CreateListOrderEvent.builder()
+                        .userId(userId)
+                        .createOrderEventList(orders.stream().map(order -> CreateOrderEvent.builder()
+                                .orderId(order.getOrderId())
+                                .userId(order.getUserId())
+                                .shopId(order.getShopId())
+                                .orderStatus(order.getOrderStatus())
+                                .totalPrice(order.getTotalPrice())
+                                .receiverName(order.getReceiverName())
+                                .address(order.getAddress())
+                                .phoneNumber(order.getPhoneNumber())
+                                .createdAt(order.getCreatedAt())
+                                .updatedAt(order.getUpdatedAt())
+                                .createOrderItemEventList(
+                                        order.getItems().stream().map(orderItem -> CreateOrderItemEvent.builder()
+                                                .orderItemId(orderItem.getOrderItemId())
+                                                .productId(orderItem.getProductId())
+                                                .productVariantId(orderItem.getProductVariantId())
+                                                .quantity(orderItem.getQuantity())
+                                                .price(orderItem.getPrice())
+                                                .totalPrice(orderItem.getTotalPrice())
+                                                .totalDiscount(orderItem.getTotalDiscount())
+                                                .totalFinalPrice(orderItem.getTotalFinalPrice())
+                                                .build()
+                                        ).toList()
+                                )
+                                .build()).toList())
+                        .build()
+        );
     }
 
 
@@ -146,8 +149,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void updateOrderStatus(List<OrderStatusEvent> orderStatusEventList) {
-        orderStatusEventList.forEach(orderStatusEvent -> {
+    public void updateOrderStatus(CreateListOrderStatusEvent createListOrderStatusEvent) {
+        createListOrderStatusEvent.getOrderStatusEventList().forEach(orderStatusEvent -> {
             Order order = orderRepository.findById(orderStatusEvent.getOrderId())
                     .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
             order.setOrderStatus(orderStatusEvent.getOrderStatus());
@@ -162,9 +165,9 @@ public class OrderServiceImpl implements OrderService {
     private static final Map<OrderStatus, Set<OrderStatus>> transitions = Map.of(
             OrderStatus.PENDING, Set.of(OrderStatus.PAID, OrderStatus.CANCELLED),
             OrderStatus.PAID, Set.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
-            OrderStatus.CONFIRMED, Set.of(OrderStatus.SHIPPED),
-            OrderStatus.SHIPPED, Set.of(OrderStatus.DELIVERED),
-            OrderStatus.DELIVERED, Set.of(OrderStatus.COMPLETED, OrderStatus.RETURNED),
+            OrderStatus.CONFIRMED, Set.of(OrderStatus.DELIVERED),
+            OrderStatus.DELIVERED, Set.of(OrderStatus.SHIPPED),
+            OrderStatus.SHIPPED, Set.of(OrderStatus.COMPLETED, OrderStatus.RETURNED),
             OrderStatus.COMPLETED, Set.of(OrderStatus.RETURNED)
     );
 

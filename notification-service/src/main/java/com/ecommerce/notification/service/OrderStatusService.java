@@ -1,9 +1,8 @@
 package com.ecommerce.notification.service;
 
-import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
+import com.ecommerce.library.kafka.event.order.CreateListOrderStatusEvent;
 
-import java.util.List;
 
 public interface OrderStatusService {
-    void sendOrderStatusMessage(List<OrderStatusEvent> orderStatusEventList);
+    void sendOrderStatusMessage(CreateListOrderStatusEvent createListOrderStatusEvent);
 }

@@ -2,6 +2,7 @@ package com.ecommerce.read.messaging.consumer;
 
 import com.ecommerce.library.kafka.event.cart.CreateCartEvent;
 import com.ecommerce.library.kafka.event.cart.DeleteCartItemEvent;
+import com.ecommerce.library.kafka.event.cart.DeleteProductCartItemEvent;
 import com.ecommerce.library.kafka.event.cart.UpdateProductCartItemEvent;
 import com.ecommerce.read.service.CartViewService;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,10 @@ public class CartEventConsumer {
     @KafkaListener(topics = DELETE_CART_ITEM_TOPIC, groupId = READ_SERVICE_GROUP)
     public void listen(DeleteCartItemEvent event) {
         cartViewService.deleteCartItem(event);
+    }
+
+    @KafkaListener(topics = DELETE_PRODUCT_CART_ITEM_TOPIC, groupId = READ_SERVICE_GROUP)
+    public void listen(DeleteProductCartItemEvent event) {
+        cartViewService.deleteProductCartItem(event);
     }
 }
