@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "chats")
@@ -19,24 +20,25 @@ import java.util.List;
 public class Chat extends BaseEntity {
 
     @Id
-    @Field("_id")
     @JsonProperty("chatId")
     private String _id;
 
     @Field("chatType")
     private ChatType chatType;
 
-    @Field("shopId")
-    private String shopId;
+    @Field("shopCache")
+    private ShopCache shopCache;
 
-    @Field("participantIds")
-    private List<String> participantIds;
+    @Field("userCacheList")
+    @Builder.Default
+    private List<UserCache> userCacheList = new ArrayList<>();
 
-    @Field("lastMessageId")
-    private String lastMessageId;
+    @Field("lastMessage")
+    private Message lastMessage;
 
-    @Field("lastMessageTime")
-    private LocalDateTime lastMessageTime;
+    public void addUserCache(UserCache userCache) {
+        this.userCacheList.add(userCache);
+    }
 
 }
 

@@ -1,51 +1,40 @@
 package com.ecommerce.chat.entity;
 
+import com.ecommerce.library.enumeration.ShopStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
-@Document(collection = "shop_cache")
+@Document(collection = "shop_caches")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class ShopCache extends BaseEntity {
 
     @Id
-    @Field("_id")
+    @JsonProperty("shopId")
     private String _id;
 
-    @Field("shop_id")
-    private String shopId;
-
-    @Field("shop_name")
+    @Field("shopName")
     private String shopName;
 
-    @Field("shop_avatar_url")
-    private String shopAvatarUrl;
+    @Field("logoUrl")
+    private String logoUrl;
 
-    @Field("shop_description")
-    private String shopDescription;
-
-    @Field("owner_id")
+    @Field("ownerId")
     private String ownerId;
 
     @Field("is_online")
     private Boolean isOnline;
 
-    @Field("is_active")
-    private Boolean isActive;
+    @Field(name = "shopStatus")
+    private ShopStatus shopStatus;
 
-    @Field("response_rate")
-    private Double responseRate; // Percentage of messages responded to
-
-    @Field("average_response_time")
-    private Long averageResponseTime; // In minutes
-
-    @Field("cache_expires_at")
-    private LocalDateTime cacheExpiresAt; // TTL for cache invalidation
 }

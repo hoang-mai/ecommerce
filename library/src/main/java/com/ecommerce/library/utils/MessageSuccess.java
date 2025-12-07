@@ -88,4 +88,7 @@ public final class MessageSuccess {
     public static final String REVIEW_REPLY_CREATED_SUCCESS = "";
     public static final String REVIEW_REPLY_UPDATED_SUCCESS = "";
     public static final String REVIEW_REPLY_DELETED_SUCCESS = "";
+    public static final String MARK_MESSAGE_AS_READ_SUCCESS = "";
+    public static final String COUNT_UNREAD_MESSAGES_SUCCESS = "";
+    public static final String UPLOAD_FILE_CHAT_SUCCESS = "";
 }

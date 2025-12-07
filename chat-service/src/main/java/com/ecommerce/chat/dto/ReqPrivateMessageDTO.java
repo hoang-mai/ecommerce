@@ -9,4 +9,5 @@ public class ReqPrivateMessageDTO {
     private String chatId;
     private String messageContent;
     private MessageType messageType;
+    private Long shopId;
 }

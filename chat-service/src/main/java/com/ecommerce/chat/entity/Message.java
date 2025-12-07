@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,21 +26,20 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class Message extends BaseEntity{
 
     @Id
-    @Field("_id")
     @JsonProperty("messageId")
     private String _id;
 
-    @Field("chat_id")
+    @Field("chatId")
     private String chatId;
 
     @Field("senderId")
     private String senderId;
 
-    @Field("senderName")
-    private String senderName;
+    @Field("shopId")
+    private String shopId;
 
-    @Field("senderAvatarUrl")
-    private String senderAvatarUrl;
+    @Field("receiverId")
+    private String receiverId;
 
     @Field("messageType")
     private MessageType messageType;
@@ -60,7 +60,16 @@ public class Message extends BaseEntity{
     private LocalDateTime deletedAt;
 
     @Field("readBy")
-    private List<String> readBy;
+    @Builder.Default
+    private List<String> readBy = new ArrayList<>();
+
+    public void markMessageAsRead(String userId) {
+        if (!this.readBy.contains(userId)) {
+            this.readBy.add(userId);
+        }
+    }
+
+
 
 }
 

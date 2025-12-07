@@ -1,14 +1,11 @@
 package com.ecommerce.chat.service.impl;
 
 import com.ecommerce.chat.dto.*;
-import com.ecommerce.chat.dto.*;
-import com.ecommerce.chat.entity.Chat;
-import com.ecommerce.chat.entity.Message;
-import com.ecommerce.chat.entity.UserChat;
-import com.ecommerce.chat.repository.ChatRepository;
-import com.ecommerce.chat.repository.MessageRepository;
-import com.ecommerce.chat.repository.UserChatRepository;
+import com.ecommerce.chat.entity.*;
+import com.ecommerce.chat.repository.*;
+import com.ecommerce.chat.repository.impl.ChatRepositoryImpl;
 import com.ecommerce.chat.service.ChatService;
+import com.ecommerce.chat.service.FileService;
 import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.utils.FnCommon;
@@ -16,9 +13,11 @@ import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -27,93 +26,178 @@ public class ChatServiceImpl implements ChatService {
 
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
-    private final UserChatRepository userChatRepository;
+    private final ChatRepositoryImpl chatRepositoryImpl;
+    private final UserCacheRepository userCacheRepository;
+    private final ShopCacheRepository shopCacheRepository;
     private final UserHelper userHelper;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final FileService fileService;
 
-    @Transactional
     @Override
-    public void createMessagePrivate(ReqPrivateMessageDTO reqPrivateMessageDTO) {
-        Long senderId = userHelper.getCurrentUserId();
+    public void createMessagePrivate(ReqPrivateMessageDTO reqPrivateMessageDTO, Principal principal) {
+        String senderId = principal.getName();
         Long receiverId = reqPrivateMessageDTO.getReceiverId();
 
+        Message message;
         if (FnCommon.isNotNullOrEmpty(reqPrivateMessageDTO.getChatId())) {
-            if (!chatRepository.existsById(reqPrivateMessageDTO.getChatId())) {
-                throw new NotFoundException(MessageError.CHAT_NOT_FOUND);
-            }
-            UserChat userChat = userChatRepository.findUserChatByChatIdAndUserId(reqPrivateMessageDTO.getChatId(), String.valueOf(senderId))
-                    .orElseThrow(() -> new NotFoundException(MessageError.USER_CHAT_NOT_FOUND));
-            Message message = Message.builder()
-                    .chatId(reqPrivateMessageDTO.getChatId())
-                    .messageType(reqPrivateMessageDTO.getMessageType())
-                    .messageContent(reqPrivateMessageDTO.getMessageContent())
-                    .userChatId(userChat.getUserChatId())
-                    .isDeleted(false)
-                    .isUpdated(false)
-                    .build();
-            UserChat receiverUserChat = userChatRepository.findUserChatByChatIdAndUserIdNot(
-                    reqPrivateMessageDTO.getChatId(),
-                    String.valueOf(senderId)
-            ).orElseThrow(() -> new NotFoundException(MessageError.USER_CHAT_NOT_FOUND));
-            receiverUserChat.setIsRead(false);
-            userChatRepository.save(receiverUserChat);
+            message = Message.builder()
+                .chatId(reqPrivateMessageDTO.getChatId())
+                .messageType(reqPrivateMessageDTO.getMessageType())
+                .messageContent(reqPrivateMessageDTO.getMessageContent())
+                .senderId(String.valueOf(senderId))
+                .isDeleted(false)
+                .isEdited(false)
+                .receiverId(String.valueOf(receiverId))
+                .readBy(List.of(String.valueOf(senderId)))
+                .build();
             messageRepository.save(message);
-
-        } else {
-            Chat chat = Chat.builder().build();
+            Chat chat = chatRepository.findById(reqPrivateMessageDTO.getChatId())
+                .orElseThrow(() -> new NotFoundException(MessageError.CHAT_NOT_FOUND));
+            chat.setLastMessage(message);
             chatRepository.save(chat);
 
-            UserChat sender = UserChat.builder()
-                    .chatId(chat.getChatId())
-                    .userId(String.valueOf(senderId))
-                    .isRead(true)
-                    .build();
+        } else {
+            Chat chat = Chat.builder()
+                .build();
+            UserCache senderCache = userCacheRepository.findById(String.valueOf(senderId))
+                .orElseThrow(() -> new NotFoundException(MessageError.USER_CACHE_NOT_FOUND));
+
+            chat.addUserCache(senderCache);
+
+            UserCache receiverCache = userCacheRepository.findById(String.valueOf(receiverId))
+                .orElseThrow(() -> new NotFoundException(MessageError.USER_CACHE_NOT_FOUND));
+
+            chat.addUserCache(receiverCache);
+            chatRepository.save(chat);
 
 
-            UserChat receiver = UserChat.builder()
-                    .chatId(chat.getChatId())
-                    .userId(String.valueOf(receiverId))
-                    .isRead(false)
-                    .build();
-            userChatRepository.saveAll(List.of(sender, receiver));
-
-            Message message = Message.builder()
-                    .messageType(reqPrivateMessageDTO.getMessageType())
-                    .messageContent(reqPrivateMessageDTO.getMessageContent())
-                    .userChatId(sender.getUserChatId())
-                    .chatId(chat.getChatId())
-                    .isDeleted(false)
-                    .isUpdated(false)
-                    .build();
+            message = Message.builder()
+                .messageType(reqPrivateMessageDTO.getMessageType())
+                .messageContent(reqPrivateMessageDTO.getMessageContent())
+                .senderId(String.valueOf(senderId))
+                .chatId(chat.get_id())
+                .isDeleted(false)
+                .isEdited(false)
+                .receiverId(String.valueOf(receiverId))
+                .readBy(List.of(String.valueOf(senderId)))
+                .build();
             messageRepository.save(message);
+            if (FnCommon.isNotNull(reqPrivateMessageDTO.getShopId())) {
+                ShopCache shopCache = shopCacheRepository.findById(String.valueOf(reqPrivateMessageDTO.getShopId()))
+                    .orElseThrow(() -> new NotFoundException(MessageError.SHOP_CACHE_NOT_FOUND));
+                chat.setShopCache(shopCache);
+                chat.setChatType(ChatType.CUSTOMER_SUPPORT);
+            }
+            chat.setLastMessage(message);
+            chatRepository.save(chat);
         }
+        simpMessagingTemplate.convertAndSendToUser(
+            String.valueOf(reqPrivateMessageDTO.getReceiverId()),
+            "/queue/messages",
+            message
+        );
     }
 
 
     @Override
-    public PageResponse<ResChatPreviewDTO> getListChatPreview(int pageNo, int pageSize) {
+    public PageResponse<Chat> getListChatPreview(int pageNo, int pageSize, String keyword, String shopId) {
         Long currentUserId = userHelper.getCurrentUserId();
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Slice<ResChatPreviewDTO> resChatPreviewDTOS = chatRepository.findByUserId(currentUserId, pageable);
-        return PageResponse.<ResChatPreviewDTO>builder()
-                .pageNo(resChatPreviewDTOS.getNumber())
-                .pageSize(resChatPreviewDTOS.getSize())
-                .hasNextPage(resChatPreviewDTOS.hasNext())
-                .hasPreviousPage(resChatPreviewDTOS.hasPrevious())
-                .data(resChatPreviewDTOS.getContent())
-                .build();
+        Page<Chat> page = chatRepositoryImpl.findByUserId(currentUserId, pageable, keyword, shopId);
+        return PageResponse.<Chat>builder()
+            .data(page.getContent())
+            .pageNo(page.getNumber())
+            .pageSize(page.getSize())
+            .totalElements(page.getTotalElements())
+            .totalPages(page.getTotalPages())
+            .hasNextPage(page.hasNext())
+            .hasPreviousPage(page.hasPrevious())
+            .build();
     }
 
     @Override
-    public PageResponse<ResMessageDTO> getChatById(String chatId, int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Slice<ResMessageDTO> resMessageDTOS = messageRepository.findByChatId(chatId, pageable);
-        return PageResponse.<ResMessageDTO>builder()
-                .pageNo(resMessageDTOS.getNumber())
-                .pageSize(resMessageDTOS.getSize())
-                .hasNextPage(resMessageDTOS.hasNext())
-                .hasPreviousPage(resMessageDTOS.hasPrevious())
-                .data(resMessageDTOS.getContent())
+    public Chat getChatByIdOrShopId(String chatId, String shopId) {
+        Chat chat = null;
+        if (FnCommon.isNotNullOrEmpty(chatId)) {
+            chat = chatRepository.findById(chatId)
+                .orElse(null);
+        } else if (FnCommon.isNotNullOrEmpty(shopId)) {
+            Long currentUserId = userHelper.getCurrentUserId();
+            chat = chatRepositoryImpl.findByShopId(shopId, String.valueOf(currentUserId));
+        }
+        return chat;
+    }
+
+    @Override
+    public String uploadFileChat(MultipartFile file, ReqPrivateMessageDTO reqPrivateMessageDTO, Principal principal) {
+        String senderId = principal.getName();
+        Long receiverId = reqPrivateMessageDTO.getReceiverId();
+
+        Message message;
+        if (FnCommon.isNotNullOrEmpty(reqPrivateMessageDTO.getChatId())) {
+            message = Message.builder()
+                .chatId(reqPrivateMessageDTO.getChatId())
+                .messageType(reqPrivateMessageDTO.getMessageType())
+                .senderId(String.valueOf(senderId))
+                .isDeleted(false)
+                .isEdited(false)
+                .receiverId(String.valueOf(receiverId))
+                .readBy(List.of(String.valueOf(senderId)))
                 .build();
+            messageRepository.save(message);
+            Chat chat = chatRepository.findById(reqPrivateMessageDTO.getChatId())
+                .orElseThrow(() -> new NotFoundException(MessageError.CHAT_NOT_FOUND));
+            chat.setLastMessage(message);
+            chatRepository.save(chat);
+
+        } else {
+            Chat chat = Chat.builder()
+                .build();
+            UserCache senderCache = userCacheRepository.findById(String.valueOf(senderId))
+                .orElseThrow(() -> new NotFoundException(MessageError.USER_CACHE_NOT_FOUND));
+
+            chat.addUserCache(senderCache);
+
+            UserCache receiverCache = userCacheRepository.findById(String.valueOf(receiverId))
+                .orElseThrow(() -> new NotFoundException(MessageError.USER_CACHE_NOT_FOUND));
+
+            chat.addUserCache(receiverCache);
+            chatRepository.save(chat);
+
+
+            message = Message.builder()
+                .messageType(reqPrivateMessageDTO.getMessageType())
+                .senderId(String.valueOf(senderId))
+                .chatId(chat.get_id())
+                .isDeleted(false)
+                .isEdited(false)
+                .receiverId(String.valueOf(receiverId))
+                .readBy(List.of(String.valueOf(senderId)))
+                .build();
+            messageRepository.save(message);
+            if (FnCommon.isNotNull(reqPrivateMessageDTO.getShopId())) {
+                ShopCache shopCache = shopCacheRepository.findById(String.valueOf(reqPrivateMessageDTO.getShopId()))
+                    .orElseThrow(() -> new NotFoundException(MessageError.SHOP_CACHE_NOT_FOUND));
+                chat.setShopCache(shopCache);
+                chat.setChatType(ChatType.CUSTOMER_SUPPORT);
+            }
+            chat.setLastMessage(message);
+            chatRepository.save(chat);
+        }
+        String fileUrl = fileService.uploadFile(file, "chat/" + message.get_id());
+        message.setMessageContent(fileUrl);
+        messageRepository.save(message);
+        simpMessagingTemplate.convertAndSendToUser(
+            String.valueOf(reqPrivateMessageDTO.getReceiverId()),
+            "/queue/messages",
+            message
+        );
+        simpMessagingTemplate.convertAndSendToUser(
+            String.valueOf(senderId),
+            "/queue/messages",
+            message
+        );
+        return fileUrl;
     }
 
 

@@ -1,7 +1,12 @@
 package com.ecommerce.chat.service;
 
 import com.ecommerce.chat.dto.*;
+import com.ecommerce.chat.entity.Chat;
+import com.ecommerce.chat.entity.Message;
 import com.ecommerce.library.utils.PageResponse;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.security.Principal;
 
 public interface ChatService {
 
@@ -10,25 +15,19 @@ public interface ChatService {
      *
      * @param reqPrivateMessageDTO Thông tin tin nhắn riêng tư
      */
-    void createMessagePrivate(ReqPrivateMessageDTO reqPrivateMessageDTO);
+    void createMessagePrivate(ReqPrivateMessageDTO reqPrivateMessageDTO, Principal principal);
 
     /**
      * Lấy danh sách các cuộc trò chuyện của người dùng
      *
+     * @param keyword  Từ khóa tìm kiếm (optional)
      * @param pageNo   Số trang
      * @param pageSize Kích thước trang
      * @return Danh sách các cuộc trò chuyện
      */
-    PageResponse<ResChatPreviewDTO> getListChatPreview(int pageNo, int pageSize);
+    PageResponse<Chat> getListChatPreview(int pageNo, int pageSize, String keyword, String shopId);
 
-    /**
-     * Lấy thông tin cuộc trò chuyện theo ID
-     *
-     * @param chatId   ID của cuộc trò chuyện
-     * @param pageNo   Số trang
-     * @param pageSize Kích thước trang
-     * @return Thông tin cuộc trò chuyện
-     */
-    PageResponse<ResMessageDTO> getChatById(String chatId, int pageNo, int pageSize);
+    Chat getChatByIdOrShopId(String chatId, String shopId);
 
+    String uploadFileChat(MultipartFile file, ReqPrivateMessageDTO reqPrivateMessageDTO, Principal principal);
 }
