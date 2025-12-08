@@ -6,6 +6,8 @@ import com.ecommerce.library.kafka.event.review.DeleteReviewViewEvent;
 import com.ecommerce.library.kafka.event.review.CreateReviewReplyEvent;
 import com.ecommerce.library.kafka.event.review.UpdateReviewReplyEvent;
 import com.ecommerce.library.kafka.event.review.DeleteReviewReplyEvent;
+import com.ecommerce.library.kafka.event.user.UpdateAvatarUserEvent;
+import com.ecommerce.library.kafka.event.user.UpdateUserEvent;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.ReviewView;
 
@@ -20,4 +22,8 @@ public interface ReviewViewService {
     PageResponse<ReviewView> getReviewsByProductId(Long productId, String stars, Boolean isOwner, Long shopId, Boolean isReply, int pageNo, int pageSize, String sortBy, String sortDir);
 
     ReviewView getReviewByOrderItemId(Long orderItemId);
+
+    void updateAvatarUserInReviews(UpdateAvatarUserEvent updateAvatarUserEvent);
+
+    void updateUserInReviews(UpdateUserEvent updateUserEvent);
 }

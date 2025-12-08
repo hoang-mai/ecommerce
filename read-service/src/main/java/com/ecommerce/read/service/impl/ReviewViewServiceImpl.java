@@ -7,6 +7,8 @@ import com.ecommerce.library.kafka.event.review.UpdateReviewViewEvent;
 import com.ecommerce.library.kafka.event.review.CreateReviewReplyEvent;
 import com.ecommerce.library.kafka.event.review.UpdateReviewReplyEvent;
 import com.ecommerce.library.kafka.event.review.DeleteReviewReplyEvent;
+import com.ecommerce.library.kafka.event.user.UpdateAvatarUserEvent;
+import com.ecommerce.library.kafka.event.user.UpdateUserEvent;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.ReviewView;
 import com.ecommerce.read.repository.ReviewViewRepository;
@@ -169,18 +171,6 @@ public class ReviewViewServiceImpl implements ReviewViewService {
         );
         return PageResponse.<ReviewView>builder()
             .data(reviewViewPage.getContent().stream().peek(reviewView -> {
-                // If review's updatedAt is older than 10 days, refresh fullName and avatarUrl from user view
-                LocalDateTime threshold = LocalDateTime.now().minusDays(10);
-                if (reviewView.getUpdatedAt() == null || reviewView.getUpdatedAt().isBefore(threshold)) {
-                    userViewRepository.findById(reviewView.getUserId()).ifPresent(userView -> {
-                        String fullName = userView.getFullName();
-                        if (!fullName.isBlank()) reviewView.setFullName(fullName);
-                        reviewView.setAvatarUrl(userView.getAvatarUrl());
-                        // persist refreshed fields
-                        reviewViewRepository.save(reviewView);
-                    });
-                }
-                // presign avatar and image urls
                 reviewView.setAvatarUrl(fileService.getPresignedUrl(reviewView.getAvatarUrl()));
                 reviewView.setImageUrls(
                     reviewView.getImageUrls().stream()
@@ -202,16 +192,6 @@ public class ReviewViewServiceImpl implements ReviewViewService {
         Optional<ReviewView> reviewViewOptional = reviewViewRepository.findByOrderItemId(String.valueOf(orderItemId));
         if (reviewViewOptional.isPresent()) {
             ReviewView reviewView = reviewViewOptional.get();
-            // refresh fullName/avatar if review is older than 10 days
-            LocalDateTime threshold = LocalDateTime.now().minusDays(10);
-            if (reviewView.getUpdatedAt() == null || reviewView.getUpdatedAt().isBefore(threshold)) {
-                userViewRepository.findById(reviewView.getUserId()).ifPresent(userView -> {
-                    String fullName = userView.getFullName();
-                    if (!fullName.isBlank()) reviewView.setFullName(fullName);
-                    reviewView.setAvatarUrl(userView.getAvatarUrl());
-                    reviewViewRepository.save(reviewView);
-                });
-            }
             reviewView.setImageUrls(
                 reviewView.getImageUrls().stream()
                     .map(fileService::getPresignedUrl)
@@ -222,5 +202,21 @@ public class ReviewViewServiceImpl implements ReviewViewService {
             return null;
         }
 
+    }
+
+    @Override
+    public void updateAvatarUserInReviews(UpdateAvatarUserEvent updateAvatarUserEvent) {
+        reviewViewRepositoryImpl.updateAvatarUserInReviews(
+            String.valueOf(updateAvatarUserEvent.getUserId()),
+            updateAvatarUserEvent.getAvatarUrl()
+        );
+    }
+
+    @Override
+    public void updateUserInReviews(UpdateUserEvent updateUserEvent) {
+        reviewViewRepositoryImpl.updateUserInReviews(
+            String.valueOf(updateUserEvent.getUserId()),
+            updateUserEvent.getFullName()
+        );
     }
 }

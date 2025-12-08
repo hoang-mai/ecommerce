@@ -32,15 +32,14 @@ public class ChatController {
     }
 
     @PostMapping(consumes = "multipart/form-data")
-    public ResponseEntity<BaseResponse<String>> uploadFileChat(
-        @RequestPart("file")MultipartFile file,
-        @RequestPart("data") ReqPrivateMessageDTO reqPrivateMessageDTO,
-        Principal principal) {
-        String fileUrl = chatService.uploadFileChat(file, reqPrivateMessageDTO, principal);
-        return ResponseEntity.ok(BaseResponse.<String>builder()
+    public ResponseEntity<BaseResponse<Chat>> uploadFileChatOrCreateChat(
+        @RequestPart(value = "file", required = false)MultipartFile file,
+        @RequestPart("data") ReqPrivateMessageDTO reqPrivateMessageDTO) {
+        Chat chat = chatService.uploadFileChatOrCreateChat(file, reqPrivateMessageDTO);
+        return ResponseEntity.ok(BaseResponse.<Chat>builder()
             .statusCode(200)
             .message(messageService.getMessage(MessageSuccess.UPLOAD_FILE_CHAT_SUCCESS))
-            .data(fileUrl)
+            .data(chat)
             .build()
         );
     }

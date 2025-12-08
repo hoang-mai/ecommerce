@@ -1,5 +1,6 @@
 package com.ecommerce.chat.messaging.consumer;
 
+import com.ecommerce.chat.service.ChatService;
 import com.ecommerce.chat.service.ShopCacheService;
 import com.ecommerce.library.kafka.event.shop.CreateShopEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
@@ -14,11 +15,12 @@ import static com.ecommerce.library.kafka.Constant.*;
 public class ShopEventConsumer {
 
     private final ShopCacheService shopCacheService;
+    private final ChatService chatService;
 
     @KafkaListener(topics = CREATE_SHOP_TOPIC, groupId = CHAT_SERVICE_GROUP)
     public void listen(CreateShopEvent createShopEvent) {
-
             shopCacheService.createShopCache(createShopEvent);
+            chatService.updateShopInChats(createShopEvent);
     }
     @KafkaListener(topics = UPDATE_SHOP_STATUS_TOPIC, groupId = CHAT_SERVICE_GROUP)
     public void listen(UpdateShopStatusEvent updateShopStatusEvent){

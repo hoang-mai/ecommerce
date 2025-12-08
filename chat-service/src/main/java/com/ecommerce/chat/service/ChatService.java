@@ -3,6 +3,8 @@ package com.ecommerce.chat.service;
 import com.ecommerce.chat.dto.*;
 import com.ecommerce.chat.entity.Chat;
 import com.ecommerce.chat.entity.Message;
+import com.ecommerce.library.kafka.event.shop.CreateShopEvent;
+import com.ecommerce.library.kafka.event.user.UpdateUserEvent;
 import com.ecommerce.library.utils.PageResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,5 +31,11 @@ public interface ChatService {
 
     Chat getChatByIdOrShopId(String chatId, String shopId);
 
-    String uploadFileChat(MultipartFile file, ReqPrivateMessageDTO reqPrivateMessageDTO, Principal principal);
+    Chat uploadFileChatOrCreateChat(MultipartFile file, ReqPrivateMessageDTO reqPrivateMessageDTO);
+
+    void updateAvatarInChats(Long userId, String avatarUrl);
+
+    void updateUserInChats(UpdateUserEvent updateUserEvent);
+
+    void updateShopInChats(CreateShopEvent createShopEvent);
 }

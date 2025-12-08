@@ -2,8 +2,11 @@ package com.ecommerce.chat.service.impl;
 
 import com.ecommerce.chat.dto.ReqUpdateMessageDTO;
 import com.ecommerce.chat.entity.Message;
+import com.ecommerce.chat.entity.MessageType;
 import com.ecommerce.chat.repository.MessageRepository;
+import com.ecommerce.chat.repository.impl.ChatRepositoryImpl;
 import com.ecommerce.chat.repository.impl.MessageRepositoryImpl;
+import com.ecommerce.chat.service.FileService;
 import com.ecommerce.chat.service.MessageChatService;
 import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.exception.NotFoundException;
@@ -23,7 +26,9 @@ public class MessageChatServiceImpl implements MessageChatService {
 
     private final MessageRepository messageRepository;
     private final MessageRepositoryImpl messageRepositoryImpl;
+    private final ChatRepositoryImpl chatRepositoryImpl;
     private final UserHelper userHelper;
+    private final FileService fileService;
 
     @Override
     public void updateMessage(String messageId, ReqUpdateMessageDTO reqUpdateMessageDTO) {
@@ -45,7 +50,12 @@ public class MessageChatServiceImpl implements MessageChatService {
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
         Page<Message> page = messageRepositoryImpl.findByChatId(chatId, pageable);
         return PageResponse.<Message>builder()
-            .data(page.getContent())
+            .data(page.getContent().stream().peek(message -> {
+                if(message.getMessageType() == MessageType.IMAGE){
+                    String imageUrl = fileService.getPresignedUrl(message.getMessageContent());
+                    message.setMessageContent(imageUrl);
+                }
+            }).toList())
             .pageNo(page.getNumber())
             .pageSize(page.getSize())
             .totalElements(page.getTotalElements())
@@ -59,6 +69,7 @@ public class MessageChatServiceImpl implements MessageChatService {
     public void markMessageAsRead(String chatId) {
         Long userId = userHelper.getCurrentUserId();
         messageRepositoryImpl.markMessagesAsRead(chatId, String.valueOf(userId));
+        chatRepositoryImpl.markChatAsRead(chatId, String.valueOf(userId));
     }
 
     @Override

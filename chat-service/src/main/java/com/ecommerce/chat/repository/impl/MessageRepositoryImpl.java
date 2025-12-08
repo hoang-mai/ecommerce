@@ -38,7 +38,7 @@ public class MessageRepositoryImpl {
             criteriaList.add(Criteria.where("chatId").is(chatId));
         }
         criteriaList.add(Criteria.where("receiverId").is(userId));
-        criteriaList.add(Criteria.where("readBy").nin(Collections.singletonList(userId)));
+        criteriaList.add(Criteria.where("readBy").ne(userId));
         Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
         Query query = new Query(finalCriteria);
         return mongoTemplate.count(query, "messages");
@@ -48,7 +48,7 @@ public class MessageRepositoryImpl {
         List<Criteria> criteriaList = new ArrayList<>();
         criteriaList.add(Criteria.where("chatId").is(chatId));
         criteriaList.add(Criteria.where("receiverId").is(userId));
-        criteriaList.add(Criteria.where("readBy").nin(Collections.singletonList(userId)));
+        criteriaList.add(Criteria.where("readBy").ne(userId));
         Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
         Query query = new Query(finalCriteria);
         Update update = new Update().addToSet("readBy", userId);

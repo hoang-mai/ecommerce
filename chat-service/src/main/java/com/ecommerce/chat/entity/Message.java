@@ -63,13 +63,5 @@ public class Message extends BaseEntity{
     @Builder.Default
     private List<String> readBy = new ArrayList<>();
 
-    public void markMessageAsRead(String userId) {
-        if (!this.readBy.contains(userId)) {
-            this.readBy.add(userId);
-        }
-    }
-
-
-
 }
 

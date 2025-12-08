@@ -1,6 +1,7 @@
 package com.ecommerce.read.messaging.consumer;
 
 import com.ecommerce.library.kafka.event.user.*;
+import com.ecommerce.read.service.ReviewViewService;
 import com.ecommerce.read.service.UserViewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -13,6 +14,7 @@ import static com.ecommerce.library.kafka.Constant.*;
 public class UserEventConsumer {
 
     private final UserViewService userViewService;
+    private final ReviewViewService reviewViewService;
 
     @KafkaListener(topics = CREATE_USER_TOPIC, groupId = READ_SERVICE_GROUP)
     public void listenCreateUser(CreateUserEvent createUserEvent) {
@@ -22,6 +24,7 @@ public class UserEventConsumer {
     @KafkaListener(topics = UPDATE_USER_TOPIC, groupId = READ_SERVICE_GROUP)
     public void listenUpdateUser(UpdateUserEvent updateUserEvent) {
         userViewService.updateUserView(updateUserEvent);
+        reviewViewService.updateUserInReviews(updateUserEvent);
     }
 
     @KafkaListener(topics = UPDATE_ROLE_TOPIC, groupId = READ_SERVICE_GROUP)
@@ -37,5 +40,6 @@ public class UserEventConsumer {
     @KafkaListener(topics = UPDATE_AVATAR_URL_TOPIC , groupId = READ_SERVICE_GROUP)
     public void listenUpdateAvatarUrl(UpdateAvatarUserEvent updateAvatarUserEvent) {
         userViewService.updateAvatarUser(updateAvatarUserEvent);
+        reviewViewService.updateAvatarUserInReviews(updateAvatarUserEvent);
     }
 }

@@ -1,5 +1,6 @@
 package com.ecommerce.chat.messaging.consumer;
 
+import com.ecommerce.chat.service.ChatService;
 import com.ecommerce.chat.service.UserCacheService;
 import com.ecommerce.library.kafka.event.user.CreateUserEvent;
 import com.ecommerce.library.kafka.event.user.UpdateAccountStatusEvent;
@@ -18,6 +19,7 @@ import static com.ecommerce.library.kafka.Constant.*;
 public class UserEventConsumer {
 
     private final UserCacheService userCacheService;
+    private final ChatService chatService;
 
     @KafkaListener(topics = CREATE_USER_TOPIC, groupId = CHAT_SERVICE_GROUP)
     public void listen(CreateUserEvent createUserEvent) {
@@ -27,11 +29,13 @@ public class UserEventConsumer {
     @KafkaListener(topics = UPDATE_USER_TOPIC, groupId = CHAT_SERVICE_GROUP)
     public void listen(UpdateUserEvent updateUserEvent) {
             userCacheService.updateUserCache(updateUserEvent);
+            chatService.updateUserInChats(updateUserEvent);
     }
 
     @KafkaListener(topics = UPDATE_AVATAR_URL_TOPIC, groupId = CHAT_SERVICE_GROUP)
     public void listen(UpdateAvatarUserEvent updateAvatarUserEvent) {
             userCacheService.updateAvatarUrl(updateAvatarUserEvent.getUserId(), updateAvatarUserEvent.getAvatarUrl());
+            chatService.updateAvatarInChats(updateAvatarUserEvent.getUserId(), updateAvatarUserEvent.getAvatarUrl());
     }
 
     @KafkaListener(topics = UPDATE_ACCOUNT_STATUS_TOPIC , groupId = CHAT_SERVICE_GROUP)

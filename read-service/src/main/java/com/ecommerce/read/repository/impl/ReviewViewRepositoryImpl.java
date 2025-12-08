@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -49,5 +50,17 @@ public class ReviewViewRepositoryImpl {
         List<ReviewView> reviews = mongoTemplate.find(query, ReviewView.class);
         return new PageImpl<>(reviews, pageable, total);
 
+    }
+
+    public void updateAvatarUserInReviews(String userId, String avatarUrl) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        Update update = new Update().set("avatarUrl", avatarUrl);
+        mongoTemplate.updateMulti(query, update, ReviewView.class);
+    }
+
+    public void updateUserInReviews(String userId, String fullName) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        Update update = new Update().set("fullName", fullName);
+        mongoTemplate.updateMulti(query, update, ReviewView.class);
     }
 }

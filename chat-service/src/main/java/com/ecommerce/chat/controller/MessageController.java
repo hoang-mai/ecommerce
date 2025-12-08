@@ -49,7 +49,7 @@ public class MessageController {
         );
     }
 
-    @PatchMapping("/isRead")
+    @GetMapping("/make-as-read")
     public ResponseEntity<BaseResponse<String>> markMessageAsRead(
         @RequestParam(value = "chatId") String chatId) {
         messageChatService.markMessageAsRead(chatId);
