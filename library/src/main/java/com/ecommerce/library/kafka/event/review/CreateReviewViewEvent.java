@@ -20,8 +20,6 @@ public class CreateReviewViewEvent {
     private Long productId;
     private Long productVariantId;
     private Long userId;
-    private String fullName;
-    private String avatarUrl;
     private Long ownerId;
     private Long shopId;
     private String productName;

@@ -1,20 +1,31 @@
 package com.ecommerce.read.repository.impl;
 
+import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.RatingNumber;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.utils.FnCommon;
+import com.ecommerce.read.dto.OwnerViewStatisticDTO;
+import com.ecommerce.read.dto.ProductViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
 import lombok.RequiredArgsConstructor;
+import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,32 +82,116 @@ public class ShopViewRepositoryImpl {
         Update update;
         if (Boolean.TRUE.equals(isDelete)) {
             update = new Update()
-                    .inc("numberOfReviews", -1);
-            if(FnCommon.isNotNull(oldRating)){
+                .inc("numberOfReviews", -1);
+            if (FnCommon.isNotNull(oldRating)) {
                 update.inc("numberOfRatings", -1)
-                        .inc("rating", -oldRating.getValue());
+                    .inc("rating", -oldRating.getValue());
             }
         } else if (Boolean.TRUE.equals(isUpdate)) {
             Integer updateValue;
-            if(FnCommon.isNotNull(oldRating) && FnCommon.isNotNull(rating)){
+            if (FnCommon.isNotNull(oldRating) && FnCommon.isNotNull(rating)) {
                 updateValue = rating.getValue() - oldRating.getValue();
-            } else if(FnCommon.isNotNull(oldRating)){
-                updateValue = - oldRating.getValue();
-            } else if(FnCommon.isNotNull(rating)){
+            } else if (FnCommon.isNotNull(oldRating)) {
+                updateValue = -oldRating.getValue();
+            } else if (FnCommon.isNotNull(rating)) {
                 updateValue = rating.getValue();
             } else {
                 updateValue = 0;
             }
             update = new Update()
-                    .inc("rating", updateValue);
+                .inc("rating", updateValue);
         } else {
             update = new Update()
-                    .inc("numberOfReviews", 1);
-            if(FnCommon.isNotNull(rating)){
+                .inc("numberOfReviews", 1);
+            if (FnCommon.isNotNull(rating)) {
                 update.inc("numberOfRatings", 1)
-                        .inc("rating", rating.getValue());
+                    .inc("rating", rating.getValue());
             }
         }
         mongoTemplate.updateFirst(query, update, ShopView.class);
+    }
+
+    public void incrementProductCount(Long shopId) {
+        Query query = new Query(Criteria.where("_id").is(String.valueOf(shopId)));
+        Update update = new Update().inc("totalProducts", 1).inc("activeProducts", 1);
+        mongoTemplate.updateFirst(query, update, ShopView.class);
+    }
+
+    public void updateProductStatusInShopView(String shopId, ProductStatus status) {
+        Query query = new Query(Criteria.where("_id").is(shopId));
+        Update update = new Update();
+        if (status == ProductStatus.ACTIVE) {
+            update.inc("activeProducts", 1);
+        } else if (status == ProductStatus.INACTIVE) {
+            update.inc("activeProducts", -1);
+        }
+        mongoTemplate.updateFirst(query, update, ShopView.class);
+    }
+
+    public void incrementTotalSoldAndTotalOrder(String shopId, int quantity) {
+        Query query = new Query(Criteria.where("_id").is(shopId));
+        Update update = new Update().inc("totalSold", quantity).inc("totalOrder", 1);
+        mongoTemplate.updateFirst(query, update, ShopView.class);
+    }
+
+    public OwnerViewStatisticDTO getOverviewStatistics(String ownerId) {
+        Criteria criteria = Criteria.where("ownerId").is(ownerId);
+        MatchOperation match = Aggregation.match(criteria);
+        GroupOperation group = Aggregation.group()
+            .sum("totalSold").as("totalSold")
+            .sum("totalProducts").as("totalProducts")
+            .sum("totalOrder").as("totalOrders")
+            .sum("totalRevenue").as("totalRevenue");
+
+        Aggregation aggregation = Aggregation.newAggregation(match, group);
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "shop_views", Document.class);
+        Document doc = results.getUniqueMappedResult();
+
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        int totalProducts = 0;
+        int totalOrders = 0;
+        int totalSold = 0;
+
+        if (doc != null) {
+            Object rev = doc.get("totalRevenue");
+            if (rev != null) {
+                try {
+                    totalRevenue = new BigDecimal(rev.toString());
+                } catch (Exception ignored) {
+                    totalRevenue = BigDecimal.ZERO;
+                }
+            }
+            Object prod = doc.get("totalProducts");
+            if (prod != null) {
+                try {
+                    totalProducts = ((Number) prod).intValue();
+                } catch (Exception ignored) {
+                    totalProducts = 0;
+                }
+            }
+            Object ord = doc.get("totalOrders");
+            if (ord != null) {
+                try {
+                    totalOrders = ((Number) ord).intValue();
+                } catch (Exception ignored) {
+                    totalOrders = 0;
+                }
+            }
+            Object shops = doc.get("totalSold");
+            if (shops != null) {
+                try {
+                    totalSold = ((Number) shops).intValue();
+                } catch (Exception ignored) {
+                    totalSold = 0;
+                }
+            }
+        }
+
+        return OwnerViewStatisticDTO.builder()
+            .totalRevenue(totalRevenue)
+            .totalProducts(totalProducts)
+            .totalOrders(totalOrders)
+            .totalSold(totalSold)
+            .build();
     }
 }

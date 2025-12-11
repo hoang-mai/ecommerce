@@ -78,8 +78,6 @@ public class ReviewServiceImpl implements ReviewService {
             .ownerId(reqReviewDTO.getOwnerId())
             .shopId(reqReviewDTO.getShopId())
             .productName(reqReviewDTO.getProductName())
-            .fullName(reqReviewDTO.getFullName())
-            .avatarUrl(reqReviewDTO.getAvatarUrl())
             .rating(review.getRatingNumber())
             .comment(review.getComment())
             .imageUrls(review.getImageUrls())
@@ -96,13 +94,19 @@ public class ReviewServiceImpl implements ReviewService {
         Long userId = userHelper.getCurrentUserId();
         Review review = reviewRepository.findByUserIdAndReviewId(userId, reviewId)
             .orElseThrow(() -> new NotFoundException(MessageError.REVIEW_NOT_FOUND));
+        if(review.getIsUpdated()){
+            throw new NotFoundException(MessageError.REVIEW_UPDATED_ALREADY);
+        }
         review.setRatingNumber(reqReviewDTO.getRating());
         review.setComment(reqReviewDTO.getComment());
         review.setIsUpdated(true);
         if (FnCommon.isNotNullOrEmptyList(reqReviewDTO.getDeletedImageUrls())) {
-            reqReviewDTO.getDeletedImageUrls().forEach(url -> {
-                fileService.deleteFile(url);
-                review.deleteImageUrl(url);
+            reqReviewDTO.getDeletedImageUrls().forEach(index -> {
+                if (index < review.getImageUrls().size()) {
+                    String imageUrl = review.getImageUrls().get(index);
+                    fileService.deleteFile(imageUrl);
+                    review.deleteImageUrlByIndex(index);
+                }
             });
         }
         if (FnCommon.isNotNullOrEmptyList(imageUrls)) {

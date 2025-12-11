@@ -64,6 +64,10 @@ public class ProductView extends BaseEntity {
     @Builder.Default
     private Integer totalSold = 0;
 
+    @Field("totalRevenue")
+    @Builder.Default
+    private BigDecimal totalRevenue = BigDecimal.ZERO;
+
     @Field("discount")
     @Builder.Default
     private Double discount = 0.0;
@@ -175,6 +179,9 @@ public class ProductView extends BaseEntity {
         @Field("sold")
         @Builder.Default
         private Integer sold = 0;
+
+        @Field("revenue")
+        private BigDecimal revenue;
 
         @Field("isDefault")
         @Builder.Default

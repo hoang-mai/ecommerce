@@ -91,4 +91,6 @@ public final class MessageSuccess {
     public static final String MARK_MESSAGE_AS_READ_SUCCESS = "";
     public static final String COUNT_UNREAD_MESSAGES_SUCCESS = "";
     public static final String UPLOAD_FILE_CHAT_SUCCESS = "";
+    public static final String GET_PRODUCT_SUCCESS = "";
+    public static final String GET_STATISTIC_SUCCESS = "";
 }

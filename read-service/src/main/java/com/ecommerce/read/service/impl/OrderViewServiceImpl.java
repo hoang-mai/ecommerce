@@ -26,6 +26,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -139,7 +140,7 @@ public class OrderViewServiceImpl implements OrderViewService {
     }
 
     @Override
-    public List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, LocalDate fromDate, LocalDate toDate) {
+    public List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, LocalDateTime fromDate, LocalDateTime toDate) {
         Long currentUserId = userHelper.getCurrentUserId();
         if (FnCommon.isNotNullOrEmpty(shopId)) {
             if (!shopViewRepository.existsBy_idAndOwnerId(shopId, String.valueOf(currentUserId))) {

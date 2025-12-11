@@ -10,8 +10,10 @@ import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent
 import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.ProductViewStatisticDTO;
 import com.ecommerce.read.entity.ProductView;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -31,4 +33,6 @@ public interface ProductViewService {
     void updateShopStatusInProductViews(UpdateShopStatusEvent updateShopStatusEvent);
 
     void updateRating(Long productId, RatingNumber rating, Boolean isUpdate, RatingNumber oldRating, Boolean isDelete);
+
+    List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, LocalDateTime nowDate);
 }

@@ -53,13 +53,18 @@ public class ShopView extends BaseEntity {
     private String phoneNumber;
 
     @Field("totalProducts")
-    private Long totalProducts;
+    @Builder.Default
+    private Long totalProducts = 0L;
 
     @Field("activeProducts")
-    private Long activeProducts;
+    @Builder.Default
+    private Long activeProducts = 0L;
 
     @Field("totalSold")
     private Long totalSold;
+
+    @Field("totalOrder")
+    private Long totalOrder;
 
     @Field("totalRevenue")
     private BigDecimal totalRevenue;

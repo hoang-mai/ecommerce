@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -102,8 +103,8 @@ public class OrderViewController {
     public ResponseEntity<BaseResponse<List<OrderViewStatisticDTO>>> getOrderStatisticsByDateRange(
             @RequestParam(required = false) String shopId,
             @RequestParam(required = false) Boolean isOwner,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate
     ) {
         List<OrderViewStatisticDTO> stats = orderViewService.getOrderStatisticsByDateRange(shopId, isOwner, fromDate, toDate);
         return ResponseEntity.ok(

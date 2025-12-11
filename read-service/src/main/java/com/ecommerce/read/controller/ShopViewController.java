@@ -6,6 +6,7 @@ import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.OwnerViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
 import com.ecommerce.read.service.ShopViewService;
 import lombok.RequiredArgsConstructor;
@@ -97,6 +98,23 @@ public class ShopViewController {
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.GET_SHOP_SUCCESS))
                 .data(shopDTO)
+                .build());
+    }
+
+    /**
+     * Lấy tổng doanh thu, đơn hàng, sản phẩm, shop của chủ nhân hiện tại
+     *
+     * @return Thống kê tổng quan
+     */
+    @GetMapping("/statistic")
+    public ResponseEntity<BaseResponse<OwnerViewStatisticDTO>> getOverviewStatistics() {
+
+        OwnerViewStatisticDTO stats = shopViewService.getOverviewStatistics();
+
+        return ResponseEntity.ok(BaseResponse.<OwnerViewStatisticDTO>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_STATISTIC_SUCCESS))
+                .data(stats)
                 .build());
     }
 }

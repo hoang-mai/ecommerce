@@ -8,6 +8,7 @@ import com.ecommerce.read.dto.OrderViewStatisticDTO;
 import com.ecommerce.read.entity.OrderView;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,6 @@ public interface OrderViewService {
 
     Map<OrderStatus, Long> getOrderStatistics(String shopId, Boolean isOwner, Integer month, Integer year);
 
-    List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, LocalDate fromDate, LocalDate toDate);
+    List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, LocalDateTime fromDate, LocalDateTime toDate);
 }
 

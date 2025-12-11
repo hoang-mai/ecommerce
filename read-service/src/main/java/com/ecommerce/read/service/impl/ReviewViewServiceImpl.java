@@ -45,6 +45,7 @@ public class ReviewViewServiceImpl implements ReviewViewService {
     @Override
     public void createReviewView(CreateReviewViewEvent createReviewViewEvent) {
         if (createReviewViewEvent == null) return;
+        UserView userView = userViewRepository.findById(String.valueOf(createReviewViewEvent.getUserId())).orElse(null);
         ReviewView rv = ReviewView.builder()
             ._id(String.valueOf(createReviewViewEvent.getReviewId()))
             .orderItemId(String.valueOf(createReviewViewEvent.getOrderItemId()))
@@ -52,8 +53,8 @@ public class ReviewViewServiceImpl implements ReviewViewService {
             .productName(createReviewViewEvent.getProductName())
             .productVariantId(String.valueOf(createReviewViewEvent.getProductVariantId()))
             .userId(String.valueOf(createReviewViewEvent.getUserId()))
-            .fullName(createReviewViewEvent.getFullName())
-            .avatarUrl(createReviewViewEvent.getAvatarUrl())
+            .fullName(userView.getFullName())
+            .avatarUrl(userView.getAvatarUrl())
             .ownerId(String.valueOf(createReviewViewEvent.getOwnerId()))
             .shopId(String.valueOf(createReviewViewEvent.getShopId()))
             .rating(createReviewViewEvent.getRating())

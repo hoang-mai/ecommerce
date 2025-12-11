@@ -7,18 +7,24 @@ import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
+import com.ecommerce.read.dto.ProductViewStatisticDTO;
 import com.ecommerce.read.entity.ProductView;
 import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
+import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,12 +36,12 @@ public class ProductViewRepositoryImpl {
 
     public void updateProductVariantStatus(UpdateProductVariantStatusEvent event) {
         Query query = new Query(Criteria.where("_id")
-                .is(String.valueOf(event.getProductId()))
-                .and("productVariants.productVariantId")
-                .is(String.valueOf(event.getProductVariantId())));
+            .is(String.valueOf(event.getProductId()))
+            .and("productVariants.productVariantId")
+            .is(String.valueOf(event.getProductVariantId())));
 
         Update update = new Update()
-                .set("productVariants.$.productVariantStatus", event.getStatus());
+            .set("productVariants.$.productVariantStatus", event.getStatus());
 
         UpdateResult result = mongoTemplate.updateFirst(query, update, ProductView.class);
 
@@ -95,25 +101,25 @@ public class ProductViewRepositoryImpl {
         if (Boolean.TRUE.equals(isDelete)) {
             update = new Update()
                 .inc("numberOfReviews", -1);
-            if(FnCommon.isNotNull(oldRating)){
+            if (FnCommon.isNotNull(oldRating)) {
                 update.inc("numberOfRatings", -1)
-                        .inc("rating", -oldRating.getValue())
-                        .inc("ratingStatistics." + oldRating.name(), -1);
+                    .inc("rating", -oldRating.getValue())
+                    .inc("ratingStatistics." + oldRating.name(), -1);
             }
         } else if (Boolean.TRUE.equals(isUpdate)) {
             Integer updateValue;
-            if(FnCommon.isNotNull(oldRating) && FnCommon.isNotNull(rating)){
+            if (FnCommon.isNotNull(oldRating) && FnCommon.isNotNull(rating)) {
                 updateValue = rating.getValue() - oldRating.getValue();
                 update = new Update()
                     .inc("rating", updateValue)
                     .inc("ratingStatistics." + oldRating.name(), -1)
                     .inc("ratingStatistics." + rating.name(), 1);
-            } else if(FnCommon.isNotNull(oldRating)){
-                updateValue = - oldRating.getValue();
+            } else if (FnCommon.isNotNull(oldRating)) {
+                updateValue = -oldRating.getValue();
                 update = new Update()
                     .inc("rating", updateValue)
                     .inc("ratingStatistics." + oldRating.name(), -1);
-            } else if(FnCommon.isNotNull(rating)){
+            } else if (FnCommon.isNotNull(rating)) {
                 updateValue = rating.getValue();
                 update = new Update()
                     .inc("rating", updateValue)
@@ -125,13 +131,64 @@ public class ProductViewRepositoryImpl {
             }
         } else {
             update = new Update()
-                    .inc("numberOfReviews", 1);
-            if(FnCommon.isNotNull(rating)){
+                .inc("numberOfReviews", 1);
+            if (FnCommon.isNotNull(rating)) {
                 update.inc("numberOfRatings", 1)
-                      .inc("rating", rating.getValue())
-                      .inc("ratingStatistics." + rating.name(), 1);
+                    .inc("rating", rating.getValue())
+                    .inc("ratingStatistics." + rating.name(), 1);
             }
         }
         mongoTemplate.updateFirst(query, update, ProductView.class);
+    }
+
+    /**
+     * Lấy thống kê sản phẩm bán chạy trong tháng
+     *
+     * @param shopId        ID của shop (optional)
+     * @param isOwner       Xác định người dùng hiện tại có phải là chủ sở hữu không
+     * @param currentUserId ID của người dùng hiện tại
+     * @param nowDate       Thời điểm hiện tại để xác định tháng
+     * @return Danh sách thống kê sản phẩm
+     */
+    public List<ProductViewStatisticDTO> getProductStatistics(
+        String shopId, Boolean isOwner, Long currentUserId, LocalDateTime nowDate) {
+
+        List<Criteria> criteriaList = new ArrayList<>();
+        criteriaList.add(Criteria.where("totalSold").gt(0));
+        if (FnCommon.isNotNull(nowDate)) {
+            LocalDateTime startOfMonth = nowDate.toLocalDate().withDayOfMonth(1).atStartOfDay();
+            LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
+            criteriaList.add(Criteria.where("createdAt").gte(startOfMonth).lt(endOfMonth));
+        }
+
+        if (FnCommon.isNotNullOrEmpty(shopId)) {
+            criteriaList.add(Criteria.where("shopId").is(shopId));
+        } else if (Boolean.TRUE.equals(isOwner)) {
+            criteriaList.add(Criteria.where("ownerId").is(String.valueOf(currentUserId)));
+        }
+
+        Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+
+
+        MatchOperation match = Aggregation.match(finalCriteria);
+
+        GroupOperation group = Aggregation.group("_id")
+            .first("name").as("productName")
+            .first("totalSold").as("totalSold")
+            .first("totalRevenue").as("totalRevenue");
+        SortOperation sort = Aggregation.sort(Sort.Direction.DESC, "totalSold");
+        LimitOperation limit = Aggregation.limit(5);
+        Aggregation aggregation = Aggregation.newAggregation(match, group, sort, limit);
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "product_views", Document.class);
+        List<ProductViewStatisticDTO> statistics = new ArrayList<>();
+        for (Document doc : results.getMappedResults()) {
+            statistics.add(ProductViewStatisticDTO.builder()
+                .productId(doc.getString("_id"))
+                .productName(doc.getString("productName"))
+                .totalSold(doc.getInteger("totalSold", 0))
+                .totalRevenue(doc.get("totalRevenue") != null ? new BigDecimal(doc.get("totalRevenue").toString()) : BigDecimal.ZERO)
+                .build());
+        }
+        return statistics;
     }
 }

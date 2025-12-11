@@ -138,9 +138,9 @@ public class ProductServiceImpl implements ProductService {
                         .discount(product.getDiscount())
                         .discountStartDate(product.getDiscountStartDate())
                         .discountEndDate(product.getDiscountEndDate())
-                        .totalSold(product.getTotalSold())
                         .createdAt(product.getCreatedAt())
                         .updatedAt(product.getUpdatedAt())
+                        .created(Boolean.TRUE)
                         .productImages(product.getProductImages().stream()
                                 .map(productImage -> CreateProductEvent.CreateProductImageEvent.builder()
                                         .productImageId(productImage.getProductImageId())
@@ -162,7 +162,6 @@ public class ProductServiceImpl implements ProductService {
                                         .price(productVariant.getPrice())
                                         .productVariantStatus(productVariant.getProductVariantStatus())
                                         .stockQuantity(productVariant.getStockQuantity())
-                                        .soldQuantity(productVariant.getSold())
                                         .isDefault(productVariant.getIsDefault())
                                         .productVariantAttributeValues(
                                                 productVariant.getProductVariantAttributeValues().stream().map(
@@ -331,8 +330,8 @@ public class ProductServiceImpl implements ProductService {
                         .discount(product.getDiscount())
                         .discountStartDate(product.getDiscountStartDate())
                         .discountEndDate(product.getDiscountEndDate())
-                        .totalSold(product.getTotalSold())
                         .createdAt(product.getCreatedAt())
+                        .created(Boolean.FALSE)
                         .productImages(product.getProductImages().stream()
                                 .map(productImage -> CreateProductEvent.CreateProductImageEvent.builder()
                                         .productImageId(productImage.getProductImageId())
@@ -354,7 +353,6 @@ public class ProductServiceImpl implements ProductService {
                                         .price(productVariant.getPrice())
                                         .productVariantStatus(productVariant.getProductVariantStatus())
                                         .stockQuantity(productVariant.getStockQuantity())
-                                        .soldQuantity(productVariant.getSold())
                                         .isDefault(productVariant.getIsDefault())
                                         .productVariantAttributeValues(
                                                 productVariant.getProductVariantAttributeValues().stream().map(
@@ -464,8 +462,6 @@ public class ProductServiceImpl implements ProductService {
                     productVariant.setProductVariantStatus(ProductVariantStatus.OUT_OF_STOCK);
                 }
                 productVariant.setStockQuantity(updatedStock);
-                productVariant.addSold(createOrderItemEvent.getQuantity());
-                productVariant.getProduct().addSold(createOrderItemEvent.getQuantity());
                 productVariantRepository.save(productVariant);
             });
         });

@@ -41,7 +41,7 @@ public class ReviewController {
     public ResponseEntity<BaseResponse<Void>> updateReview(
         @PathVariable Long reviewId,
         @RequestPart ReqReviewDTO reqReviewDTO,
-        @RequestPart(value = "imageUrls") List<MultipartFile> imageUrls
+        @RequestPart(value = "imageUrls", required = false) List<MultipartFile> imageUrls
     ) {
         reviewService.updateReview(reviewId, reqReviewDTO, imageUrls);
         return ResponseEntity.ok(

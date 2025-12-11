@@ -8,6 +8,7 @@ import com.ecommerce.library.kafka.event.shop.CreateShopEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.OwnerViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
 import com.ecommerce.read.repository.ShopViewRepository;
 import com.ecommerce.read.repository.impl.ShopViewRepositoryImpl;
@@ -160,5 +161,11 @@ public class ShopViewServiceImpl implements ShopViewService {
                 .hasPreviousPage(shopsPage.hasPrevious())
                 .build();
 
+    }
+
+    @Override
+    public OwnerViewStatisticDTO getOverviewStatistics() {
+        Long ownerId = userHelper.getCurrentUserId();
+        return shopViewRepositoryImpl.getOverviewStatistics(String.valueOf(ownerId));
     }
 }

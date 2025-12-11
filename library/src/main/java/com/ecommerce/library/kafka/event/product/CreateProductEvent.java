@@ -26,7 +26,6 @@ public class CreateProductEvent {
     private String productName;
     private String description;
     private ProductStatus productStatus;
-    private Integer totalSold;
     private Double discount;
     private LocalDateTime discountStartDate;
     private LocalDateTime discountEndDate;
@@ -35,6 +34,7 @@ public class CreateProductEvent {
     private List<CreateProductVariantEvent> productVariants;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Boolean created;
 
     @Builder
     @Getter
@@ -73,7 +73,6 @@ public class CreateProductEvent {
         private Long productVariantId;
         private BigDecimal price;
         private Integer stockQuantity;
-        private Integer soldQuantity;
         private ProductVariantStatus productVariantStatus;
         private Boolean isDefault;
         private List<CreateProductVariantValueEvent> productVariantAttributeValues;

@@ -136,4 +136,5 @@ public final class MessageError {
     public static final String SHOP_ID_POSITIVE = "";
     public static final String USER_CACHE_NOT_FOUND = "";
     public static final String SHOP_CACHE_NOT_FOUND = "";
+    public static final String REVIEW_UPDATED_ALREADY = "";
 }

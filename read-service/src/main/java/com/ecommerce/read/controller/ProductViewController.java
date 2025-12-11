@@ -6,13 +6,18 @@ import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.ProductViewStatisticDTO;
 import com.ecommerce.read.entity.ProductView;
 import com.ecommerce.read.service.ProductViewService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = Constant.PRODUCT_VIEW)
@@ -84,5 +89,26 @@ public class ProductViewController {
                 .data(productResponse)
                 .build());
     }
-
+    /**
+     * Thống kê sản phẩm bán chạy trong tháng
+     * @param shopId  ID của cửa hàng (optional) - nếu cung cấp sẽ trả về thống kê cho cửa hàng đó (chỉ owner của shop)
+     * @param isOwner Xác định người dùng hiện tại có phải là chủ sở hữu shop không (optional)
+     * @param nowDate Thời điểm hiện tại để xác định tháng (optional, mặc định là thời điểm hiện tại)
+     * @return Thống kê sản phẩm bán chạy
+     */
+    @GetMapping("/statistic")
+    public ResponseEntity<BaseResponse<List<ProductViewStatisticDTO>>> getProductStatistics(
+        @RequestParam(required = false) String shopId,
+        @RequestParam(required = false) Boolean isOwner,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime nowDate
+    ) {
+        List<ProductViewStatisticDTO> stats = productViewService.getProductStatistics(shopId, isOwner, nowDate);
+        return ResponseEntity.ok(
+            BaseResponse.<List<ProductViewStatisticDTO>>builder()
+                .statusCode(200)
+                .message(messageService.getMessage(MessageSuccess.GET_PRODUCT_SUCCESS))
+                .data(stats)
+                .build()
+        );
+    }
 }

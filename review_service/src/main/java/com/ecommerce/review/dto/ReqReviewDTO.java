@@ -40,10 +40,6 @@ public class ReqReviewDTO implements Serializable {
     @Positive(message = MessageError.SHOP_ID_POSITIVE)
     private final Long shopId;
 
-    @NotBlank(message = MessageError.USERNAME_NOT_BLANK)
-    private String fullName;
-    private String avatarUrl;
-
     @NotNull(message = MessageError.PRODUCT_VARIANT_ID_NOT_NULL)
     @Positive(message = MessageError.PRODUCT_VARIANT_ID_POSITIVE)
     private final Long productVariantId;
@@ -51,5 +47,5 @@ public class ReqReviewDTO implements Serializable {
     @NotNull(message = MessageError.PRODUCT_ATTRIBUTES_NOT_NULL)
     private final Map<String, String> attributes;
 
-    private List<String> deletedImageUrls;
+    private List<Integer> deletedImageUrls;
 }

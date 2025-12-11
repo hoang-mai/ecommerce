@@ -4,21 +4,19 @@ import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.*;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
-import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.product.CreateProductEvent;
 import com.ecommerce.library.kafka.event.product.UpdateProductStatusEvent;
 import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent;
-import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.ProductViewStatisticDTO;
 import com.ecommerce.read.entity.ProductView;
 import com.ecommerce.read.repository.ProductViewRepository;
 import com.ecommerce.read.repository.impl.ProductViewRepositoryImpl;
 import com.ecommerce.read.repository.impl.ShopViewRepositoryImpl;
 import com.ecommerce.read.service.FileService;
 import com.ecommerce.read.service.ProductViewService;
-import com.ecommerce.read.service.ShopViewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +24,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +45,6 @@ public class ProductViewServiceImpl implements ProductViewService {
                 .name(event.getProductName())
                 .description(event.getDescription())
                 .productStatus(event.getProductStatus())
-                .totalSold(event.getTotalSold())
                 .discount(event.getDiscount())
                 .discountStartDate(event.getDiscountStartDate())
                 .discountEndDate(event.getDiscountEndDate())
@@ -79,7 +78,6 @@ public class ProductViewServiceImpl implements ProductViewService {
                                 ._id(String.valueOf(variant.getProductVariantId()))
                                 .price(variant.getPrice())
                                 .stockQuantity(variant.getStockQuantity())
-                                .sold(variant.getSoldQuantity())
                                 .productVariantStatus(variant.getProductVariantStatus())
                                 .isDefault(variant.getIsDefault())
                                 .productVariantAttributeValues(variant.getProductVariantAttributeValues() == null ? null : variant.getProductVariantAttributeValues().stream()
@@ -93,6 +91,9 @@ public class ProductViewServiceImpl implements ProductViewService {
                         .toList())
                 .build();
         productViewRepository.save(productView);
+        if(Boolean.TRUE.equals(event.getCreated())){
+            shopViewRepositoryImpl.incrementProductCount(event.getShopId());
+        }
     }
 
     @Override
@@ -101,6 +102,7 @@ public class ProductViewServiceImpl implements ProductViewService {
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
         productView.setProductStatus(event.getStatus());
         productViewRepository.save(productView);
+        shopViewRepositoryImpl.updateProductStatusInShopView(productView.getShopId(), event.getStatus());
     }
 
     @Override
@@ -161,6 +163,7 @@ public class ProductViewServiceImpl implements ProductViewService {
     public void updateStockAfterCreateOrder(CreateListOrderEvent createListOrderEvent) {
 
         createListOrderEvent.getCreateOrderEventList().forEach(createOrderEvent -> {
+            AtomicLong totalSoldForShop= new AtomicLong();
             if (OrderStatus.CANCELLED.equals(createOrderEvent.getOrderStatus())) {
                 return;
             }
@@ -189,7 +192,9 @@ public class ProductViewServiceImpl implements ProductViewService {
                 matchedVariant.addSold(quantity);
                 productView.addSold(quantity);
                 productViewRepository.save(productView);
+                totalSoldForShop.addAndGet(quantity);
             });
+            shopViewRepositoryImpl.incrementTotalSoldAndTotalOrder(String.valueOf(createOrderEvent.getShopId()), totalSoldForShop.intValue());
         });
 
     }
@@ -208,6 +213,15 @@ public class ProductViewServiceImpl implements ProductViewService {
         ProductView productView = productViewRepository.findById(String.valueOf(productId))
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
         shopViewRepositoryImpl.updateRating(productView.getShopId(), rating, isUpdate, oldRating, isDelete);
+    }
+
+    @Override
+    public List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, LocalDateTime nowDate) {
+        Long currentUserId = null;
+        if (Boolean.TRUE.equals(isOwner)) {
+            currentUserId = userHelper.getCurrentUserId();
+        }
+        return productViewRepositoryImpl.getProductStatistics(shopId, isOwner, currentUserId, nowDate);
     }
 
 }

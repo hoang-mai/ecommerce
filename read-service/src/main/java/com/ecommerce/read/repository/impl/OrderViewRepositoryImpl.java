@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -120,7 +121,7 @@ public class OrderViewRepositoryImpl {
      * @return List thống kê theo ngày
      */
     public List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(
-            String shopId, Boolean isOwner, Long currentUserId, LocalDate fromDate, LocalDate toDate) {
+            String shopId, Boolean isOwner, Long currentUserId, LocalDateTime fromDate, LocalDateTime toDate) {
 
         List<Criteria> criteriaList = new ArrayList<>();
 
@@ -136,8 +137,12 @@ public class OrderViewRepositoryImpl {
 
 
         if (fromDate != null || toDate != null) {
-            LocalDateTime start = (fromDate != null) ? fromDate.atStartOfDay() : LocalDate.of(1970, 1, 1).atStartOfDay();
-            LocalDateTime end = (toDate != null) ? toDate.plusDays(1).atStartOfDay() : LocalDateTime.now().plusDays(1);
+            LocalDateTime start = (fromDate != null)
+                    ? fromDate.toLocalDate().withDayOfMonth(1).atStartOfDay()
+                    : LocalDateTime.of(1970, 1, 1, 0, 0);
+            LocalDateTime end = (toDate != null)
+                    ? toDate.toLocalDate().withDayOfMonth(1).plusMonths(1).atStartOfDay()
+                    : LocalDate.now().withDayOfMonth(1).plusMonths(1).atStartOfDay();
             criteriaList.add(Criteria.where("createdAt").gte(start).lt(end));
         }
 
@@ -146,10 +151,10 @@ public class OrderViewRepositoryImpl {
 
 
         ProjectionOperation project = Aggregation.project()
-                .andExpression("dateToString", "%Y-%m-%d", "$createdAt").as("dateString")
+                .and(DateOperators.dateOf("createdAt").toString("%Y-%m")).as("monthString")
                 .andInclude("shopId", "ownerId", "userId");
 
-        GroupOperation group = Aggregation.group("dateString")
+        GroupOperation group = Aggregation.group("monthString")
                 .count().as("newOrders");
 
 
@@ -167,10 +172,10 @@ public class OrderViewRepositoryImpl {
             Object count = doc.get("newOrders");
             if (id != null && count != null) {
                 try {
-                    LocalDate date = LocalDate.parse(id.toString());
+                    String monthString = id.toString();
                     Integer orderCount = ((Number) count).intValue();
                     statistics.add(OrderViewStatisticDTO.builder()
-                            .localDate(date)
+                            .localDate(monthString)
                             .newOrders(orderCount)
                             .build());
                 } catch (Exception ignored) {

@@ -5,12 +5,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderViewStatisticDTO {
-    private String localDate;
-    private Integer newOrders;
+public class OwnerViewStatisticDTO {
+    private BigDecimal totalRevenue;
+    private Integer totalProducts;
+    private Integer totalOrders;
+    private Integer totalSold;
 }

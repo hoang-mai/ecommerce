@@ -33,10 +33,6 @@ public class Product extends BaseEntity {
     @Column(name = "product_status", nullable = false)
     private ProductStatus productStatus;
 
-    @Column(name = "total_sold")
-    @Builder.Default
-    private Integer totalSold = 0;
-
     @Column(name = "discount")
     @Builder.Default
     private Double discount = 0.0;
@@ -87,7 +83,4 @@ public class Product extends BaseEntity {
         productVariant.setProduct(this);
     }
 
-    public void addSold(Integer quantity) {
-        totalSold += quantity;
-    }
 }

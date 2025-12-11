@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +70,10 @@ public class OrderServiceImpl implements OrderService {
                 }
 
                 BigDecimal totalPrice = productOrderItem.getPrice().multiply(BigDecimal.valueOf(productOrderItem.getQuantity()));
-                BigDecimal totalDiscount = totalPrice.multiply(BigDecimal.valueOf(productOrderItem.getDiscount()));
+                BigDecimal totalDiscount = totalPrice.multiply(
+                    BigDecimal.valueOf(productOrderItem.getDiscount())
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                );
                 BigDecimal totalFinalPrice = totalPrice.subtract(totalDiscount);
                 OrderItem orderItem = OrderItem.builder()
                         .productId(productOrderItem.getProductId())

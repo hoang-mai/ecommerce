@@ -75,6 +75,10 @@ public class Review extends BaseEntity {
         this.imageUrls.remove(imageUrl);
     }
 
+    public void deleteImageUrlByIndex(int index) {
+        this.imageUrls.remove(index);
+    }
+
     public void addImageUrls(List<String> imageUrl) {
         this.imageUrls.addAll(imageUrl);
     }
