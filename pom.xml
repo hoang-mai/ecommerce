@@ -16,18 +16,16 @@
     <packaging>pom</packaging>
     <modules>
         <module>user-service</module>
-        <module>chat-service</module>
+        <module>chat-notification-service</module>
         <module>discovery-service</module>
         <module>api-gateway</module>
         <module>auth-service</module>
         <module>proto</module>
         <module>library</module>
         <module>product-service</module>
-        <module>inventory-service</module>
         <module>order_service</module>
         <module>review_service</module>
         <module>read-service</module>
-        <module>notification-service</module>
         <module>saga-service</module>
         <module>payment-service</module>
     </modules>
