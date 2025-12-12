@@ -13,6 +13,20 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>ecommerce</name>
     <description>ecommerce microservice</description>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-commons</artifactId>
+        </dependency>
+    </dependencies>
     <packaging>pom</packaging>
     <modules>
         <module>user-service</module>
@@ -23,8 +37,8 @@
         <module>proto</module>
         <module>library</module>
         <module>product-service</module>
-        <module>order_service</module>
-        <module>review_service</module>
+        <module>order-service</module>
+        <module>review-service</module>
         <module>read-service</module>
         <module>saga-service</module>
         <module>payment-service</module>

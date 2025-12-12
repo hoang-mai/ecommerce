@@ -17,12 +17,12 @@ public class ShopEventConsumer {
     private final ShopCacheService shopCacheService;
     private final ChatService chatService;
 
-    @KafkaListener(topics = CREATE_SHOP_TOPIC, groupId = CHAT_SERVICE_GROUP)
+    @KafkaListener(topics = CREATE_SHOP_TOPIC, groupId = CHAT_NOTIFICATION_SERVICE_GROUP)
     public void listen(CreateShopEvent createShopEvent) {
             shopCacheService.createShopCache(createShopEvent);
             chatService.updateShopInChats(createShopEvent);
     }
-    @KafkaListener(topics = UPDATE_SHOP_STATUS_TOPIC, groupId = CHAT_SERVICE_GROUP)
+    @KafkaListener(topics = UPDATE_SHOP_STATUS_TOPIC, groupId = CHAT_NOTIFICATION_SERVICE_GROUP)
     public void listen(UpdateShopStatusEvent updateShopStatusEvent){
         shopCacheService.updateShopCacheStatus(updateShopStatusEvent);
     }

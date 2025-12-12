@@ -76,18 +76,8 @@ services:
     volumes:
       - mongo_data:/data/db
       - ./mongo-init:/docker-entrypoint-initdb.d
-
-  mongo-express:
-    image: mongo-express:latest
-    container_name: mongo_express
-    ports:
-      - "8089:8081"
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: rootpassword
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_BASICAUTH_USERNAME: root
-      ME_CONFIG_BASICAUTH_PASSWORD: rootpassword
+    networks:
+      - service-network
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -111,7 +101,7 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093,INTERNAL://kafka:9094
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:19092,INTERNAL://kafka:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,INTERNAL://kafka:9094
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
@@ -161,6 +151,8 @@ services:
       - "9092:9092"
     depends_on:
       - keycloak
+      - mysql
+      - kafka
       - discovery-service
     networks:
       - service-network
@@ -177,7 +169,111 @@ services:
       - "9093:9093"
     depends_on:
       - mysql
+      - kafka
+      - minio
+      - discovery-service
+    networks:
+      - service-network
+  saga-service:
+    image: saga-service:latest
+    container_name: saga-service
+    build:
+      context: ./saga-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./saga-service/.env
+    ports:
+      - "8084:8084"
+    depends_on:
       - temporal
+      - kafka
+      - user-service
+      - auth-service
+      - discovery-service
+    networks:
+      - service-network
+  review-service:
+    image: review-service:latest
+    container_name: review-service
+    build:
+      context: ./review-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./review-service/.env
+    ports:
+      - "8085:8085"
+    depends_on:
+      - mysql
+      - minio
+      - kafka
+      - discovery-service
+    networks:
+      - service-network
+  read-service:
+    image: read-service:latest
+    container_name: read-service
+    build:
+      context: ./read-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./read-service/.env
+    ports:
+      - "8086:8086"
+    depends_on:
+      - mongo
+      - minio
+      - kafka
+      - discovery-service
+    networks:
+      - service-network
+  product-service:
+    image: product-service:latest
+    container_name: product-service
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./product-service/.env
+    ports:
+      - "8087:8087"
+    depends_on:
+      - mysql
+      - minio
+      - kafka
+      - discovery-service
+    networks:
+      - service-network
+  order-service:
+    image: order-service:latest
+    container_name: order-service
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./order-service/.env
+    ports:
+      - "8088:8088"
+    depends_on:
+      - mysql
+      - minio
+      - kafka
+      - discovery-service
+    networks:
+      - service-network
+  chat-notification-service:
+    image: chat-notification-service:latest
+    container_name: chat-notification-service
+    build:
+      context: ./chat-notification-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./chat-notification-service/.env
+    ports:
+      - "8089:8089"
+    depends_on:
+      - mongo
+      - minio
+      - kafka
       - discovery-service
     networks:
       - service-network

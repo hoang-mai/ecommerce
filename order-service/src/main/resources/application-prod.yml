@@ -1,16 +1,21 @@
-
-server:
-  port: 8087
-
 spring:
   application:
     name: order-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.ecommerce.library.kafka.event.*"
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:mysql8}:${MYSQL_PORT:3306}/order_service?createDatabaseIfNotExist=true
     username: order_service
     password: order_service
     driver-class-name: com.mysql.cj.jdbc.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -19,13 +24,13 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
-
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
-
+server:
+  port: ${SERVER_PORT:8088}
 eureka:
   client:
     service-url:
@@ -33,8 +38,4 @@ eureka:
   instance:
     prefer-ip-address: true
 
-logging:
-  level:
-    com.ecommerce.order: DEBUG
-    org.springframework.security: DEBUG
 

@@ -60,6 +60,9 @@ public class ProductView extends BaseEntity {
     @Field("productStatus")
     private ProductStatus productStatus;
 
+    @Field("basePrice")
+    private BigDecimal basePrice;
+
     @Field("totalSold")
     @Builder.Default
     private Integer totalSold = 0;

@@ -93,4 +93,7 @@ public final class MessageSuccess {
     public static final String UPLOAD_FILE_CHAT_SUCCESS = "";
     public static final String GET_PRODUCT_SUCCESS = "";
     public static final String GET_STATISTIC_SUCCESS = "";
+    public static final String INTERACTION_CREATED_SUCCESS = "interactive.created.success";
+    public static final String INTERACTION_RETRIEVED_SUCCESS = "interactive.retrieved.success";
+    public static final String INTERACTION_UPDATED_SUCCESS = "interactive.updated.success";
 }

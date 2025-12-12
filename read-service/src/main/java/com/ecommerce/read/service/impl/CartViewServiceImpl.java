@@ -9,16 +9,20 @@ import com.ecommerce.library.kafka.event.cart.DeleteProductCartItemEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.read.dto.CartViewDTO;
+import com.ecommerce.read.dto.CreateInteractionRequest;
+import com.ecommerce.read.dto.InteractionDTO;
 import com.ecommerce.read.entity.CartView;
+import com.ecommerce.read.entity.Interaction;
 import com.ecommerce.read.repository.CartViewRepository;
 import com.ecommerce.read.repository.impl.CartViewRepositoryImpl;
 import com.ecommerce.read.service.CartViewService;
 import com.ecommerce.read.service.FileService;
+import com.ecommerce.read.service.InteractionService;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ public class CartViewServiceImpl implements CartViewService {
     private final CartViewRepository cartViewRepository;
     private final CartViewRepositoryImpl cartViewRepositoryImpl;
     private final FileService fileService;
+    private final InteractionService interactionService;
 
     @Override
     public void createCart(CreateCartEvent event) {
@@ -54,6 +59,17 @@ public class CartViewServiceImpl implements CartViewService {
                 )
                 .build();
         cartViewRepository.save(cartView);
+        CompletableFuture.runAsync(() -> event.getCreateCartItemEventList().forEach(cartItemEvent -> cartItemEvent.getCreateProductCartItemEvents().forEach(productCartItemEvent -> {
+            CreateInteractionRequest interactionRequest = CreateInteractionRequest.builder()
+                .userId(String.valueOf(event.getUserId()))
+                .productId(String.valueOf(productCartItemEvent.getProductId()))
+                .interactionType(Interaction.InteractionType.ADD_TO_CART)
+                .metadata(InteractionDTO.InteractionMetadataDTO.builder()
+                    .quantity(productCartItemEvent.getQuantity())
+                    .build())
+                .build();
+            interactionService.createInteraction(interactionRequest);
+        })));
     }
 
     @Override
@@ -67,6 +83,22 @@ public class CartViewServiceImpl implements CartViewService {
         if(FnCommon.isNotNull(event.getIsDeletedAllItems()) && event.getIsDeletedAllItems()){
             CartView cartView = cartViewRepository.findById(String.valueOf(event.getCartId()))
                     .orElseThrow(() -> new NotFoundException(MessageError.CART_NOT_FOUND));
+
+            // Track remove interaction for all items before clearing
+            CompletableFuture.runAsync(() -> cartView.getCartItems().forEach(cartItem ->
+                cartItem.getProductCartItems().forEach(productCartItem -> {
+                    CreateInteractionRequest interactionRequest = CreateInteractionRequest.builder()
+                        .userId(cartView.getUserId())
+                        .productId(productCartItem.getProductId())
+                        .interactionType(Interaction.InteractionType.REMOVE_FROM_CART)
+                        .metadata(InteractionDTO.InteractionMetadataDTO.builder()
+                            .quantity(productCartItem.getQuantity())
+                            .build())
+                        .build();
+                    interactionService.createInteraction(interactionRequest);
+                })
+            ));
+
             cartView.clearCart();
             cartViewRepository.save(cartView);
             return;
@@ -79,6 +111,20 @@ public class CartViewServiceImpl implements CartViewService {
                     .findFirst()
                     .orElse(null);
             if (FnCommon.isNotNull(cartItemToRemove)) {
+                // Track remove interaction for all products in the cart item
+                CartView.CartItem finalCartItemToRemove = cartItemToRemove;
+                CompletableFuture.runAsync(() -> finalCartItemToRemove.getProductCartItems().forEach(productCartItem -> {
+                    CreateInteractionRequest interactionRequest = CreateInteractionRequest.builder()
+                        .userId(cartView.getUserId())
+                        .productId(productCartItem.getProductId())
+                        .interactionType(Interaction.InteractionType.REMOVE_FROM_CART)
+                        .metadata(InteractionDTO.InteractionMetadataDTO.builder()
+                            .quantity(productCartItem.getQuantity())
+                            .build())
+                        .build();
+                    interactionService.createInteraction(interactionRequest);
+                }));
+
                 cartView.removeCartItem(cartItemToRemove);
             }
             cartViewRepository.save(cartView);
@@ -98,6 +144,20 @@ public class CartViewServiceImpl implements CartViewService {
 
         if (FnCommon.isNotNull(cartItem)) {
             if (event.getIsDeleteCartItem()) {
+                // Track remove interaction for all products in cart item
+                CartView.CartItem finalCartItem = cartItem;
+                CompletableFuture.runAsync(() -> finalCartItem.getProductCartItems().forEach(productCartItem -> {
+                    CreateInteractionRequest interactionRequest = CreateInteractionRequest.builder()
+                        .userId(cartView.getUserId())
+                        .productId(productCartItem.getProductId())
+                        .interactionType(Interaction.InteractionType.REMOVE_FROM_CART)
+                        .metadata(InteractionDTO.InteractionMetadataDTO.builder()
+                            .quantity(productCartItem.getQuantity())
+                            .build())
+                        .build();
+                    interactionService.createInteraction(interactionRequest);
+                }));
+
                 // Nếu cần xóa luôn cartItem (không còn sản phẩm nào)
                 cartView.removeCartItem(cartItem);
             } else {
@@ -108,6 +168,20 @@ public class CartViewServiceImpl implements CartViewService {
                         .orElse(null);
 
                 if (FnCommon.isNotNull(productCartItemToRemove)) {
+                    // Track remove interaction for this specific product
+                    CartView.ProductCartItem finalProductCartItem = productCartItemToRemove;
+                    CompletableFuture.runAsync(() -> {
+                        CreateInteractionRequest interactionRequest = CreateInteractionRequest.builder()
+                            .userId(cartView.getUserId())
+                            .productId(finalProductCartItem.getProductId())
+                            .interactionType(Interaction.InteractionType.REMOVE_FROM_CART)
+                            .metadata(InteractionDTO.InteractionMetadataDTO.builder()
+                                .quantity(finalProductCartItem.getQuantity())
+                                .build())
+                            .build();
+                        interactionService.createInteraction(interactionRequest);
+                    });
+
                     cartItem.getProductCartItems().remove(productCartItemToRemove);
                 }
             }

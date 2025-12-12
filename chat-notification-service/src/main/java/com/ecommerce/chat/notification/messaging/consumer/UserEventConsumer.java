@@ -21,24 +21,24 @@ public class UserEventConsumer {
     private final UserCacheService userCacheService;
     private final ChatService chatService;
 
-    @KafkaListener(topics = CREATE_USER_TOPIC, groupId = CHAT_SERVICE_GROUP)
+    @KafkaListener(topics = CREATE_USER_TOPIC, groupId = CHAT_NOTIFICATION_SERVICE_GROUP)
     public void listen(CreateUserEvent createUserEvent) {
             userCacheService.createUserCache(createUserEvent);
     }
 
-    @KafkaListener(topics = UPDATE_USER_TOPIC, groupId = CHAT_SERVICE_GROUP)
+    @KafkaListener(topics = UPDATE_USER_TOPIC, groupId = CHAT_NOTIFICATION_SERVICE_GROUP)
     public void listen(UpdateUserEvent updateUserEvent) {
             userCacheService.updateUserCache(updateUserEvent);
             chatService.updateUserInChats(updateUserEvent);
     }
 
-    @KafkaListener(topics = UPDATE_AVATAR_URL_TOPIC, groupId = CHAT_SERVICE_GROUP)
+    @KafkaListener(topics = UPDATE_AVATAR_URL_TOPIC, groupId = CHAT_NOTIFICATION_SERVICE_GROUP)
     public void listen(UpdateAvatarUserEvent updateAvatarUserEvent) {
             userCacheService.updateAvatarUrl(updateAvatarUserEvent.getUserId(), updateAvatarUserEvent.getAvatarUrl());
             chatService.updateAvatarInChats(updateAvatarUserEvent.getUserId(), updateAvatarUserEvent.getAvatarUrl());
     }
 
-    @KafkaListener(topics = UPDATE_ACCOUNT_STATUS_TOPIC , groupId = CHAT_SERVICE_GROUP)
+    @KafkaListener(topics = UPDATE_ACCOUNT_STATUS_TOPIC , groupId = CHAT_NOTIFICATION_SERVICE_GROUP)
     public void listen(UpdateAccountStatusEvent updateAccountStatusEvent) {
         userCacheService.updateAccountStatus(updateAccountStatusEvent.getUserId(), updateAccountStatusEvent.getAccountStatus());
     }

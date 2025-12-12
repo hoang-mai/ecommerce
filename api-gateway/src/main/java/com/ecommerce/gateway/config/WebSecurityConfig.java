@@ -39,7 +39,7 @@ public class WebSecurityConfig {
                         .pathMatchers(HttpMethod.POST,"/api/v1/auth/refresh-token").permitAll()
                         .pathMatchers(HttpMethod.PATCH, "/api/v1/auth/{userId}").hasAuthority("ADMIN")
                         .pathMatchers("/api/v1/address","/api/v1/address/**").hasAnyAuthority("USER", "OWNER")
-                        .pathMatchers("/api/v1/user-verification").hasAnyAuthority("USER")
+                        .pathMatchers("/api/v1/user-verification").hasAnyAuthority("USER", "ADMIN")
                         .pathMatchers("/api/v1/user-verification/**").hasAnyAuthority("ADMIN")
                         .pathMatchers("api/v1/saga/{userVerificationId}/approve").hasAnyAuthority("ADMIN")
                         .pathMatchers("api/v1/shop-view").hasAuthority("OWNER")

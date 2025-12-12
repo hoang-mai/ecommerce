@@ -137,4 +137,5 @@ public final class MessageError {
     public static final String USER_CACHE_NOT_FOUND = "";
     public static final String SHOP_CACHE_NOT_FOUND = "";
     public static final String REVIEW_UPDATED_ALREADY = "";
+    public static final String INTERACTION_NOT_FOUND = "interactive.not.found";
 }

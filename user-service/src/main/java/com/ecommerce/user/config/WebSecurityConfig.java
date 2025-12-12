@@ -27,7 +27,7 @@ public class WebSecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/v1/address","/api/v1/address/**").hasAnyAuthority("USER", "OWNER")
-                        .requestMatchers("/api/v1/user-verification").hasAnyAuthority("USER")
+                        .requestMatchers("/api/v1/user-verification").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/api/v1/user-verification/**").hasAnyAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )

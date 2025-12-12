@@ -24,9 +24,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +41,7 @@ public class ProductViewServiceImpl implements ProductViewService {
 
     @Override
     public void createProductEvent(CreateProductEvent event) {
+        AtomicReference<BigDecimal> basePrice = new AtomicReference<>(BigDecimal.ZERO);
         ProductView productView = ProductView.builder()
                 ._id(String.valueOf(event.getProductId()))
                 .shopId(String.valueOf(event.getShopId()))
@@ -74,7 +77,11 @@ public class ProductViewServiceImpl implements ProductViewService {
                                 .build())
                         .toList())
                 .productVariants(event.getProductVariants() == null ? null : event.getProductVariants().stream()
-                        .map(variant -> ProductView.ProductVariant.builder()
+                        .map(variant -> {
+                            if(variant.getIsDefault()){
+                                basePrice.set(variant.getPrice());
+                            }
+                            return ProductView.ProductVariant.builder()
                                 ._id(String.valueOf(variant.getProductVariantId()))
                                 .price(variant.getPrice())
                                 .stockQuantity(variant.getStockQuantity())
@@ -87,9 +94,11 @@ public class ProductViewServiceImpl implements ProductViewService {
                                                 .productAttributeValueId(String.valueOf(val.getProductAttributeValueId()))
                                                 .build())
                                         .toList())
-                                .build())
+                                .build();}
+                        )
                         .toList())
                 .build();
+        productView.setBasePrice(basePrice.get());
         productViewRepository.save(productView);
         if(Boolean.TRUE.equals(event.getCreated())){
             shopViewRepositoryImpl.incrementProductCount(event.getShopId());

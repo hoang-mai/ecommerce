@@ -9,13 +9,17 @@ import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.CreateInteractionRequest;
+import com.ecommerce.read.dto.InteractionDTO;
 import com.ecommerce.read.dto.OrderViewStatisticDTO;
+import com.ecommerce.read.entity.Interaction;
 import com.ecommerce.read.entity.OrderView;
 import com.ecommerce.read.repository.OrderViewRepository;
 import com.ecommerce.read.repository.ShopViewRepository;
 import com.ecommerce.read.repository.impl.OrderViewRepositoryImpl;
 import com.ecommerce.read.service.CartViewService;
 import com.ecommerce.read.service.FileService;
+import com.ecommerce.read.service.InteractionService;
 import com.ecommerce.read.service.OrderViewService;
 import com.ecommerce.read.service.ProductViewService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +33,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +46,7 @@ public class OrderViewServiceImpl implements OrderViewService {
     private final ProductViewService productViewService;
     private final UserHelper userHelper;
     private final FileService fileService;
+    private final InteractionService interactionService;
 
     @Override
     public void createOrderView(CreateListOrderEvent createListOrderEvent) {
@@ -79,6 +85,20 @@ public class OrderViewServiceImpl implements OrderViewService {
                             .build()).toList())
                     .build();
             orderViewRepository.save(orderView);
+
+            // Track PURCHASE interaction for each product in the order
+            String userId = String.valueOf(createOrderViewEvent.getUserId());
+            CompletableFuture.runAsync(() -> createOrderViewEvent.getCreateOrderItemEventList().forEach(orderItem -> {
+                CreateInteractionRequest interactionRequest = CreateInteractionRequest.builder()
+                    .userId(userId)
+                    .productId(String.valueOf(orderItem.getProductId()))
+                    .interactionType(Interaction.InteractionType.PURCHASE)
+                    .metadata(InteractionDTO.InteractionMetadataDTO.builder()
+                        .quantity(orderItem.getQuantity())
+                        .build())
+                    .build();
+                interactionService.createInteraction(interactionRequest);
+            }));
         }
         cartViewService.clearCartViewByUserId(String.valueOf(createListOrderEvent.getUserId()));
         productViewService.updateStockAfterCreateOrder(createListOrderEvent);

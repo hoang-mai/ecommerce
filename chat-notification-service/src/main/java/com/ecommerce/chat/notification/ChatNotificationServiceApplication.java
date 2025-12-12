@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @EnableDiscoveryClient
 @ComponentScan({
-		"com.ecommerce.chat",
+		"com.ecommerce.chat.notification",
 		"com.ecommerce.library"
 })
 public class ChatNotificationServiceApplication {

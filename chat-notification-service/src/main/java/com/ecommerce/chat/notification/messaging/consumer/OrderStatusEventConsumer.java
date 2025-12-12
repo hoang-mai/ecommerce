@@ -14,7 +14,7 @@ public class OrderStatusEventConsumer {
 
     private final OrderStatusService orderStatusService;
 
-    @KafkaListener(topics = ORDER_STATUS_TOPIC, groupId = NOTIFICATION_SERVICE_GROUP)
+    @KafkaListener(topics = ORDER_STATUS_TOPIC, groupId = CHAT_NOTIFICATION_SERVICE_GROUP)
     public void listen(CreateListOrderStatusEvent createListOrderStatusEvent) {
         orderStatusService.sendOrderStatusMessage(createListOrderStatusEvent);
     }

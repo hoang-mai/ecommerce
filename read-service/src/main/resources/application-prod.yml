@@ -1,25 +1,34 @@
 spring:
   application:
-    name: user-service
+    name: read-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.trusted.packages: '*'
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.ecommerce.library.kafka.event.*"
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
-  datasource:
-    url: jdbc:mysql://${MYSQL_HOST:mysql8}:${MYSQL_PORT:3306}/user_service
-    username: user_service
-    password: user_service
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
+  data:
+    mongodb:
+      uri: mongodb://read-service:read-service@${MONGODB_HOST:mongo}:${MONGODB_PORT:27017}/read-service
+minio:
+  url: http://${MINIO_HOST:minio}:${MINIO_PORT:9000}
+  access-key: root
+  secret-key: password
+  bucket-name: ecommerce
 
 server:
-  port: ${SERVER_PORT:8083}
+  port: ${SERVER_PORT:8086}
 
 eureka:
   client:

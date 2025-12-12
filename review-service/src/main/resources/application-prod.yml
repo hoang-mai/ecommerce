@@ -2,7 +2,7 @@ spring:
   application:
     name: review-service
   kafka:
-    bootstrap-servers: localhost:19092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -17,9 +17,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081/auth/realms/ecommerce
+          issuer-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
   datasource:
-    url: jdbc:mysql://localhost:3306/review_service
+    url: jdbc:mysql://${MYSQL_HOST:mysql8}:${MYSQL_PORT:3306}/review_service
     username: review_service
     password: review_service
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -29,33 +29,15 @@ spring:
       ddl-auto: update
     show-sql: true
 minio:
-  url: http://localhost:9000
+  url: http://${MINIO_HOST:minio}:${MINIO_PORT:9000}
   access-key: root
   secret-key: password
   bucket-name: ecommerce
 
 server:
-  port: 8092
+  port: ${SERVER_PORT:8085}
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    metadata-map:
-      grpc-port: ${spring.grpc.server.port}
-
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-
-openapi:
-  service:
-    api-docs: Review-Service-API-docs
-    serverUrl: http://localhost:${server.port}
-    serverName: server dev
-    title: Review Service API
-    version: 1.0.0
-    description: API document
+      defaultZone: http://${DISCOVERY_SERVICE_HOST:discovery-service}:${DISCOVERY_SERVICE_PORT:8761}/eureka/

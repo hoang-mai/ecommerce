@@ -9,6 +9,11 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:mysql8}:${MYSQL_PORT:3306}/auth_service
     username: auth_service
@@ -36,3 +41,6 @@ eureka:
   client:
     service-url:
       defaultZone: http://${DISCOVERY_SERVICE_HOST:discovery-service}:${DISCOVERY_SERVICE_PORT:8761}/eureka/
+  instance:
+    metadata-map:
+      grpc-port: ${spring.grpc.server.port}

@@ -18,7 +18,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -55,10 +54,64 @@ public class OrderViewRepositoryImpl {
             criteriaList.add(Criteria.where("orderItems.productId").is(productId));
         }
         Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+
+        // Check if sorting requires numeric conversion for _id or totalPrice
+        boolean needsAggregation = pageable.getSort().stream()
+                .anyMatch(order -> "_id".equals(order.getProperty()) || "totalPrice".equals(order.getProperty()));
+
+        if (needsAggregation) {
+            return getOrderViewWithAggregation(finalCriteria, pageable);
+        }
+
         Query query = new Query(finalCriteria);
         long total = mongoTemplate.count(query, OrderView.class);
         query.with(pageable);
         List<OrderView> orderViews = mongoTemplate.find(query, OrderView.class);
+        return new PageImpl<>(orderViews, pageable, total);
+    }
+
+    private Page<OrderView> getOrderViewWithAggregation(Criteria criteria, Pageable pageable) {
+        MatchOperation matchOperation = Aggregation.match(criteria);
+
+        AddFieldsOperation addFieldsOperation = Aggregation.addFields()
+                .addFieldWithValue("_idNumeric", ConvertOperators.ToLong.toLong("$_id"))
+                .addFieldWithValue("totalPriceNumeric", ConvertOperators.ToDouble.toDouble("$totalPrice"))
+                .build();
+
+        Aggregation countAgg = Aggregation.newAggregation(matchOperation);
+        long total = mongoTemplate.aggregate(countAgg, "order_views", OrderView.class).getMappedResults().size();
+
+        Sort originalSort = pageable.getSort();
+        Sort.Order[] orders = originalSort.stream()
+                .map(order -> {
+                    if ("_id".equals(order.getProperty())) {
+                        return new Sort.Order(order.getDirection(), "_idNumeric");
+                    } else if ("totalPrice".equals(order.getProperty())) {
+                        return new Sort.Order(order.getDirection(), "totalPriceNumeric");
+                    }
+                    return order;
+                })
+                .toArray(Sort.Order[]::new);
+
+        SortOperation sortOperation = Aggregation.sort(Sort.by(orders));
+
+        SkipOperation skipOperation = Aggregation.skip((long) pageable.getPageNumber() * pageable.getPageSize());
+        LimitOperation limitOperation = Aggregation.limit(pageable.getPageSize());
+
+        ProjectionOperation projectOperation = Aggregation.project()
+                .andExclude("_idNumeric", "totalPriceNumeric");
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchOperation,
+                addFieldsOperation,
+                sortOperation,
+                skipOperation,
+                limitOperation,
+                projectOperation
+        );
+
+        List<OrderView> orderViews = mongoTemplate.aggregate(aggregation, "order_views", OrderView.class).getMappedResults();
+
         return new PageImpl<>(orderViews, pageable, total);
     }
 
