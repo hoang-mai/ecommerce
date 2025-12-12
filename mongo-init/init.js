@@ -8,22 +8,12 @@ db.createUser({
     ]
 });
 
-db = db.getSiblingDB("notification-service");
+db = db.getSiblingDB("chat-notification-service");
 
 db.createUser({
-    user: "notification-service",
-    pwd: "notification-service",
+    user: "chat-notification-service",
+    pwd: "chat-notification-service",
     roles: [
-        { role: "dbOwner", db: "notification-service" }
-    ]
-});
-
-db = db.getSiblingDB("chat-service");
-
-db.createUser({
-    user: "chat-service",
-    pwd: "chat-service",
-    roles: [
-        { role: "dbOwner", db: "chat-service" }
+        { role: "dbOwner", db: "chat-notification-service" }
     ]
 });

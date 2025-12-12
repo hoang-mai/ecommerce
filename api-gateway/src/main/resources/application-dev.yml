@@ -38,7 +38,7 @@ spring:
           predicates:
             - Path=/api/v1/chat/**, /api/v1/message/**
         - id: chat-service-websocket
-          uri: lb://chat-service
+          uri: lb://chat-notification-service
           predicates:
             - Path=/ws/**
         - id: saga-service
@@ -53,14 +53,6 @@ spring:
           uri: lb://order-service
           predicates:
             - Path=/api/v1/order/**,/api/v1/cart/**
-#        - id: notification-service-api
-#          uri: lb://notification-service
-#          predicates:
-#            - Path=/api/v1/notification/**
-#        - id: notification-service-websocket
-#          uri: lb://notification-service
-#          predicates:
-#            - Path=/ws/notification/**
         - id: review-service
           uri: lb://review-service
           predicates:

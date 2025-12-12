@@ -8,7 +8,7 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>chat-notification-service</artifactId>
-	<name>chat-service</name>
+	<name>chat-notification-service</name>
 
 	<url/>
 	<licenses>
