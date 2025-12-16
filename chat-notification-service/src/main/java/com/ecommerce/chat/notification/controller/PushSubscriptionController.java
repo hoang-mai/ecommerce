@@ -4,7 +4,6 @@ import com.ecommerce.library.component.MessageService;
 import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
-import com.ecommerce.chat.notification.dto.PushSubscriptionDto;
 import com.ecommerce.chat.notification.dto.PushSubscriptionRequest;
 import com.ecommerce.chat.notification.service.PushSubscriptionService;
 import jakarta.validation.Valid;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = Constant.NOTIFICATION + "/subscriptions")
+@RequestMapping(value = Constant.PUSH_SUBSCRIPTION)
 @RequiredArgsConstructor
 public class PushSubscriptionController {
 
@@ -26,16 +25,15 @@ public class PushSubscriptionController {
      * Subscribe nhận push notification
      */
     @PostMapping("/subscribe")
-    public ResponseEntity<BaseResponse<PushSubscriptionDto>> subscribe(
+    public ResponseEntity<BaseResponse<Void>> subscribe(
             @Valid @RequestBody PushSubscriptionRequest request) {
 
-        PushSubscriptionDto subscription = pushSubscriptionService.subscribe(request);
+        pushSubscriptionService.subscribe(request);
 
         return ResponseEntity.ok(
-                BaseResponse.<PushSubscriptionDto>builder()
+                BaseResponse.<Void>builder()
                         .statusCode(200)
                         .message(messageService.getMessage(MessageSuccess.PUSH_SUBSCRIPTION_SUCCESS))
-                        .data(subscription)
                         .build()
         );
     }
@@ -57,72 +55,5 @@ public class PushSubscriptionController {
         );
     }
 
-    /**
-     * Lấy tất cả subscription của user
-     */
-    @GetMapping()
-    public ResponseEntity<BaseResponse<List<PushSubscriptionDto>>> getUserSubscriptions() {
-
-        List<PushSubscriptionDto> subscriptions = pushSubscriptionService.getUserSubscriptions();
-
-        return ResponseEntity.ok(
-                BaseResponse.<List<PushSubscriptionDto>>builder()
-                        .statusCode(200)
-                        .message(messageService.getMessage(MessageSuccess.GET_NOTIFICATIONS_SUCCESS))
-                        .data(subscriptions)
-                        .build()
-        );
-    }
-
-    /**
-     * Lấy tất cả subscription đang active của user
-     */
-    @GetMapping("/active")
-    public ResponseEntity<BaseResponse<List<PushSubscriptionDto>>> getActiveSubscriptions() {
-
-        List<PushSubscriptionDto> subscriptions = pushSubscriptionService.getActiveSubscriptions();
-
-        return ResponseEntity.ok(
-                BaseResponse.<List<PushSubscriptionDto>>builder()
-                        .statusCode(200)
-                        .message(messageService.getMessage(MessageSuccess.GET_NOTIFICATIONS_SUCCESS))
-                        .data(subscriptions)
-                        .build()
-        );
-    }
-
-    /**
-     * Deactivate một subscription
-     */
-    @PatchMapping("/{subscriptionId}/deactivate")
-    public ResponseEntity<BaseResponse<Void>> deactivateSubscription(
-            @PathVariable String subscriptionId) {
-
-        pushSubscriptionService.deactivateSubscription(subscriptionId);
-
-        return ResponseEntity.ok(
-                BaseResponse.<Void>builder()
-                        .statusCode(200)
-                        .message(messageService.getMessage(MessageSuccess.UPDATE_NOTIFICATION_SUCCESS))
-                        .build()
-        );
-    }
-
-    /**
-     * Activate một subscription
-     */
-    @PatchMapping("/{subscriptionId}/activate")
-    public ResponseEntity<BaseResponse<Void>> activateSubscription(
-            @PathVariable String subscriptionId) {
-
-        pushSubscriptionService.activateSubscription(subscriptionId);
-
-        return ResponseEntity.ok(
-                BaseResponse.<Void>builder()
-                        .statusCode(200)
-                        .message(messageService.getMessage(MessageSuccess.UPDATE_NOTIFICATION_SUCCESS))
-                        .build()
-        );
-    }
 }
 

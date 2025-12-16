@@ -16,12 +16,6 @@ public interface PushSubscriptionRepository extends MongoRepository<PushSubscrip
     Optional<PushSubscription> findByEndpoint(String endpoint);
 
     /**
-     * Tìm tất cả PushSubscription của một user
-     */
-    List<PushSubscription> findByUserId(Long userId);
-
-
-    /**
      * Kiểm tra xem subscription đã tồn tại chưa
      */
     boolean existsByEndpointAndUserId(String endpoint, Long userId);

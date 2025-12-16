@@ -25,6 +25,7 @@ public class ShopEventConsumer {
     @KafkaListener(topics = UPDATE_SHOP_STATUS_TOPIC, groupId = CHAT_NOTIFICATION_SERVICE_GROUP)
     public void listen(UpdateShopStatusEvent updateShopStatusEvent){
         shopCacheService.updateShopCacheStatus(updateShopStatusEvent);
+        chatService.updateShopStatusInChats(updateShopStatusEvent);
     }
 
 }

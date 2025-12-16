@@ -1,7 +1,9 @@
 package com.ecommerce.chat.notification.repository.impl;
 
 import com.ecommerce.chat.notification.entity.Chat;
+import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.kafka.event.shop.CreateShopEvent;
+import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.kafka.event.user.UpdateUserEvent;
 import com.ecommerce.library.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
@@ -85,5 +87,17 @@ public class ChatRepositoryImpl {
         Update update = new Update().addToSet("lastMessage.readBy", userId);
         mongoTemplate.updateMulti(query, update, Chat.class);
 
+    }
+
+    public void updateAccountStatusInChats(Long userId, AccountStatus accountStatus) {
+        Query query = new Query(Criteria.where("userCacheList._id").is(String.valueOf(userId)));
+        Update update = new Update().set("userCacheList.$.accountStatus", accountStatus);
+        mongoTemplate.updateMulti(query, update, Chat.class);
+    }
+
+    public void updateShopStatusInChats(UpdateShopStatusEvent updateShopStatusEvent) {
+        Query query = new Query(Criteria.where("shopCache._id").is(String.valueOf(updateShopStatusEvent.getShopId())));
+        Update update = new Update().set("shopCache.shopStatus", updateShopStatusEvent.getShopStatus());
+        mongoTemplate.updateMulti(query, update, Chat.class);
     }
 }

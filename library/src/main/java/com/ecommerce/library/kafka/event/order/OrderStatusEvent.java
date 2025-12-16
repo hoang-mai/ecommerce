@@ -16,4 +16,5 @@ public class OrderStatusEvent {
     private Long orderId;
     private OrderStatus orderStatus;
     private String reason;
+    private Long ownerId;
 }

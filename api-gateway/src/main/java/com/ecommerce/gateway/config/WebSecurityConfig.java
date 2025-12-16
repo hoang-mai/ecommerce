@@ -29,6 +29,8 @@ public class WebSecurityConfig {
                                 "/api-docs-json/**",
                                 "ws/**"
                         ).permitAll()
+                        .pathMatchers("api/v1/user-view/search-address").permitAll()
+                        .pathMatchers("/api/v1/push-subscription/unsubscribe").permitAll()
                         .pathMatchers("/api/v1/product-view/**").permitAll()
                         .pathMatchers("/api/v1/shop-view/**").permitAll()
                         .pathMatchers("/api/v1/review-view/**").permitAll()

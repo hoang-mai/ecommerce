@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 public class PushSubscription {
 
     @Id
-    @Field("_id")
     private String _id;
 
     @Field("userId")

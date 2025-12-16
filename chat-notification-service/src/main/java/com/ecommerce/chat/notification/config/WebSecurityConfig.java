@@ -24,6 +24,7 @@ public class WebSecurityConfig {
                     "/ws",
                     "/ws/**"
                 ).permitAll()
+                .requestMatchers("/api/v1/push-subscription/unsubscribe").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

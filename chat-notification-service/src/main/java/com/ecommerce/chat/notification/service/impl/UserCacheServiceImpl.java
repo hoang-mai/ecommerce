@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserCacheServiceImpl implements UserCacheService {
 
     private final UserCacheRepository userCacheRepository;

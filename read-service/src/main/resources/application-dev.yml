@@ -27,7 +27,7 @@ minio:
   secret-key: password
   bucket-name: ecommerce
 server:
-  port: 8089
+  port: 8090
 
 eureka:
   client:
@@ -48,3 +48,7 @@ openapi:
     title: Read Service API
     version: 1.0.0
     description: API document
+
+here:
+  url: https://geocode.search.hereapi.com/v1/geocode
+  api-key: mGVJd3sfQbBjNXCQ_GgvpAdwxWpHW-bvFeBo-9pDr3c

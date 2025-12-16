@@ -476,6 +476,7 @@ public class ProductServiceImpl implements ProductService {
                                         .orderId(createOrderEvent.getOrderId())
                                         .orderStatus(createOrderEvent.getOrderStatus())
                                         .reason(createOrderEvent.getReason())
+                                        .ownerId(createOrderEvent.getOwnerId())
                                         .build()
                         ).toList())
                         .build()

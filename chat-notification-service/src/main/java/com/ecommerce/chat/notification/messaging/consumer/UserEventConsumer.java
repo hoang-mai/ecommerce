@@ -41,6 +41,7 @@ public class UserEventConsumer {
     @KafkaListener(topics = UPDATE_ACCOUNT_STATUS_TOPIC , groupId = CHAT_NOTIFICATION_SERVICE_GROUP)
     public void listen(UpdateAccountStatusEvent updateAccountStatusEvent) {
         userCacheService.updateAccountStatus(updateAccountStatusEvent.getUserId(), updateAccountStatusEvent.getAccountStatus());
+        chatService.updateAccountStatusInChats(updateAccountStatusEvent.getUserId(), updateAccountStatusEvent.getAccountStatus());
     }
 }
 

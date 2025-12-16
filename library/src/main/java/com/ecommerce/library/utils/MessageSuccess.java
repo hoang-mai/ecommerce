@@ -77,8 +77,9 @@ public final class MessageSuccess {
     public static final String ORDER_SUCCESS_MESSAGE = "";
     public static final String GET_NOTIFICATIONS_SUCCESS = "";
     public static final String UPDATE_NOTIFICATION_SUCCESS = "";
-    public static final String PUSH_SUBSCRIPTION_SUCCESS = "";
-    public static final String PUSH_UNSUBSCRIPTION_SUCCESS = "";
+    public static final String PUSH_SUBSCRIPTION_SUCCESS = "push.subscription.success";
+    public static final String PUSH_UNSUBSCRIPTION_SUCCESS = "push.unsubscription.success";
+    public static final String PUSH_NOTIFICATION_SENT_SUCCESS = "push.notification.sent.success";
     public static final String GET_CART_ITEM_COUNT_SUCCESS = "";
     public static final String CART_RETRIEVED_SUCCESS = "";
     public static final String REVIEW_CREATED_SUCCESS = "";
@@ -96,4 +97,7 @@ public final class MessageSuccess {
     public static final String INTERACTION_CREATED_SUCCESS = "interactive.created.success";
     public static final String INTERACTION_RETRIEVED_SUCCESS = "interactive.retrieved.success";
     public static final String INTERACTION_UPDATED_SUCCESS = "interactive.updated.success";
+    public static final String SEARCH_ADDRESS_SUCCESS = "";
+    public static final String NEW_ORDER = "";
+    public static final String NEW_ORDER_MESSAGE = "";
 }

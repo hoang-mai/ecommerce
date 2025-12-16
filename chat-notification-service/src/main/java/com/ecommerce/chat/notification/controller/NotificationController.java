@@ -1,5 +1,6 @@
 package com.ecommerce.chat.notification.controller;
 
+import com.ecommerce.chat.notification.entity.NotificationType;
 import com.ecommerce.library.component.MessageService;
 import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
@@ -26,16 +27,23 @@ public class NotificationController {
      * @param pageSize Kích thước trang (mặc định là 10)
      * @param sortBy Trường sắp xếp (mặc định là createdAt)
      * @param sortDir Hướng sắp xếp (mặc định là desc)
+     * @param keyword Từ khóa tìm kiếm
+     * @param notificationType Loại thông báo
+     * @param isRead Trạng thái đã đọc
      */
     @GetMapping()
     public ResponseEntity<BaseResponse<PageResponse<NotificationDto>>> getNotifications(
+
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) NotificationType notificationType,
+            @RequestParam(required = false) Boolean isRead) {
 
         PageResponse<NotificationDto> notifications = notificationService.getNotifications(
-                pageNo, pageSize, sortBy, sortDir);
+                pageNo, pageSize, sortBy, sortDir, keyword, notificationType, isRead);
 
         return ResponseEntity.ok(
                 BaseResponse.<PageResponse<NotificationDto>>builder()

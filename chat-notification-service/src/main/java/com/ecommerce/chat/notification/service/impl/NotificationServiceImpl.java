@@ -1,5 +1,7 @@
 package com.ecommerce.chat.notification.service.impl;
 
+import com.ecommerce.chat.notification.entity.NotificationType;
+import com.ecommerce.chat.notification.repository.impl.NotificationRepositoryImpl;
 import com.ecommerce.chat.notification.service.NotificationService;
 import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.exception.NotFoundException;
@@ -20,10 +22,12 @@ import org.springframework.stereotype.Service;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final NotificationRepositoryImpl notificationRepositoryImpl;
     private final UserHelper userHelper;
 
     @Override
-    public PageResponse<NotificationDto> getNotifications(int pageNo, int pageSize, String sortBy, String sortDir) {
+    public PageResponse<NotificationDto> getNotifications(int pageNo, int pageSize, String sortBy, String sortDir,
+                                                          String keyword, NotificationType notificationType, Boolean isRead) {
         Long userId = userHelper.getCurrentUserId();
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
@@ -31,7 +35,8 @@ public class NotificationServiceImpl implements NotificationService {
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Notification> notifications = notificationRepository.findByUserId(userId, pageable);
+        Page<Notification> notifications = notificationRepositoryImpl.findByUserId(
+                userId, keyword, notificationType, isRead, pageable);
 
         return PageResponse.<NotificationDto>builder()
                 .pageNo(pageNo)

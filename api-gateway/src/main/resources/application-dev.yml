@@ -36,7 +36,7 @@ spring:
         - id: chat-notification-service-api
           uri: lb://chat-notification-service
           predicates:
-            - Path=/api/v1/chat/**, /api/v1/message/**
+            - Path=/api/v1/chat/**, /api/v1/message/**, /api/v1/push-subscription/**, /api/v1/notification/**
         - id: chat-notification-service-websocket
           uri: lb://chat-notification-service
           predicates:

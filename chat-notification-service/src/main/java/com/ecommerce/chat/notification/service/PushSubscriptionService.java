@@ -1,16 +1,15 @@
 package com.ecommerce.chat.notification.service;
 
-import com.ecommerce.chat.notification.dto.PushSubscriptionDto;
+import com.ecommerce.chat.notification.dto.NotificationDto;
 import com.ecommerce.chat.notification.dto.PushSubscriptionRequest;
 
-import java.util.List;
 
 public interface PushSubscriptionService {
 
     /**
      * Subscribe nhận push notification
      */
-    PushSubscriptionDto subscribe(PushSubscriptionRequest request);
+    void subscribe(PushSubscriptionRequest request);
 
     /**
      * Unsubscribe từ push notification
@@ -18,23 +17,10 @@ public interface PushSubscriptionService {
     void unsubscribe(String endpoint);
 
     /**
-     * Lấy tất cả subscription của user
+     * Gửi push notification đến tất cả subscription active của user
+     *
+     * @param userId      ID của user
+     * @param notification Nội dung notification
      */
-    List<PushSubscriptionDto> getUserSubscriptions();
-
-    /**
-     * Lấy tất cả subscription đang active của user
-     */
-    List<PushSubscriptionDto> getActiveSubscriptions();
-
-    /**
-     * Deactivate một subscription
-     */
-    void deactivateSubscription(String subscriptionId);
-
-    /**
-     * Activate một subscription
-     */
-    void activateSubscription(String subscriptionId);
+    void sendNotificationToUser(Long userId, NotificationDto notification);
 }
-

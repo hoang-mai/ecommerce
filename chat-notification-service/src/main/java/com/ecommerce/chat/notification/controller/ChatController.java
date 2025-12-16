@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,11 @@ public class ChatController {
     public void sendPrivateMessage(@Payload ReqPrivateMessageDTO reqPrivateMessageDTO, Principal principal) {
         chatService.createMessagePrivate(reqPrivateMessageDTO,principal);
 
+    }
+
+    @MessageMapping("/heartbeat")
+    public void heartbeat( StompHeaderAccessor stompHeaderAccessor) {
+        chatService.heartbeat(stompHeaderAccessor);
     }
 
     @PostMapping(consumes = "multipart/form-data")

@@ -7,6 +7,7 @@ import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.AddressDTO;
 import com.ecommerce.read.entity.UserView;
 import com.ecommerce.read.service.UserViewService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = Constant.USER_VIEW)
@@ -51,6 +54,25 @@ public class UserViewController {
                         .statusCode(200)
                         .message(messageService.getMessage(MessageSuccess.GET_INFO_USER_SUCCESS))
                         .data(userViews)
+                        .build()
+        );
+    }
+
+    /**
+     * Tìm kiếm địa chỉ
+     *
+     * @param keyword Từ khóa tìm kiếm
+     */
+    @GetMapping("/search-address")
+    public ResponseEntity<BaseResponse<List<String>>> searchAddress(
+            @RequestParam String keyword
+    ){
+        List<String> addresses = userViewService.searchAddress(keyword);
+        return ResponseEntity.ok(
+                BaseResponse.<List<String>>builder()
+                        .statusCode(200)
+                        .message(messageService.getMessage(MessageSuccess.SEARCH_ADDRESS_SUCCESS))
+                        .data(addresses)
                         .build()
         );
     }
