@@ -56,7 +56,7 @@ services:
       - DB_USER=keycloak
       - DB_PASSWORD=keycloak
     command:
-      - start-dev
+      - start
       - --http-relative-path=/auth
     depends_on:
       - mysql
@@ -119,18 +119,6 @@ services:
       - service-network
     volumes:
       - kafka-data:/var/lib/kafka/data
-  discovery-service:
-    image: maianhhoang31072003/discovery-service:latest
-    container_name: discovery-service
-    build:
-      context: ./discovery-service
-      dockerfile: Dockerfile
-    ports:
-      - "8761:8761"
-    env_file:
-      - .env
-    networks:
-      - service-network
   api-gateway:
     image: maianhhoang31072003/api-gateway:latest
     container_name: api-gateway

@@ -1,6 +1,13 @@
 spring:
   application:
     name: saga-service
+  grpc:
+    client:
+      channels:
+        auth-service:
+          address: localhost:9092
+        user-service:
+          address: localhost:9093
   security:
     oauth2:
       resourceserver:
@@ -27,12 +34,7 @@ spring:
           - approveOwnerActivitiesImpl
 
 server:
-  port: 8091
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
+  port: 8088
 
 springdoc:
   api-docs:

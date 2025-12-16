@@ -27,12 +27,7 @@ minio:
   secret-key: password
   bucket-name: ecommerce
 server:
-  port: 8090
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
+  port: 8086
 
 springdoc:
   api-docs:

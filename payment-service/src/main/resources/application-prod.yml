@@ -1,16 +1,8 @@
-server:
-  port: 8085
-
 spring:
   application:
     name: product-service
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8081/auth/realms/ecommerce
   kafka:
-    bootstrap-servers: localhost:19092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -19,41 +11,27 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
   datasource:
-    url: jdbc:mysql://localhost:3306/product_service
+    url: jdbc:mysql://${MYSQL_HOST:mysql8}:${MYSQL_PORT:3306}/product_service
     username: product_service
     password: product_service
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
-
 minio:
-  url: http://localhost:9000
+  url: http://${MINIO_HOST:minio}:${MINIO_PORT:9000}
   access-key: root
   secret-key: password
   bucket-name: ecommerce
 
-
-
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-
-openapi:
-  service:
-    api-docs: Product-Service-API-docs
-    serverUrl: http://localhost:${server.port}
-    serverName: server dev
-    title: Product Service API
-    version: 1.0.0
-    description: API document
-
+server:
+  port: ${SERVER_PORT:8084}
 

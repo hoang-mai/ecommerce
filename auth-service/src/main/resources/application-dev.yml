@@ -35,7 +35,7 @@ keycloak:
   password: 123456
 
 server:
-  port: 8082
+  port: 8081
 
 openapi:
   service:
@@ -46,10 +46,7 @@ openapi:
     version: 1.0.0
     description: API Documentation for Keycloak Admin Service
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
+
   instance:
     metadata-map:
       grpc-port: ${spring.grpc.server.port}

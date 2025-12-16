@@ -28,14 +28,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
+          issuer-uri: https://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
 server:
-  port: ${SERVER_PORT:8088}
-eureka:
-  client:
-    service-url:
-      defaultZone: http://${DISCOVERY_SERVICE_HOST:discovery-service}:${DISCOVERY_SERVICE_PORT:8761}/eureka/
-  instance:
-    prefer-ip-address: true
+  port: ${SERVER_PORT:8083}
+
 
 

@@ -15,7 +15,7 @@ spring:
         jwt:
           issuer-uri: http://localhost:8081/auth/realms/ecommerce
   datasource:
-    url: jdbc:mysql://localhost:3306/user_service
+    url: jdbc:mysql://localhost:3306/user_service?
     username: user_service
     password: user_service
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -31,15 +31,8 @@ minio:
   bucket-name: ecommerce
 
 server:
-  port: 8083
+  port: 8089
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    metadata-map:
-      grpc-port: ${spring.grpc.server.port}
 
 springdoc:
   api-docs:

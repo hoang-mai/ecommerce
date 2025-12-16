@@ -1,16 +1,6 @@
 server:
   port: ${SERVER_PORT:8080}
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://${DISCOVERY_SERVICE_HOST:discovery-service}:${DISCOVERY_SERVICE_PORT:8761}/eureka/
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.security: DEBUG
-
-
 spring:
   application:
     name: api-gateway
@@ -18,43 +8,47 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/ecommerce
+          issuer-uri: https://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/ecommerce
   cloud:
     gateway:
       routes:
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/api/v1/user/**,/api/v1/address/**,/api/v1/user-verification/**
         - id: auth-service
-          uri: lb://auth-service
+          uri: https://${AUTH_SERVICE_HOST:auth-service}:${AUTH_SERVICE_PORT:8081}
           predicates:
             - Path=/api/v1/auth/**
-        - id: product-service
-          uri: lb://product-service
-          predicates:
-            - Path=/api/v1/product/**,/api/v1/category/**,/api/v1/shop/**
         - id: chat-notification-service-api
-          uri: lb://chat-notification-service
+          uri: https://${CHAT_NOTIFICATION_SERVICE_HOST:chat-notification-service}:${CHAT_NOTIFICATION_SERVICE_PORT:8082}
           predicates:
-            - Path=/api/v1/chat/**, /api/v1/message/**
+            - Path=/api/v1/chat/**, /api/v1/message/**, /api/v1/push-subscription/**, /api/v1/notification/**
         - id: chat-notification-service-websocket
-          uri: lb://chat-notification-service
+          uri: https://${CHAT_NOTIFICATION_SERVICE_HOST:chat-notification-service}:${CHAT_NOTIFICATION_SERVICE_PORT:8082}
           predicates:
             - Path=/ws/**
-        - id: saga-service
-          uri: lb://saga-service
-          predicates:
-            - Path=/api/v1/saga/**
-        - id: read-service
-          uri: lb://read-service
-          predicates:
-            - Path=/api/v1/user-view/**,/api/v1/product-view/**,/api/v1/order-view/**,/api/v1/cart-view/**,/api/v1/shop-view/**,/api/v1/review-view/**,/api/v1/interaction/**
         - id: order-service
-          uri: lb://order-service
+          uri: https://${ORDER_SERVICE_HOST:order-service}:${ORDER_SERVICE_PORT:8083}
           predicates:
             - Path=/api/v1/order/**,/api/v1/cart/**
+        - id: payment-service
+          uri: https://${PAYMENT_SERVICE_HOST:payment-service}:${PAYMENT_SERVICE_PORT:8084}
+          predicates:
+            - Path=/api/v1/payment/**
+        - id: product-service
+          uri: https://${PRODUCT_SERVICE_HOST:product-service}:${PRODUCT_SERVICE_PORT:8085}
+          predicates:
+            - Path=/api/v1/product/**,/api/v1/category/**,/api/v1/shop/**
+        - id: read-service
+          uri: https://${READ_SERVICE_HOST:read-service}:${READ_SERVICE_PORT:8086}
+          predicates:
+            - Path=/api/v1/user-view/**,/api/v1/product-view/**,/api/v1/order-view/**,/api/v1/cart-view/**,/api/v1/shop-view/**,/api/v1/review-view/**,/api/v1/interaction/**
         - id: review-service
-          uri: lb://review-service
+          uri: https://${REVIEW_SERVICE_HOST:review-service}:${REVIEW_SERVICE_PORT:8087}
           predicates:
             - Path=/api/v1/review/**,/api/v1/review-reply/**
+        - id: saga-service
+          uri: https://${SAGA_SERVICE_HOST:saga-service}:${SAGA_SERVICE_PORT:8088}
+          predicates:
+            - Path=/api/v1/saga/**
+        - id: user-service
+          uri: https://${USER_SERVICE_HOST:user-service}:${USER_SERVICE_PORT:8089}
+          predicates:
+            - Path=/api/v1/user/**,/api/v1/address/**,/api/v1/user-verification/**
