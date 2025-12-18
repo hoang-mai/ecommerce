@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -21,14 +23,12 @@ public class Payment extends BaseEntity {
     @Column(name = "payment_id", updatable = false, nullable = false)
     private Long paymentId;
 
-    @Column(name = "order_id", nullable = false)
-    private Long orderId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(nullable = false)
-    private BigDecimal price;
-
-    @Column(nullable = false)
-    private String currency;
+    @Builder.Default
+    private BigDecimal price = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -37,8 +37,19 @@ public class Payment extends BaseEntity {
     @Column(name = "reason")
     private String reason;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_method_id", nullable = false)
-    private PaymentMethod paymentMethod;
 
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<OrderCache> orderCaches = new ArrayList<>();
+
+    public void addPrice(BigDecimal amount) {
+        if (this.price == null) {
+            this.price = BigDecimal.ZERO;
+        }
+        this.price = this.price.add(amount);
+    }
+    public void addOrderCache(OrderCache orderCache) {
+        this.orderCaches.add(orderCache);
+        orderCache.setPayment(this);
+    }
 }

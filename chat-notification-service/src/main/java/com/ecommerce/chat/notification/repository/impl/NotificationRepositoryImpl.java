@@ -54,5 +54,11 @@ public class NotificationRepositoryImpl {
 
         return new PageImpl<>(notifications, pageable, total);
     }
+
+    public void markAsRead(String notificationId) {
+        Query query = new Query(Criteria.where("_id").is(notificationId));
+        Update update = new Update().set("isRead", true);
+        mongoTemplate.updateFirst(query, update, Notification.class);
+    }
 }
 

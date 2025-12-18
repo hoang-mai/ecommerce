@@ -1,6 +1,7 @@
 package com.ecommerce.read.messaging.consumer;
 
 import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
+import com.ecommerce.library.kafka.event.order.CreateListOrderStatusEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.read.service.OrderViewService;
@@ -26,5 +27,10 @@ public class OrderEventConsumer {
     @KafkaListener(topics =UPDATE_ORDER_STATUS_VIEW_TOPIC, groupId = READ_SERVICE_GROUP)
     public void listen(OrderStatusEvent orderStatusEvent){
         orderViewService.updateOrderStatusView(orderStatusEvent);
+    }
+
+    @KafkaListener(topics = ORDER_STATUS_TOPIC, groupId = READ_SERVICE_GROUP)
+    public void listenCreateListOrderStatusEvent(CreateListOrderStatusEvent createListOrderStatusEvent) {
+        orderViewService.updateOrderStatusFromOrderEvent(createListOrderStatusEvent);
     }
 }

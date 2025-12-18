@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: product-service
+    name: payment-service
   security:
     oauth2:
       resourceserver:
@@ -20,9 +20,9 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
   datasource:
-    url: jdbc:mysql://localhost:3306/product_service
-    username: product_service
-    password: product_service
+    url: jdbc:mysql://localhost:3306/payment_service
+    username: payment_service
+    password: payment_service
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -32,13 +32,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
-
-minio:
-  url: http://localhost:9000
-  access-key: root
-  secret-key: password
-  bucket-name: ecommerce
-
+vnpay:
+  vnp_TmnCode: ROZ4O53D
+  vnp_HashSecret: F3H0O9XDMD9R4KTSDE8Z8L0FFRU0O1DY
 
 
 springdoc:
@@ -49,10 +45,10 @@ springdoc:
 
 openapi:
   service:
-    api-docs: Product-Service-API-docs
+    api-docs: Payment-Service-API-docs
     serverUrl: http://localhost:${server.port}
     serverName: server dev
-    title: Product Service API
+    title: Payment Service API
     version: 1.0.0
     description: API document
 

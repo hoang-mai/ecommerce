@@ -1,6 +1,6 @@
 spring:
   application:
-    name: product-service
+    name: payment-service
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     producer:
@@ -15,22 +15,20 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
+          issuer-uri: http://${KEYCLOAK_HOST:keycloak}:${KEYCLOAK_PORT:8080}/auth/realms/${KEYCLOAK_REALM:ecommerce}
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST:mysql8}:${MYSQL_PORT:3306}/product_service
-    username: product_service
-    password: product_service
+    url: jdbc:mysql://${MYSQL_HOST:mysql8}:${MYSQL_PORT:3306}/payment_service
+    username: payment_service
+    password: payment_service
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
-minio:
-  url: http://${MINIO_HOST:minio}:${MINIO_PORT:9000}
-  access-key: root
-  secret-key: password
-  bucket-name: ecommerce
+vnpay:
+  vnp_TmnCode: ${VNP_TMN_CODE:ROZ4O53D}
+  vnp_HashSecret: ${VNP_HASH_SECRET:F3H0O9XDMD9R4KTSDE8Z8L0FFRU0O1DY}
 
 server:
   port: ${SERVER_PORT:8084}

@@ -172,7 +172,6 @@ public class ProductViewServiceImpl implements ProductViewService {
     public void updateStockAfterCreateOrder(CreateListOrderEvent createListOrderEvent) {
 
         createListOrderEvent.getCreateOrderEventList().forEach(createOrderEvent -> {
-            AtomicLong totalSoldForShop= new AtomicLong();
             if (OrderStatus.CANCELLED.equals(createOrderEvent.getOrderStatus())) {
                 return;
             }
@@ -198,12 +197,8 @@ public class ProductViewServiceImpl implements ProductViewService {
                     matchedVariant.setStockQuantity(updatedStock);
                 }
 
-                matchedVariant.addSold(quantity);
-                productView.addSold(quantity);
                 productViewRepository.save(productView);
-                totalSoldForShop.addAndGet(quantity);
             });
-            shopViewRepositoryImpl.incrementTotalSoldAndTotalOrder(String.valueOf(createOrderEvent.getShopId()), totalSoldForShop.intValue());
         });
 
     }
@@ -225,12 +220,69 @@ public class ProductViewServiceImpl implements ProductViewService {
     }
 
     @Override
-    public List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, LocalDateTime nowDate) {
+    public List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, LocalDateTime nowDate, String type) {
         Long currentUserId = null;
         if (Boolean.TRUE.equals(isOwner)) {
             currentUserId = userHelper.getCurrentUserId();
         }
-        return productViewRepositoryImpl.getProductStatistics(shopId, isOwner, currentUserId, nowDate);
+        return productViewRepositoryImpl.getProductStatistics(shopId, isOwner, currentUserId, nowDate, type);
+    }
+
+    @Override
+    public void updateProductSoldAndRevenue(String productId, String productVariantId, Integer quantity, BigDecimal revenue) {
+        ProductView productView = productViewRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+
+        // Update Product totalSold and totalRevenue
+        if (productView.getTotalSold() == null) {
+            productView.setTotalSold(0);
+        }
+        if (productView.getTotalRevenue() == null) {
+            productView.setTotalRevenue(BigDecimal.ZERO);
+        }
+        productView.setTotalSold(productView.getTotalSold() + quantity);
+        productView.setTotalRevenue(productView.getTotalRevenue().add(revenue));
+
+        // Update ProductVariant sold and revenue
+        productView.getProductVariants().stream()
+                .filter(variant -> variant.get_id().equals(productVariantId))
+                .findFirst()
+                .ifPresent(variant -> {
+                    if (variant.getSold() == null) {
+                        variant.setSold(0);
+                    }
+                    if (variant.getRevenue() == null) {
+                        variant.setRevenue(BigDecimal.ZERO);
+                    }
+                    variant.setSold(variant.getSold() + quantity);
+                    variant.setRevenue(variant.getRevenue().add(revenue));
+                });
+
+        productViewRepository.save(productView);
+    }
+
+    @Override
+    public void restoreProductStock(String productId, String productVariantId, Integer quantity) {
+        ProductView productView = productViewRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+
+        // Find and update the product variant stock
+        productView.getProductVariants().stream()
+                .filter(variant -> variant.get_id().equals(productVariantId))
+                .findFirst()
+                .ifPresent(variant -> {
+                    int currentStock = variant.getStockQuantity() == null ? 0 : variant.getStockQuantity();
+                    int restoredStock = currentStock + quantity;
+
+                    variant.setStockQuantity(restoredStock);
+
+                    // Update variant status if stock is restored
+                    if (restoredStock > 0 && variant.getProductVariantStatus() == ProductVariantStatus.OUT_OF_STOCK) {
+                        variant.setProductVariantStatus(ProductVariantStatus.ACTIVE);
+                    }
+                });
+
+        productViewRepository.save(productView);
     }
 
 }

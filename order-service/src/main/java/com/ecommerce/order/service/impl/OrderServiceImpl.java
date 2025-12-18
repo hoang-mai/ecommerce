@@ -145,6 +145,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderEventProducer.send(
                 OrderStatusEvent.builder()
+                        .userId(order.getUserId())
                         .orderId(order.getOrderId())
                         .orderStatus(order.getOrderStatus())
                         .reason(order.getReason())

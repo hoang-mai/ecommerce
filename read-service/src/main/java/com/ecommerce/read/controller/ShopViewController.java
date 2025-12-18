@@ -7,12 +7,17 @@ import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.OwnerViewStatisticDTO;
+import com.ecommerce.read.dto.ShopViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
 import com.ecommerce.read.service.ShopViewService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = Constant.SHOP_VIEW)
@@ -112,6 +117,27 @@ public class ShopViewController {
         OwnerViewStatisticDTO stats = shopViewService.getOverviewStatistics();
 
         return ResponseEntity.ok(BaseResponse.<OwnerViewStatisticDTO>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.GET_STATISTIC_SUCCESS))
+                .data(stats)
+                .build());
+    }
+
+    /**
+     * Thống kê top 5 shop theo doanh thu cao hoặc bán chạy trong tháng hiện tại
+     *
+     * @param nowDate Thời điểm hiện tại để xác định tháng (optional, mặc định là thời điểm hiện tại)
+     * @param type    Loại thống kê: "sold" (bán chạy - mặc định) hoặc "revenue" (doanh thu cao)
+     * @return Danh sách top 5 shop
+     */
+    @GetMapping("/statistic/top-revenue")
+    public ResponseEntity<BaseResponse<List<ShopViewStatisticDTO>>> getTopShopsByRevenue(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime nowDate,
+            @RequestParam(required = false, defaultValue = "revenue") String type) {
+
+        List<ShopViewStatisticDTO> stats = shopViewService.getTopShopsByRevenue(nowDate, type);
+
+        return ResponseEntity.ok(BaseResponse.<List<ShopViewStatisticDTO>>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.GET_STATISTIC_SUCCESS))
                 .data(stats)

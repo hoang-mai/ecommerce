@@ -53,13 +53,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void markAsRead(String notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new NotFoundException(MessageError.NOTIFICATION_NOT_FOUND));
-
-        if (!notification.getIsRead()) {
-            notification.setIsRead(true);
-            notificationRepository.save(notification);
-        }
+        notificationRepositoryImpl.markAsRead(notificationId    );
     }
 
     @Override
@@ -71,7 +65,6 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void markAllAsRead() {
         Long userId = userHelper.getCurrentUserId();
-        notificationRepository.markAllAsReadByUserId(userId);
     }
 
     private NotificationDto convertToResponse(Notification notification) {

@@ -6,10 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, String> {
 
     long countByUserIdAndIsRead(Long userId, Boolean isRead);
 
-    void markAllAsReadByUserId(Long userId);
+    Optional<Notification> findBy_id(String _id);
 }

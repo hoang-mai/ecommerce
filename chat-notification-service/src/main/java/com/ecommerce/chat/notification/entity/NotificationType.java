@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum NotificationType {
+    PAYMENT("payment"),
     ERROR("error"),
     SUCCESS("success"),
     INFO("info"),

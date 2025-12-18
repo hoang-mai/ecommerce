@@ -6,7 +6,11 @@ import com.ecommerce.library.kafka.event.shop.CreateShopEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.OwnerViewStatisticDTO;
+import com.ecommerce.read.dto.ShopViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public interface ShopViewService {
     void createShopView(CreateShopEvent createShopEvent);
@@ -21,4 +25,6 @@ public interface ShopViewService {
     ShopView getShopById(Long shopId,boolean isOwner);
 
     OwnerViewStatisticDTO getOverviewStatistics();
+
+    List<ShopViewStatisticDTO> getTopShopsByRevenue(LocalDateTime nowDate, String type);
 }

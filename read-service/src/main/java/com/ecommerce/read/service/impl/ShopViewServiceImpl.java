@@ -9,6 +9,7 @@ import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.OwnerViewStatisticDTO;
+import com.ecommerce.read.dto.ShopViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
 import com.ecommerce.read.repository.ShopViewRepository;
 import com.ecommerce.read.repository.impl.ShopViewRepositoryImpl;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -167,5 +169,10 @@ public class ShopViewServiceImpl implements ShopViewService {
     public OwnerViewStatisticDTO getOverviewStatistics() {
         Long ownerId = userHelper.getCurrentUserId();
         return shopViewRepositoryImpl.getOverviewStatistics(String.valueOf(ownerId));
+    }
+
+    @Override
+    public List<ShopViewStatisticDTO> getTopShopsByRevenue(LocalDateTime nowDate, String type) {
+        return shopViewRepositoryImpl.getTopShopsByRevenue(nowDate, type);
     }
 }

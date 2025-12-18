@@ -4,6 +4,7 @@ import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
+import com.ecommerce.library.kafka.event.order.CreateListOrderStatusEvent;
 import com.ecommerce.library.kafka.event.order.CreateOrderEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
@@ -12,6 +13,7 @@ import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.CreateInteractionRequest;
 import com.ecommerce.read.dto.InteractionDTO;
 import com.ecommerce.read.dto.OrderViewStatisticDTO;
+import com.ecommerce.read.dto.OrderViewStatisticRevenueDTO;
 import com.ecommerce.read.entity.Interaction;
 import com.ecommerce.read.entity.OrderView;
 import com.ecommerce.read.repository.OrderViewRepository;
@@ -29,7 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -108,11 +110,47 @@ public class OrderViewServiceImpl implements OrderViewService {
     public void updateOrderStatusView(OrderStatusEvent orderStatusEvent) {
         OrderView orderView = orderViewRepository.findById(String.valueOf(orderStatusEvent.getOrderId()))
                 .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+
+        OrderStatus previousStatus = orderView.getOrderStatus();
         orderView.setOrderStatus(orderStatusEvent.getOrderStatus());
+
         if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
             orderView.setReason(orderStatusEvent.getReason());
         }
+
+        if (orderStatusEvent.getOrderStatus() == OrderStatus.COMPLETED && previousStatus != OrderStatus.COMPLETED) {
+            updateSoldAndRevenue(orderView);
+        }
+
         orderViewRepository.save(orderView);
+    }
+
+    private void updateSoldAndRevenue(OrderView orderView) {
+        orderView.getOrderItems().forEach(orderItem -> {
+            productViewService.updateProductSoldAndRevenue(
+                orderItem.getProductId(),
+                orderItem.getProductVariantId(),
+                orderItem.getQuantity(),
+                orderItem.getTotalFinalPrice()
+            );
+        });
+
+        shopViewRepository.findById(orderView.getShopId()).ifPresent(shopView -> {
+            if (shopView.getTotalSold() == null) {
+                shopView.setTotalSold(0L);
+            }
+            if (shopView.getTotalRevenue() == null) {
+                shopView.setTotalRevenue(BigDecimal.ZERO);
+            }
+
+            int totalQuantity = orderView.getOrderItems().stream()
+                .mapToInt(OrderView.OrderItem::getQuantity)
+                .sum();
+
+            shopView.setTotalSold(shopView.getTotalSold() + totalQuantity);
+            shopView.setTotalRevenue(shopView.getTotalRevenue().add(orderView.getTotalPrice()));
+            shopViewRepository.save(shopView);
+        });
     }
 
     @Override
@@ -168,6 +206,53 @@ public class OrderViewServiceImpl implements OrderViewService {
             }
         }
         return orderViewRepositoryImpl.getOrderStatisticsByDateRange(shopId, isOwner, currentUserId, fromDate, toDate);
+    }
+
+    @Override
+    public void updateOrderStatusFromOrderEvent(CreateListOrderStatusEvent createListOrderStatusEvent) {
+        createListOrderStatusEvent.getOrderStatusEventList().forEach(orderStatusEvent -> {
+            OrderView orderView = orderViewRepository.findById(String.valueOf(orderStatusEvent.getOrderId()))
+                    .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+
+            OrderStatus previousStatus = orderView.getOrderStatus();
+            orderView.setOrderStatus(orderStatusEvent.getOrderStatus());
+
+            if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
+                orderView.setReason(orderStatusEvent.getReason());
+                // Restore product stock when order fails
+                if (previousStatus != OrderStatus.CANCELLED && previousStatus != OrderStatus.RETURNED) {
+                    restoreProductStock(orderView);
+                }
+            }
+
+            // Update sold and revenue when order is completed
+            if (orderStatusEvent.getOrderStatus() == OrderStatus.COMPLETED && previousStatus != OrderStatus.COMPLETED) {
+                updateSoldAndRevenue(orderView);
+            }
+
+            orderViewRepository.save(orderView);
+        });
+    }
+
+    @Override
+    public List<OrderViewStatisticRevenueDTO> getRevenueStatisticsByDateRange(String shopId, Boolean isOwner, LocalDateTime fromDate, LocalDateTime toDate) {
+        Long currentUserId = userHelper.getCurrentUserId();
+        if (FnCommon.isNotNullOrEmpty(shopId)) {
+            if (!shopViewRepository.existsBy_idAndOwnerId(shopId, String.valueOf(currentUserId))) {
+                throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
+            }
+        }
+        return orderViewRepositoryImpl.getOrderStatisticRevenuesByDateRange(shopId, isOwner, currentUserId, fromDate, toDate);
+    }
+
+    private void restoreProductStock(OrderView orderView) {
+        orderView.getOrderItems().forEach(orderItem -> {
+            productViewService.restoreProductStock(
+                orderItem.getProductId(),
+                orderItem.getProductVariantId(),
+                orderItem.getQuantity()
+            );
+        });
     }
 }
 

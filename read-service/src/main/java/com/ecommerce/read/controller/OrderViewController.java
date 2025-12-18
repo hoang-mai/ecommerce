@@ -7,6 +7,7 @@ import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.OrderViewStatisticDTO;
+import com.ecommerce.read.dto.OrderViewStatisticRevenueDTO;
 import com.ecommerce.read.entity.OrderView;
 import com.ecommerce.read.service.OrderViewService;
 import lombok.RequiredArgsConstructor;
@@ -113,6 +114,31 @@ public class OrderViewController {
                         .message(messageService.getMessage(MessageSuccess.GET_ORDER_SUCCESS))
                         .data(stats)
                         .build()
+        );
+    }
+
+    /**
+     * Thống kê doanh thu shop hoặc owner theo từ ngày nào đến ngày nào
+     * @param shopId  ID của cửa hàng (optional) - nếu cung cấp sẽ trả về thống kê cho cửa hàng đó (chỉ owner của shop)
+     * @param isOwner Xác định người dùng hiện tại có phải là chủ sở hữu shop không (optional)
+     * @param fromDate Ngày bắt đầu (optional)
+     * @param toDate Ngày kết thúc (optional)
+     * @return Thống kê doanh thu theo từ ngày nào đến ngày nào
+     */
+    @GetMapping("/statistic/revenue")
+    public ResponseEntity<BaseResponse<List<OrderViewStatisticRevenueDTO>>> getRevenueStatisticsByDateRange(
+            @RequestParam(required = false) String shopId,
+            @RequestParam(required = false) Boolean isOwner,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate
+    ) {
+        List<OrderViewStatisticRevenueDTO> stats = orderViewService.getRevenueStatisticsByDateRange(shopId, isOwner, fromDate, toDate);
+        return ResponseEntity.ok(
+            BaseResponse.<List<OrderViewStatisticRevenueDTO>>builder()
+                .statusCode(200)
+                .message(messageService.getMessage(MessageSuccess.GET_ORDER_SUCCESS))
+                .data(stats)
+                .build()
         );
     }
 }

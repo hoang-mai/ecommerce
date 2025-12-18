@@ -40,13 +40,18 @@ public final class Constant {
     // Product Service Kafka Topics and Group
     public static final String PRODUCT_SERVICE_TOPIC = "product-service-topic";
     public static final String PRODUCT_SERVICE_GROUP = "product-service-group";
+    public static final String RESTORE_STOCK_TOPIC = PRODUCT_SERVICE_TOPIC + ".restore-stock";
 
 
     public static final String CHAT_NOTIFICATION_SERVICE_TOPIC = "chat-notification-service-topic";
     public static final String ORDER_STATUS_TOPIC = CHAT_NOTIFICATION_SERVICE_TOPIC + ".order-status";
     public static final String CHAT_NOTIFICATION_SERVICE_GROUP = "chat-notification-service-group";
+    public static final String CREATE_PAYMENT_NOTIFICATION_TOPIC = CHAT_NOTIFICATION_SERVICE_TOPIC + ".create-payment-notification";
 
     public static final String REVIEW_TOPIC = "review-service-topic";
     public static final String REVIEW_SERVICE_GROUP = "review-service-group";
 
+    public static final String PAYMENT_TOPIC = "payment-service-topic";
+    public static final String PAYMENT_SERVICE_GROUP = "payment-service-group";
+    public static final String CREATE_PAYMENT_TOPIC = PAYMENT_TOPIC + ".create-payment";
 }

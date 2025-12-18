@@ -90,19 +90,21 @@ public class ProductViewController {
                 .build());
     }
     /**
-     * Thống kê sản phẩm bán chạy trong tháng
+     * Thống kê sản phẩm bán chạy hoặc doanh thu cao trong tháng
      * @param shopId  ID của cửa hàng (optional) - nếu cung cấp sẽ trả về thống kê cho cửa hàng đó (chỉ owner của shop)
      * @param isOwner Xác định người dùng hiện tại có phải là chủ sở hữu shop không (optional)
      * @param nowDate Thời điểm hiện tại để xác định tháng (optional, mặc định là thời điểm hiện tại)
-     * @return Thống kê sản phẩm bán chạy
+     * @param type    Loại thống kê: "sold" (bán chạy - mặc định) hoặc "revenue" (doanh thu cao)
+     * @return Thống kê sản phẩm (top 5)
      */
     @GetMapping("/statistic")
     public ResponseEntity<BaseResponse<List<ProductViewStatisticDTO>>> getProductStatistics(
         @RequestParam(required = false) String shopId,
         @RequestParam(required = false) Boolean isOwner,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime nowDate
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime nowDate,
+        @RequestParam(required = false, defaultValue = "sold") String type
     ) {
-        List<ProductViewStatisticDTO> stats = productViewService.getProductStatistics(shopId, isOwner, nowDate);
+        List<ProductViewStatisticDTO> stats = productViewService.getProductStatistics(shopId, isOwner, nowDate, type);
         return ResponseEntity.ok(
             BaseResponse.<List<ProductViewStatisticDTO>>builder()
                 .statusCode(200)

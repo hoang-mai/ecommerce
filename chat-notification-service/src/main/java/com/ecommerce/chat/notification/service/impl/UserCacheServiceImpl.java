@@ -9,7 +9,6 @@ import com.ecommerce.library.kafka.event.user.CreateUserEvent;
 import com.ecommerce.library.kafka.event.user.UpdateUserEvent;
 import com.ecommerce.library.utils.MessageError;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
 public class Notification {
 
     @Id
-    @Field("_id")
     private String _id;
 
+    @Field("userId")
     private Long userId;
 
     @Field("title")

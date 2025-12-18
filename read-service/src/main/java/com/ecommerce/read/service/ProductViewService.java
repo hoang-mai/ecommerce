@@ -13,6 +13,7 @@ import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.ProductViewStatisticDTO;
 import com.ecommerce.read.entity.ProductView;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,5 +35,9 @@ public interface ProductViewService {
 
     void updateRating(Long productId, RatingNumber rating, Boolean isUpdate, RatingNumber oldRating, Boolean isDelete);
 
-    List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, LocalDateTime nowDate);
+    List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, LocalDateTime nowDate, String type);
+
+    void updateProductSoldAndRevenue(String productId, String productVariantId, Integer quantity, BigDecimal revenue);
+
+    void restoreProductStock(String productId, String productVariantId, Integer quantity);
 }

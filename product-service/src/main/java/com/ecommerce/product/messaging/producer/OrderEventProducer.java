@@ -21,10 +21,10 @@ public class OrderEventProducer {
 
     public void sendStatus(CreateListOrderStatusEvent createListOrderStatusEvent){
         orderStatusEventKafkaTemplate.send(UPDATE_ORDER_STATUS_TOPIC, createListOrderStatusEvent.getUserId(), createListOrderStatusEvent);
-        orderStatusEventKafkaTemplate.send(ORDER_STATUS_TOPIC, createListOrderStatusEvent.getUserId(), createListOrderStatusEvent);
     }
 
     public void send(CreateListOrderEvent createListOrderEvent){
         createOrderEventKafkaTemplate.send(CREATE_ORDER_VIEW_TOPIC, createListOrderEvent.getUserId(), createListOrderEvent);
+        createOrderEventKafkaTemplate.send(CREATE_PAYMENT_TOPIC, createListOrderEvent.getUserId(), createListOrderEvent);
     }
 }

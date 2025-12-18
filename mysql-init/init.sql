@@ -35,5 +35,9 @@ CREATE DATABASE IF NOT EXISTS review_service;
 CREATE USER IF NOT EXISTS 'review_service'@'%' IDENTIFIED BY 'review_service';
 GRANT ALL PRIVILEGES ON review_service.* TO 'review_service'@'%';
 
+CREATE DATABASE IF NOT EXISTS payment_service;
+CREATE USER IF NOT EXISTS 'payment_service'@'%' IDENTIFIED BY 'payment_service';
+GRANT ALL PRIVILEGES ON payment_service.* TO 'payment_service'@'%';
+
 
 FLUSH PRIVILEGES;

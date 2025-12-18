@@ -36,4 +36,5 @@ public final class Constant {
     public static final String INTERACTION = REQUEST_MAPPING + "/interaction";
     public static final long TTL_SECONDS = 60;
     public static final String PUSH_SUBSCRIPTION = REQUEST_MAPPING + "/push-subscription";
+    public static final String PAYMENT = REQUEST_MAPPING + "/payment";
 }

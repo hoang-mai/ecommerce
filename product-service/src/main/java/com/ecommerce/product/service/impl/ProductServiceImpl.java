@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -452,7 +451,6 @@ public class ProductServiceImpl implements ProductService {
             if (createOrderEvent.getOrderStatus() == OrderStatus.CANCELLED) {
                 return;
             }
-            createOrderEvent.setOrderStatus(OrderStatus.PAID);
             createOrderEvent.getCreateOrderItemEventList().forEach(createOrderItemEvent -> {
 
                 ProductVariant productVariant = productVariantRepository.findByIdForUpDate(createOrderItemEvent.getProductVariantId())
@@ -484,5 +482,36 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-}
 
+    @Override
+    @Transactional
+    public void handleRestoreStockEvent(RestoreStockEvent restoreStockEvent) {
+        log.info("Processing restore stock event for user: {}", restoreStockEvent.getUserId());
+
+        restoreStockEvent.getRestoreStockItems().forEach(restoreStockItem -> {
+            try {
+                ProductVariant productVariant = productVariantRepository.findByIdForUpDate(restoreStockItem.getProductVariantId())
+                        .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND));
+
+                int currentStock = productVariant.getStockQuantity();
+                int restoredStock = currentStock + restoreStockItem.getQuantity();
+
+                productVariant.setStockQuantity(restoredStock);
+
+                // Update variant status if stock is restored
+                if (restoredStock > 0 && ProductVariantStatus.OUT_OF_STOCK.equals(productVariant.getProductVariantStatus())) {
+                    productVariant.setProductVariantStatus(ProductVariantStatus.ACTIVE);
+                }
+
+                productVariantRepository.save(productVariant);
+
+                log.info("Restored stock for product variant {}: {} -> {}",
+                        restoreStockItem.getProductVariantId(), currentStock, restoredStock);
+            } catch (Exception e) {
+                log.error("Error restoring stock for product variant {}: {}",
+                        restoreStockItem.getProductVariantId(), e.getMessage());
+            }
+        });
+    }
+
+}

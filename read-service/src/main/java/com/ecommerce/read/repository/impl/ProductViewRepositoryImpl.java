@@ -142,19 +142,26 @@ public class ProductViewRepositoryImpl {
     }
 
     /**
-     * Lấy thống kê sản phẩm bán chạy trong tháng
+     * Thống kê sản phẩm bán chạy hoặc doanh thu cao trong tháng
      *
      * @param shopId        ID của shop (optional)
      * @param isOwner       Xác định người dùng hiện tại có phải là chủ sở hữu không
      * @param currentUserId ID của người dùng hiện tại
      * @param nowDate       Thời điểm hiện tại để xác định tháng
+     * @param type          Loại thống kê: "sold" (bán chạy) hoặc "revenue" (doanh thu cao)
      * @return Danh sách thống kê sản phẩm
      */
     public List<ProductViewStatisticDTO> getProductStatistics(
-        String shopId, Boolean isOwner, Long currentUserId, LocalDateTime nowDate) {
+        String shopId, Boolean isOwner, Long currentUserId, LocalDateTime nowDate, String type) {
 
         List<Criteria> criteriaList = new ArrayList<>();
-        criteriaList.add(Criteria.where("totalSold").gt(0));
+
+        // Điều kiện lọc dựa trên type
+        if ("revenue".equalsIgnoreCase(type)) {
+            criteriaList.add(Criteria.where("totalRevenue").gt(BigDecimal.ZERO));
+        } else {
+            criteriaList.add(Criteria.where("totalSold").gt(0));
+        }
         if (FnCommon.isNotNull(nowDate)) {
             LocalDateTime startOfMonth = nowDate.toLocalDate().withDayOfMonth(1).atStartOfDay();
             LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
@@ -176,7 +183,11 @@ public class ProductViewRepositoryImpl {
             .first("name").as("productName")
             .first("totalSold").as("totalSold")
             .first("totalRevenue").as("totalRevenue");
-        SortOperation sort = Aggregation.sort(Sort.Direction.DESC, "totalSold");
+
+        // Sắp xếp theo type
+        String sortField = "revenue".equalsIgnoreCase(type) ? "totalRevenue" : "totalSold";
+        SortOperation sort = Aggregation.sort(Sort.Direction.DESC, sortField);
+
         LimitOperation limit = Aggregation.limit(5);
         Aggregation aggregation = Aggregation.newAggregation(match, group, sort, limit);
         AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "product_views", Document.class);

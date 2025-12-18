@@ -3,6 +3,7 @@ package com.ecommerce.read.repository.impl;
 import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.read.dto.OrderViewStatisticDTO;
+import com.ecommerce.read.dto.OrderViewStatisticRevenueDTO;
 import com.ecommerce.read.entity.OrderView;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
@@ -16,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -236,6 +238,56 @@ public class OrderViewRepositoryImpl {
             }
         });
 
+        return statistics;
+    }
+
+    public List<OrderViewStatisticRevenueDTO> getOrderStatisticRevenuesByDateRange(String shopId, Boolean isOwner, Long currentUserId, LocalDateTime fromDate, LocalDateTime toDate) {
+        List<Criteria> criteriaList = new ArrayList<>();
+        if(FnCommon.isNotNullOrEmpty(shopId)){
+            criteriaList.add(Criteria.where("shopId").is(shopId));
+            criteriaList.add(Criteria.where("ownerId").is(String.valueOf(currentUserId)));
+        } else if(Boolean.TRUE.equals(isOwner)){
+            criteriaList.add(Criteria.where("ownerId").is(String.valueOf(currentUserId)));
+        } else {
+            criteriaList.add(Criteria.where("userId").is(String.valueOf(currentUserId)));
+        }
+        if (fromDate != null || toDate != null) {
+            LocalDateTime start = (fromDate != null)
+                    ? fromDate.toLocalDate().withDayOfMonth(1).atStartOfDay()
+                    : LocalDateTime.of(1970, 1, 1, 0, 0);
+            LocalDateTime end = (toDate != null)
+                    ? toDate.toLocalDate().withDayOfMonth(1).plusMonths(1).atStartOfDay()
+                    : LocalDate.now().withDayOfMonth(1).plusMonths(1).atStartOfDay();
+            criteriaList.add(Criteria.where("createdAt").gte(start).lt(end));
+        }
+        criteriaList.add(Criteria.where("orderStatus").is(OrderStatus.COMPLETED));
+        Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        MatchOperation match = Aggregation.match(finalCriteria);
+        ProjectionOperation project = Aggregation.project()
+                .and(DateOperators.dateOf("createdAt").toString("%Y-%m")).as("monthString")
+                .and(ConvertOperators.ToDouble.toDouble("$totalPrice")).as("totalPriceDouble");
+        GroupOperation group = Aggregation.group("monthString")
+                .sum("totalPriceDouble").as("totalRevenue");
+        SortOperation sort =
+                Aggregation.sort(Sort.Direction.ASC, "_id");
+        Aggregation agg = Aggregation.newAggregation(match, project, group, sort);
+        AggregationResults<Document> results = mongoTemplate.aggregate(agg, "order_views", Document.class);
+        List<OrderViewStatisticRevenueDTO> statistics = new ArrayList<>();
+        results.getMappedResults().forEach(doc -> {
+            Object id = doc.get("_id");
+            Object revenue = doc.get("totalRevenue");
+            if (id != null && revenue != null) {
+                try {
+                    String monthString = id.toString();
+                    BigDecimal totalRevenue = new BigDecimal(revenue.toString());
+                    statistics.add(OrderViewStatisticRevenueDTO.builder()
+                        .localDate(monthString)
+                        .totalRevenue(totalRevenue)
+                        .build());
+                } catch (Exception ignored) {
+                }
+            }
+        });
         return statistics;
     }
 }
