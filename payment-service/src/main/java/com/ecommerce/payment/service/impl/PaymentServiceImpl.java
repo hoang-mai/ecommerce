@@ -2,21 +2,27 @@ package com.ecommerce.payment.service.impl;
 
 import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.enumeration.PaymentStatus;
+import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
 import com.ecommerce.library.kafka.event.order.CreateListOrderStatusEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.kafka.event.payment.CreatePaymentEvent;
 import com.ecommerce.library.kafka.event.product.RestoreStockEvent;
 import com.ecommerce.library.utils.FnCommon;
+import com.ecommerce.library.utils.MessageError;
+import com.ecommerce.payment.dto.VnpayResponseDTO;
 import com.ecommerce.payment.entity.OrderCache;
 import com.ecommerce.payment.entity.OrderItemCache;
 import com.ecommerce.payment.entity.Payment;
 import com.ecommerce.payment.messaging.producer.OrderEventProvider;
+import com.ecommerce.payment.repository.OrderCacheRepository;
 import com.ecommerce.payment.repository.PaymentRepository;
 import com.ecommerce.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -36,12 +42,11 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final String vnp_Version = "2.1.0";
-    private final String vnp_Command = "pay";
+    private final OrderCacheRepository orderCacheRepository;
     @Value("${vnpay.vnp_TmnCode}")
     private String vnp_TmnCode;
     @Value("${vnpay.vnp_HashSecret}")
     private String vnp_HashSecret;
-    private final String vnp_OrderInfo = "Thanh toan don hang";
     private final String orderType = "other";
 
     private final String vnp_CurrCode = "VND";
@@ -50,6 +55,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final String vnp_IpAddr = "127.0.0.1";
 
     private final String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+    public final String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
     @Override
     public void handleCreatePaymentEvent(CreateListOrderEvent createListOrderEvent) {
@@ -65,6 +71,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orderId(createOrderEvent.getOrderId())
                 .ownerId(createOrderEvent.getOwnerId())
                 .shopId(createOrderEvent.getShopId())
+                .totalPrice(createOrderEvent.getTotalPrice())
                 .build();
             createOrderEvent.getCreateOrderItemEventList().forEach(orderItemEvent -> {
                 orderCache.addOrderItemCache(
@@ -88,33 +95,21 @@ public class PaymentServiceImpl implements PaymentService {
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
+        String vnp_Command = "pay";
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
         vnp_Params.put("vnp_Amount", amountStr);
-        vnp_Params.put("vnp_CreateDate", LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        vnp_Params.put("vnp_CreateDate", payment.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         vnp_Params.put("vnp_CurrCode", vnp_CurrCode);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
         vnp_Params.put("vnp_Locale", vnp_Locale);
+        String vnp_OrderInfo = "Thanh toan don hang";
         vnp_Params.put("vnp_OrderInfo", vnp_OrderInfo);
         vnp_Params.put("vnp_OrderType", orderType);
         vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
-        vnp_Params.put("vnp_ExpireDate", LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusMinutes(15).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        vnp_Params.put("vnp_ExpireDate", payment.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).plusMinutes(15).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         vnp_Params.put("vnp_TxnRef", String.valueOf(payment.getPaymentId()));
-        String hash_Data = String.join("|",
-            vnp_Params.get("vnp_Version"),
-            vnp_Params.get("vnp_Command"),
-            vnp_Params.get("vnp_TmnCode"),
-            vnp_Params.get("vnp_Amount"),
-            vnp_Params.get("vnp_CreateDate"),
-            vnp_Params.get("vnp_CurrCode"),
-            vnp_Params.get("vnp_IpAddr"),
-            vnp_Params.get("vnp_Locale"),
-            vnp_Params.get("vnp_OrderInfo"),
-            vnp_Params.get("vnp_OrderType"),
-            vnp_Params.get("vnp_ReturnUrl"),
-            vnp_Params.get("vnp_ExpireDate"),
-            vnp_Params.get("vnp_TxnRef")
-        );
+
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
@@ -186,6 +181,8 @@ public class PaymentServiceImpl implements PaymentService {
             if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) return;
             if ("00".equals(responseCode)) {
                 payment.setPaymentStatus(PaymentStatus.SUCCESS);
+                payment.setTransactionNo(transactionNo);
+                payment.setPayDate(payDate);
                 paymentRepository.save(payment);
                 orderEventProvider.sendUpdatePaymentStatusEvent(
                     CreateListOrderStatusEvent.builder()
@@ -240,6 +237,96 @@ public class PaymentServiceImpl implements PaymentService {
                 );
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public void refundPayment(Long orderId, String reason) {
+        OrderCache orderCache = orderCacheRepository.findByOrderId(orderId)
+            .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+        Payment payment = orderCache.getPayment();
+        Payment refundPayment = Payment.builder()
+            .paymentStatus(PaymentStatus.REFUNDED)
+            .userId(payment.getUserId())
+            .price(orderCache.getTotalPrice())
+            .reason(reason)
+            .build();
+        paymentRepository.save(refundPayment);
+        String amountStr = refundPayment.getPrice()
+            .multiply(BigDecimal.valueOf(100))
+            .toPlainString();
+
+        if (amountStr.contains(".")) {
+            amountStr = amountStr.substring(0, amountStr.indexOf('.'));
+        }
+        Map<String, String> vnp_Params = new HashMap<>();
+        vnp_Params.put("vnp_RequestId", String.valueOf(refundPayment.getPaymentId()));
+        vnp_Params.put("vnp_Version", vnp_Version);
+        vnp_Params.put("vnp_Command", "refund");
+        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
+        vnp_Params.put("vnp_TransactionType", "02");
+        vnp_Params.put("vnp_TxnRef", String.valueOf(payment.getPaymentId()));
+        vnp_Params.put("vnp_Amount", amountStr);
+        vnp_Params.put("vnp_OrderInfo", "Hoan tien don hang");
+        vnp_Params.put("vnp_TransactionNo", payment.getTransactionNo());
+        vnp_Params.put("vnp_TransactionDate", payment.getPayDate());
+        vnp_Params.put("vnp_CreateBy", String.valueOf(payment.getUserId()));
+        vnp_Params.put("vnp_CreateDate", refundPayment.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+        String hash_Data = String.join("|",
+            vnp_Params.get("vnp_RequestId"),
+            vnp_Params.get("vnp_Version"),
+            vnp_Params.get("vnp_Command"),
+            vnp_Params.get("vnp_TmnCode"),
+            vnp_Params.get("vnp_TransactionType"),
+            vnp_Params.get("vnp_TxnRef"),
+            vnp_Params.get("vnp_Amount"),
+            vnp_Params.get("vnp_TransactionNo"),
+            vnp_Params.get("vnp_TransactionDate"),
+            vnp_Params.get("vnp_CreateBy"),
+            vnp_Params.get("vnp_CreateDate"),
+            vnp_Params.get("vnp_IpAddr"),
+            vnp_Params.get("vnp_OrderInfo")
+        );
+        vnp_Params.put("vnp_SecureHash", hmacSHA512(vnp_HashSecret, hash_Data));
+
+        VnpayResponseDTO vnpayResponseDTO = RestClient.builder()
+            .baseUrl(vnp_ApiUrl)
+            .defaultHeader("Accept", "application/json")
+            .build()
+            .post()
+            .body(vnp_Params)
+            .retrieve()
+            .body(VnpayResponseDTO.class);
+
+        if (vnpayResponseDTO == null || !"00".equals(vnpayResponseDTO.getVnp_ResponseCode())) {
+            throw new RuntimeException(MessageError.REFUND_FAILED);
+        }
+        orderEventProvider.sendUpdatePaymentStatusEvent(
+            CreateListOrderStatusEvent.builder()
+                .userId(payment.getUserId())
+                .orderStatusEventList(List.of(
+                    OrderStatusEvent.builder()
+                        .orderId(orderCache.getOrderId())
+                        .ownerId(orderCache.getOwnerId())
+                        .orderStatus(OrderStatus.CANCELLED)
+                        .reason(reason)
+                        .build()
+                ))
+                .build()
+        );
+        orderEventProvider.sendRestoreStockEvent(
+            RestoreStockEvent.builder()
+                .userId(payment.getUserId())
+                .restoreStockItems(orderCache.getOrderItems().stream().map(orderItemCache ->
+                    RestoreStockEvent.RestoreStockItemEvent.builder()
+                        .productId(orderItemCache.getProductId())
+                        .productVariantId(orderItemCache.getProductVariantId())
+                        .quantity(orderItemCache.getQuantity())
+                        .build()
+                ).toList())
+                .build()
+        );
     }
 
     private String hmacSHA512(String key, String data) {

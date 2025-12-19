@@ -1,18 +1,20 @@
 package com.ecommerce.payment.controller;
 
+import com.ecommerce.library.component.MessageService;
+import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
+import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(Constant.PAYMENT)
 @RequiredArgsConstructor
 public class PaymentController {
     private final PaymentService paymentService;
+    private final MessageService messageService;
     @GetMapping("IPN")
     public void ipn(
         @RequestParam(value = "vnp_Amount") String amount,
@@ -29,5 +31,17 @@ public class PaymentController {
         @RequestParam(value = "vnp_SecureHash") String secureHash
     ){
         paymentService.handleIPN(amount, bankCode, bankTranNo, cardType, orderInfo, payDate, responseCode, tmnCode, transactionNo, transactionStatus, txnRef, secureHash);
+    }
+
+    @PatchMapping("/refund/{orderId}")
+    public ResponseEntity<BaseResponse<Void>> refundPayment(@PathVariable Long orderId,
+                                                            @RequestBody String reason) {
+        paymentService.refundPayment(orderId, reason);
+        return ResponseEntity.ok(
+            BaseResponse.<Void>builder()
+                .message(messageService.getMessage(MessageSuccess.REFUND_SUCCESS))
+                .statusCode(200)
+                .build()
+        );
     }
 }

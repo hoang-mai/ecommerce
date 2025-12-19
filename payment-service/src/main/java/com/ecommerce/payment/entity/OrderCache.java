@@ -4,6 +4,7 @@ import com.ecommerce.library.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,10 @@ public class OrderCache extends BaseEntity {
 
     @Column(name = "owner_id", nullable = false)
     private Long ownerId;
+
+    @Column(name = "total_price", nullable = false)
+    @Builder.Default
+    private BigDecimal totalPrice = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id")

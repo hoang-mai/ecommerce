@@ -104,4 +104,5 @@ public final class MessageSuccess {
     public static final String ORDER_COMPLETED_MESSAGE = "order.completed.message";
     public static final String ORDER_STATUS_UPDATED_TITLE = "order.status.updated.title";
     public static final String ORDER_STATUS_UPDATED_MESSAGE = "order.status.updated.message";
+    public static final String REFUND_SUCCESS = "refund.success";
 }

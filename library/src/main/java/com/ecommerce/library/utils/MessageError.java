@@ -138,4 +138,6 @@ public final class MessageError {
     public static final String SHOP_CACHE_NOT_FOUND = "shop.cache.not.found";
     public static final String REVIEW_UPDATED_ALREADY = "review.updated.already";
     public static final String INTERACTION_NOT_FOUND = "interactive.not.found";
+    public static final String PAYMENT_NOT_FOUND = "";
+    public static final String REFUND_FAILED = "";
 }

@@ -34,6 +34,12 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
 
+    @Column(name="transaction_no")
+    private String transactionNo;
+
+    @Column(name = "payDate")
+    private String payDate;
+
     @Column(name = "reason")
     private String reason;
 
