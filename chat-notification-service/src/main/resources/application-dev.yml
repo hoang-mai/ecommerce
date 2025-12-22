@@ -15,7 +15,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081/auth/realms/ecommerce
+          issuer-uri: http://localhost:18080/auth/realms/ecommerce
   data:
     mongodb:
         uri: mongodb://chat-notification-service:chat-notification-service@localhost:27017/chat-notification-service

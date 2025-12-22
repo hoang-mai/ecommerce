@@ -25,7 +25,7 @@ spring:
       ddl-auto: update
     show-sql: true
 minio:
-  url: http://${MINIO_HOST:minio}:${MINIO_PORT:9000}
+  url: http://localhost:9000
   access-key: root
   secret-key: password
   bucket-name: ecommerce

@@ -8,7 +8,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081/auth/realms/ecommerce
+          issuer-uri: http://localhost:18080/auth/realms/ecommerce
   kafka:
     bootstrap-servers: localhost:19092
     producer:
@@ -26,7 +26,7 @@ spring:
     show-sql: true
 
 keycloak:
-  auth-server-url: http://localhost:8081/auth
+  auth-server-url: http://localhost:18080/auth
   realm: ecommerce
   client-id-register: admin-cli
   client-id-login: auth-service
@@ -35,7 +35,7 @@ keycloak:
   password: 123456
 
 server:
-  port: 8099
+  port: 8081
 
 openapi:
   service:
