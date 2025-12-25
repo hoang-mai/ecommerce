@@ -10,9 +10,12 @@ import com.ecommerce.library.kafka.event.product.UpdateProductVariantStatusEvent
 import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.ProductViewHomePageDTO;
 import com.ecommerce.read.dto.ProductViewStatisticDTO;
 import com.ecommerce.read.entity.ProductView;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,7 +28,7 @@ public interface ProductViewService {
 
     void updateProductVariantStatus(UpdateProductVariantStatusEvent event);
 
-    PageResponse<ProductView> searchProducts(Boolean isOwner, Long shopId, Long categoryId, ProductStatus status, String keyword, Integer star, Double startPrice, Double endPrice, int pageNo, int pageSize, String sortBy, String sortDir);
+    PageResponse<ProductView> searchProducts(String searchId,Boolean isOwner, Long shopId, Long categoryId, ProductStatus status, String keyword, Integer star, BigDecimal startPrice, BigDecimal endPrice, int pageNo, int pageSize, String sortBy, String sortDir);
 
     ProductView getProductById(Long productId,boolean isOwner);
 
@@ -40,4 +43,8 @@ public interface ProductViewService {
     void updateProductSoldAndRevenue(String productId, String productVariantId, Integer quantity, BigDecimal revenue);
 
     void restoreProductStock(String productId, String productVariantId, Integer quantity);
+
+    String searchProductByImages(MultipartFile file) throws IOException;
+
+    ProductViewHomePageDTO getHomepageProducts(int pageNo, int pageSize, List<String> showProductIds, Long totalElements);
 }

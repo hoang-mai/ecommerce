@@ -6,6 +6,7 @@ import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.ProductViewHomePageDTO;
 import com.ecommerce.read.dto.ProductViewStatisticDTO;
 import com.ecommerce.read.entity.ProductView;
 import com.ecommerce.read.service.ProductViewService;
@@ -15,7 +16,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,6 +33,7 @@ public class ProductViewController {
     /**
      * Tìm kiếm sản phẩm với nhiều bộ lọc
      *
+     * @param searchId   ID tìm kiếm hình ảnh sản phẩm (optional)
      * @param shopId     ID của shop (optional)
      * @param categoryId ID của category (optional)
      * @param status     Trạng thái sản phẩm (optional)
@@ -46,19 +51,20 @@ public class ProductViewController {
     @GetMapping()
     @Operation(summary = "Search products", description = "Search products with multiple filters")
     public ResponseEntity<BaseResponse<PageResponse<ProductView>>> searchProducts(
+            @RequestParam(required = false) String searchId,
             @RequestParam(required = false) Long shopId,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) ProductStatus status,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer star,
-            @RequestParam(required = false) Double startPrice,
-            @RequestParam(required = false) Double endPrice,
+            @RequestParam(required = false) BigDecimal startPrice,
+            @RequestParam(required = false) BigDecimal endPrice,
             @RequestParam(required = false) Boolean isOwner,
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = "createdAt", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
-        PageResponse<ProductView> page = productViewService.searchProducts(isOwner, shopId, categoryId, status, keyword, star, startPrice, endPrice, pageNo, pageSize, sortBy, sortDir);
+        PageResponse<ProductView> page = productViewService.searchProducts(searchId,isOwner, shopId, categoryId, status, keyword, star, startPrice, endPrice, pageNo, pageSize, sortBy, sortDir);
 
         return ResponseEntity.ok(
                 BaseResponse.<PageResponse<ProductView>>builder()
@@ -110,6 +116,47 @@ public class ProductViewController {
                 .statusCode(200)
                 .message(messageService.getMessage(MessageSuccess.GET_PRODUCT_SUCCESS))
                 .data(stats)
+                .build()
+        );
+    }
+    @PostMapping("/search-images")
+    @Operation(summary = "Search product images by product IDs", description = "Retrieve product images by a list of product IDs")
+    public ResponseEntity<BaseResponse<String>> searchProductByImages(
+        @RequestPart("file")MultipartFile file
+        ) throws IOException {
+       String searchId=productViewService.searchProductByImages(file);
+        return ResponseEntity.ok(
+            BaseResponse.<String>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.PRODUCT_RETRIEVED_SUCCESS))
+                .data(searchId)
+                .build()
+        );
+    }
+
+    /**
+     * Lấy sản phẩm để hiển thị trên trang chủ
+     *
+     * @param pageNo   Số trang (mặc định là 0)
+     * @param pageSize Kích thước trang (mặc định là 12)
+     * @param showProductIds Danh sách ID sản phẩm đã hiển thị (optional)
+     * @return Danh sách sản phẩm cho trang chủ
+     */
+    @GetMapping("/homepage")
+    @Operation(summary = "Get homepage products", description = "Retrieve products for homepage display")
+    public ResponseEntity<BaseResponse<ProductViewHomePageDTO>> getHomepageProducts(
+        @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
+        @RequestParam(value = "pageSize", defaultValue = "12", required = false) int pageSize,
+        @RequestParam(value = "showProductIds", required = false) List<String> showProductIds,
+        @RequestParam(value = "totalElements", required = false) Long totalElements
+    ) {
+        ProductViewHomePageDTO page = productViewService.getHomepageProducts(pageNo, pageSize, showProductIds, totalElements);
+
+        return ResponseEntity.ok(
+            BaseResponse.<ProductViewHomePageDTO>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(messageService.getMessage(MessageSuccess.PRODUCT_RETRIEVED_SUCCESS))
+                .data(page)
                 .build()
         );
     }

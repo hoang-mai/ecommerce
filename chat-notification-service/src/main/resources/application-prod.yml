@@ -19,6 +19,13 @@ spring:
   data:
     mongodb:
       uri: mongodb://chat-notification-service:chat-notification-service@${MONGODB_HOST:mongo}:${MONGODB_PORT:27017}/chat-notification-service
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+web-push:
+  vapid-private-key: ${VAPID_PRIVATE_KEY:bNjc8_tboWXoOZmzBt0EJxgmLJXkj8A34SkbOZxTVYk}
+  vapid-public-key: ${VAPID_PUBLIC_KEY:BEp-S9Fb6ObCba-w6hWdCEjQu3FSEcnF_vAMkr7sVYQ1odhQg0gT6MTWXvw41v7BkuaSvT3WGeDC7zHUdnC1gOA}
+  subject: mailto:admin@ecommerce.com
 
 server:
   port: ${SERVER_PORT:8082}

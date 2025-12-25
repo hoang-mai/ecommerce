@@ -39,7 +39,7 @@ spring:
         - id: read-service
           uri: http://${READ_SERVICE_HOST:read-service}:${READ_SERVICE_PORT:8086}
           predicates:
-            - Path=/api/v1/user-view/**,/api/v1/product-view/**,/api/v1/order-view/**,/api/v1/cart-view/**,/api/v1/shop-view/**,/api/v1/review-view/**,/api/v1/interaction/**
+            - Path=/api/v1/user-view/**,/api/v1/product-view/**,/api/v1/order-view/**,/api/v1/cart-view/**,/api/v1/shop-view/**,/api/v1/review-view/**,/api/v1/user-category/**
         - id: review-service
           uri: http://${REVIEW_SERVICE_HOST:review-service}:${REVIEW_SERVICE_PORT:8087}
           predicates:

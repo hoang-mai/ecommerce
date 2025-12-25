@@ -1,0 +1,23 @@
+services:
+  ai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ai-service:latest
+    container_name: ai-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ai_vector_data:/app/vector_data
+    environment:
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      VECTOR_STORAGE_DIR: /app/vector_data
+    env_file:
+      - .env
+
+
+volumes:
+  ai_vector_data:
+    driver: local
+

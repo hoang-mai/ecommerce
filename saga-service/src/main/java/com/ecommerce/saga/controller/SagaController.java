@@ -40,7 +40,7 @@ public class SagaController {
      * @param userVerificationId ID của yêu cầu xác minh người dùng
      * @return Trả về thành công
      */
-    @PatchMapping("{userVerificationId}/approve")
+    @PatchMapping("/{userVerificationId}/approve")
     public ResponseEntity<BaseResponse<Void>> updateOwner(@PathVariable Long userVerificationId) {
         sagaService.approveOwnerRequest(userVerificationId);
         return ResponseEntity.status(HttpStatus.OK).body(BaseResponse.<Void>builder()

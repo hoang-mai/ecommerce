@@ -362,6 +362,14 @@ public class ProductServiceImpl implements ProductService {
                                                                 .build()).toList())
                                         .build()).toList())
                         .build());
+        productEventProducer.send(
+                UploadProductImageEvent.builder()
+                        .productId(product.getProductId())
+                        .imageUrls(product.getProductImages().stream()
+                                .map(productImage -> fileService.getPresignedUrl(productImage.getImageUrl()))
+                                .toList())
+                        .build()
+        );
     }
 
     @Override

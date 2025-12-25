@@ -87,7 +87,6 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         }
         return response.getLocation().getPath().replaceAll(".*/users/", "");
 
-
     }
 
     @Override
@@ -229,7 +228,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(reqCreateAccountDTO.getUsername());
         Map<String, List<String>> attributes = Map.of(
-                "userId", List.of(String.valueOf(reqCreateAccountDTO.getUserId())),
+                "user-id", List.of(String.valueOf(reqCreateAccountDTO.getUserId())),
                 "role", List.of(FnCommon.convertRoleProtoToRole(reqCreateAccountDTO.getRole()).getRole())
         );
         user.setAttributes(attributes);

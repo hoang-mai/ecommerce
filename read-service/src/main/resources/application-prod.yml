@@ -30,3 +30,7 @@ minio:
 server:
   port: ${SERVER_PORT:8086}
 
+here:
+  url: ${HERE_API_URL:https://geocode.search.hereapi.com/v1/geocode}
+  api-key: ${HERE_API_KEY:mGVJd3sfQbBjNXCQ_GgvpAdwxWpHW-bvFeBo-9pDr3c}
+

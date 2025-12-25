@@ -87,10 +87,10 @@ public class LoggingAspect {
     }
 
     @AfterReturning(value = "within(com.ecommerce.*.exception.RestException)", returning = "result")
-    public void logAfterReturning(JoinPoint joinPoint, Object result) {
+    public void logAfterReturning(JoinPoint joinPoint, Object result) throws JsonProcessingException {
         String methodName = joinPoint.getSignature().getName();
         LocalDateTime endTime = LocalDateTime.now();
-        log.info("Method {} returned successfully with result: {}. End time: {}", methodName, result, endTime);
+        log.info("Method {} returned successfully with result: {}. End time: {}", methodName, objectMapper.writeValueAsString(result), endTime);
     }
 
     @Before(value = "within(com.ecommerce.*.messaging.consumer.*)")

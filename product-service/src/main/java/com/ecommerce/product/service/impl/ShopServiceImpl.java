@@ -61,13 +61,13 @@ public class ShopServiceImpl implements ShopService {
         shopRepository.save(shop);
         String logoUrl;
         if (logoFile != null) {
-            logoUrl = fileService.uploadFile(logoFile, "shop" + shop.getShopId() + "/logo");
+            logoUrl = fileService.uploadFile(logoFile, "shop/" + shop.getShopId() + "/logo");
             shop.setLogoUrl(logoUrl);
 
         }
         String bannerUrl;
         if (bannerFile != null) {
-            bannerUrl = fileService.uploadFile(bannerFile, "shop" + shop.getShopId() + "/banner");
+            bannerUrl = fileService.uploadFile(bannerFile, "shop/" + shop.getShopId() + "/banner");
             shop.setBannerUrl(bannerUrl);
         }
         shopRepository.save(shop);
@@ -112,20 +112,20 @@ public class ShopServiceImpl implements ShopService {
         shop.setPhoneNumber(reqUpdateShopDTO.getPhoneNumber());
 
         if (logoFile != null) {
-            String logoUrl = fileService.uploadFile(logoFile, "shop" + shop.getShopId() + "/logo");
+            String logoUrl = fileService.uploadFile(logoFile, "shop/" + shop.getShopId() + "/logo");
             shop.setLogoUrl(logoUrl);
         }
         if (bannerFile != null) {
-            String bannerUrl = fileService.uploadFile(bannerFile, "shop" + shop.getShopId() + "/banner");
+            String bannerUrl = fileService.uploadFile(bannerFile, "shop/" + shop.getShopId() + "/banner");
             shop.setBannerUrl(bannerUrl);
         }
         if (logoFile == null && !FnCommon.isNotNullOrEmpty(reqUpdateShopDTO.getLogoUrl())) {
             shop.setLogoUrl(null);
-            fileService.deleteFilesInDirectory("shop" + shop.getShopId() + "/logo");
+            fileService.deleteFilesInDirectory("shop/" + shop.getShopId() + "/logo");
         }
         if (bannerFile == null && !FnCommon.isNotNullOrEmpty(reqUpdateShopDTO.getBannerUrl())) {
             shop.setBannerUrl(null);
-            fileService.deleteFilesInDirectory("shop" + shop.getShopId() + "/banner");
+            fileService.deleteFilesInDirectory("shop/" + shop.getShopId() + "/banner");
         }
 
 

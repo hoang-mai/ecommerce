@@ -29,7 +29,7 @@ public class Shop extends BaseEntity {
     @Column(name = "shop_name")
     private String shopName;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "logo_url")

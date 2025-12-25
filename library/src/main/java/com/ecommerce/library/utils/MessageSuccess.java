@@ -12,13 +12,7 @@ public final class MessageSuccess {
     public static final String UPDATE_ACCOUNT_SUCCESS = "update.account.success";
     public static final String GET_LIST_CHAT_PREVIEW_SUCCESS = "get.list.chat.preview.success";
     public static final String GET_CHAT_SUCCESS = "get.chat.success";
-    public static final String MARK_AS_READ_SUCCESS = "mark.as.read.success";
-    public static final String GET_UNREAD_COUNT_SUCCESS = "get.unread.count.success";
     public static final String UPDATE_MESSAGE_SUCCESS = "update.message.success";
-    public static final String CREATE_GROUP_CHAT_SUCCESS = "create.group.chat.success";
-    public static final String ADD_MEMBER_TO_GROUP_CHAT_SUCCESS = "add.member.to.group.chat.success";
-    public static final String UPDATE_NICKNAME_SUCCESS = "update.nickname.success";
-    public static final String UPDATE_CHAT_SUCCESS = "update.chat.success";
     public static final String ADDRESS_CREATED_SUCCESS = "address.created.success";
     public static final String GET_USER_ADDRESSES_SUCCESS = "get.user.addresses.success";
     public static final String ADDRESS_UPDATED_SUCCESS = "address.updated.success";
@@ -37,27 +31,12 @@ public final class MessageSuccess {
     public static final String PRODUCT_CREATED_SUCCESS = "product.created.success";
     public static final String PRODUCT_RETRIEVED_SUCCESS = "product.retrieved.success";
     public static final String PRODUCT_UPDATED_SUCCESS = "product.updated.success";
-    public static final String PRODUCT_DELETED_SUCCESS = "product.deleted.success";
-    public static final String PRODUCTS_RETRIEVED_SUCCESS = "products.retrieved.success";
     public static final String PRODUCT_STATUS_UPDATED_SUCCESS = "product.status.updated.success";
     public static final String CATEGORY_CREATED_SUCCESS = "category.created.success";
     public static final String CATEGORY_RETRIEVED_SUCCESS = "category.retrieved.success";
     public static final String CATEGORY_UPDATED_SUCCESS = "category.updated.success";
     public static final String CATEGORY_STATUS_UPDATED_SUCCESS = "category.status.updated.success";
-    public static final String CATEGORY_DELETED_SUCCESS = "category.deleted.success";
     public static final String CATEGORIES_RETRIEVED_SUCCESS = "categories.retrieved.success";
-    public static final String VARIANT_RETRIEVED_SUCCESS = "variant.retrieved.success";
-    public static final String VARIANT_UPDATED_SUCCESS = "variant.updated.success";
-    public static final String VARIANT_DELETED_SUCCESS = "variant.deleted.success";
-    public static final String VARIANTS_RETRIEVED_SUCCESS = "variants.retrieved.success";
-    public static final String STOCK_UPDATED_SUCCESS = "stock.updated.success";
-    public static final String PRODUCT_ATTRIBUTE_CREATED_SUCCESS = "product.attribute.created.success";
-
-    public static final String PRODUCT_IMAGE_CREATED_SUCCESS = "product.image.created.success";
-    public static final String PRODUCT_IMAGE_RETRIEVED_SUCCESS = "product.image.retrieved.success";
-    public static final String PRODUCT_IMAGE_UPDATED_SUCCESS = "product.image.updated.success";
-    public static final String PRODUCT_IMAGE_DELETED_SUCCESS = "product.image.deleted.success";
-    public static final String PRODUCT_IMAGES_RETRIEVED_SUCCESS = "product.images.retrieved.success";
     public static final String UPLOAD_AVATAR_SUCCESS = "upload.avatar.success";
     public static final String ACCOUNT_UPDATED_SUCCESS = "account.updated.success";
     public static final String ROLLBACK_UPDATE_USER_ROLE_SUCCESS = "rollback.update.user.role.success";
@@ -69,7 +48,6 @@ public final class MessageSuccess {
     public static final String CLEAR_CART_SUCCESS = "clear.cart.success";
     public static final String ORDER_CREATED_SUCCESS = "order.created.success";
     public static final String UPDATE_ORDER_STATUS_SUCCESS = "update.order.status.success";
-    public static final String CANCEL_ORDER_SUCCESS = "cancel.order.success";
     public static final String GET_ORDER_SUCCESS = "get.order.success";
     public static final String ORDER_CANCELLED_TITLE = "order.cancelled.title";
     public static final String ORDER_SUCCESS_TITLE = "order.success.title";
@@ -79,7 +57,6 @@ public final class MessageSuccess {
     public static final String UPDATE_NOTIFICATION_SUCCESS = "update.notification.success";
     public static final String PUSH_SUBSCRIPTION_SUCCESS = "push.subscription.success";
     public static final String PUSH_UNSUBSCRIPTION_SUCCESS = "push.unsubscription.success";
-    public static final String PUSH_NOTIFICATION_SENT_SUCCESS = "push.notification.sent.success";
     public static final String GET_CART_ITEM_COUNT_SUCCESS = "get.cart.item.count.success";
     public static final String CART_RETRIEVED_SUCCESS = "cart.retrieved.success";
     public static final String REVIEW_CREATED_SUCCESS = "review.created.success";
@@ -94,9 +71,6 @@ public final class MessageSuccess {
     public static final String UPLOAD_FILE_CHAT_SUCCESS = "upload.file.chat.success";
     public static final String GET_PRODUCT_SUCCESS = "get.product.success";
     public static final String GET_STATISTIC_SUCCESS = "get.statistic.success";
-    public static final String INTERACTION_CREATED_SUCCESS = "interactive.created.success";
-    public static final String INTERACTION_RETRIEVED_SUCCESS = "interactive.retrieved.success";
-    public static final String INTERACTION_UPDATED_SUCCESS = "interactive.updated.success";
     public static final String SEARCH_ADDRESS_SUCCESS = "search.address.success";
     public static final String NEW_ORDER = "new.order";
     public static final String NEW_ORDER_MESSAGE = "new.order.message";
@@ -105,4 +79,5 @@ public final class MessageSuccess {
     public static final String ORDER_STATUS_UPDATED_TITLE = "order.status.updated.title";
     public static final String ORDER_STATUS_UPDATED_MESSAGE = "order.status.updated.message";
     public static final String REFUND_SUCCESS = "refund.success";
+    public static final String USER_CATEGORY_ADD_SUCCESS = "user.category.add.success";
 }

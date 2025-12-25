@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM eclipse-temurin:17-jre-slim
 WORKDIR /app
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} user-service.jar

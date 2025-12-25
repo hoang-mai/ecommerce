@@ -30,7 +30,7 @@ keycloak:
   realm: ecommerce
   client-id-register: admin-cli
   client-id-login: auth-service
-  client-secret: vmx7F1YpWv5kxYYhVkVvnimRD1cD1dlj
+  client-secret: 0p9yYzLUw4HdmQoVC7kCOcDAv5tneaI3
   username: admin
   password: 123456
 
@@ -45,8 +45,3 @@ openapi:
     title: Keycloak Admin API
     version: 1.0.0
     description: API Documentation for Keycloak Admin Service
-
-
-  instance:
-    metadata-map:
-      grpc-port: ${spring.grpc.server.port}

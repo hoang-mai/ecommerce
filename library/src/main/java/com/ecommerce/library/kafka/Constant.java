@@ -54,4 +54,7 @@ public final class Constant {
     public static final String PAYMENT_TOPIC = "payment-service-topic";
     public static final String PAYMENT_SERVICE_GROUP = "payment-service-group";
     public static final String CREATE_PAYMENT_TOPIC = PAYMENT_TOPIC + ".create-payment";
+
+    public static final String AI_SERVICE_TOPIC = "ai-service-topic";
+    public static final String UPLOAD_PRODUCT_IMAGE_TOPIC = AI_SERVICE_TOPIC + ".upload-product-image";
 }

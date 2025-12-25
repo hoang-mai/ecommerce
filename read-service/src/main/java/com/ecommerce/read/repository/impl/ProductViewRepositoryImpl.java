@@ -50,8 +50,11 @@ public class ProductViewRepositoryImpl {
         }
     }
 
-    public Page<ProductView> getProductView(Long ownerId, Long shopId, Long categoryId, ProductStatus status, ShopStatus shopStatus, String keyword, Integer star, Double startPrice, Double endPrice, Pageable pageable) {
+    public Page<ProductView> getProductView(List<String> productIds, Long ownerId, Long shopId, Long categoryId, ProductStatus status, ShopStatus shopStatus, String keyword, Integer star, BigDecimal startPrice, BigDecimal endPrice, Pageable pageable) {
         List<Criteria> criteriaList = new ArrayList<>();
+        if (FnCommon.isNotNullOrEmptyList(productIds)) {
+            criteriaList.add(Criteria.where("_id").in(productIds));
+        }
         if (FnCommon.isNotNull(ownerId)) {
             criteriaList.add(Criteria.where("ownerId").is(String.valueOf(ownerId)));
         }
@@ -77,11 +80,20 @@ public class ProductViewRepositoryImpl {
 
         if (FnCommon.isNotNull(startPrice) || FnCommon.isNotNull(endPrice)) {
             if (FnCommon.isNotNull(startPrice) && FnCommon.isNotNull(endPrice)) {
-                criteriaList.add(Criteria.where("productVariants.price").gte(startPrice).lte(endPrice));
+                criteriaList.add(Criteria.where("$expr").is(
+                    new Document("$and", List.of(
+                        new Document("$gte", List.of(new Document("$toDouble", "$basePrice"), startPrice.doubleValue())),
+                        new Document("$lte", List.of(new Document("$toDouble", "$basePrice"), endPrice.doubleValue()))
+                    ))
+                ));
             } else if (FnCommon.isNotNull(startPrice)) {
-                criteriaList.add(Criteria.where("productVariants.price").gte(startPrice));
+                criteriaList.add(Criteria.where("$expr").is(
+                    new Document("$gte", List.of(new Document("$toDouble", "$basePrice"), startPrice.doubleValue()))
+                ));
             } else {
-                criteriaList.add(Criteria.where("productVariants.price").lte(endPrice));
+                criteriaList.add(Criteria.where("$expr").is(
+                    new Document("$lte", List.of(new Document("$toDouble", "$basePrice"), endPrice.doubleValue()))
+                ));
             }
         }
         Criteria finalCriteria = new Criteria();
@@ -201,5 +213,27 @@ public class ProductViewRepositoryImpl {
                 .build());
         }
         return statistics;
+    }
+
+    public List<ProductView> getHomepageProducts(List<String> showProductIds, String categoryId, Sort sort, int limit) {
+        Query query = new Query();
+        if (FnCommon.isNotNullOrEmptyList(showProductIds)) {
+            query.addCriteria(Criteria.where("_id").nin(showProductIds));
+        }
+        if (FnCommon.isNotNullOrEmpty(categoryId)) {
+            query.addCriteria(Criteria.where("categoryId").is(categoryId));
+        }
+        query.addCriteria(Criteria.where("productStatus").is(ProductStatus.ACTIVE));
+        query.addCriteria(Criteria.where("shopStatus").is(ShopStatus.ACTIVE));
+        query.limit(limit);
+        query.with(sort);
+        return mongoTemplate.find(query, ProductView.class);
+    }
+
+    public Long countProductsForHomepage() {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("productStatus").is(ProductStatus.ACTIVE));
+        query.addCriteria(Criteria.where("shopStatus").is(ShopStatus.ACTIVE));
+        return mongoTemplate.count(query, ProductView.class);
     }
 }
