@@ -22,7 +22,8 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api-docs-json/**"
+                                "/api-docs-json/**",
+                            "/actuator/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/v1/review","/api/v1/review/**").hasAuthority("USER")

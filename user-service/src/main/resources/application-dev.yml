@@ -48,3 +48,11 @@ openapi:
     title: User Service API
     version: 1.0.0
     description: API document
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always

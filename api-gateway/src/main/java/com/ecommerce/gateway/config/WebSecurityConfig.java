@@ -27,7 +27,8 @@ public class WebSecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api-docs-json/**",
-                                "ws/**"
+                                "ws/**",
+                                "/actuator/**"
                         ).permitAll()
                         .pathMatchers("api/v1/user-view/search-address").permitAll()
                         .pathMatchers("/api/v1/push-subscription/unsubscribe").permitAll()

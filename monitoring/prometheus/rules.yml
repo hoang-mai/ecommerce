@@ -3,28 +3,28 @@ groups:
     rules:
       - alert: HighErrorRate
         expr: |
-          sum by (application) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+          sum by (application, instance) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
           /
-          sum by (application) (rate(http_server_requests_seconds_count[5m])) > 0.05
+          sum by (application, instance) (rate(http_server_requests_seconds_count[5m])) > 0.05
         for: 2m
         labels:
           severity: critical
         annotations:
-          summary: "High error rate detected on {{ $labels.application }}"
-          description: "Service {{ $labels.application }} has error rate > 5% in last 5 minutes (current: {{ $value | humanizePercentage }})"
+          summary: "High error rate detected on {{ $labels.application }} (instance {{ $labels.instance }})"
+          description: "Service {{ $labels.application }} instance {{ $labels.instance }} has error rate > 5% in last 5 minutes (current: {{ $value | humanizePercentage }})"
 
       - alert: HighLatency
         expr: |
           histogram_quantile(
             0.95,
-            sum by (le, application) (rate(http_server_requests_seconds_bucket[5m]))
+            sum by (le, application, instance) (rate(http_server_requests_seconds_bucket[5m]))
           ) > 1
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High latency on {{ $labels.application }}"
-          description: "Service {{ $labels.application }} has P95 latency > 1s (current: {{ $value }}s)"
+          summary: "High latency on {{ $labels.application }} (instance {{ $labels.instance }})"
+          description: "Service {{ $labels.application }} instance {{ $labels.instance }} has P95 latency > 1s (current: {{ $value }}s)"
 
       - alert: ServiceDown
         expr: up{job="spring-boot-services"} == 0
@@ -32,44 +32,44 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Service {{ $labels.instance }} is down"
-          description: "Service {{ $labels.instance }} has been down for more than 1 minute"
+          summary: "Service {{ $labels.application }} instance {{ $labels.instance }} is down"
+          description: "Service {{ $labels.application }} instance {{ $labels.instance }} has been down for more than 1 minute"
 
       - alert: HighCPUUsage
-        expr: sum by (application) (process_cpu_usage) > 0.9
+        expr: sum by (application, instance) (process_cpu_usage) > 0.9
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High CPU usage on {{ $labels.application }}"
-          description: "Service {{ $labels.application }} CPU usage > 90% for more than 5 minutes (current: {{ $value | humanizePercentage }})"
+          summary: "High CPU usage on {{ $labels.application }} (instance {{ $labels.instance }})"
+          description: "Service {{ $labels.application }} instance {{ $labels.instance }} CPU usage > 90% for more than 5 minutes (current: {{ $value | humanizePercentage }})"
 
       - alert: HighMemoryUsage
         expr: |
-          sum by (application) (jvm_memory_used_bytes{area="heap"})
+          sum by (application, instance) (jvm_memory_used_bytes{area="heap"})
           /
-          sum by (application) (jvm_memory_max_bytes{area="heap"}) > 0.85
+          sum by (application, instance) (jvm_memory_max_bytes{area="heap"}) > 0.85
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High memory usage on {{ $labels.application }}"
-          description: "Service {{ $labels.application }} heap memory usage > 85% for more than 5 minutes (current: {{ $value | humanizePercentage }})"
+          summary: "High memory usage on {{ $labels.application }} (instance {{ $labels.instance }})"
+          description: "Service {{ $labels.application }} instance {{ $labels.instance }} heap memory usage > 85% for more than 5 minutes (current: {{ $value | humanizePercentage }})"
 
       - alert: TooManyGCPauses
-        expr: sum by (application) (rate(jvm_gc_pause_seconds_count[5m])) > 5
+        expr: sum by (application, instance) (rate(jvm_gc_pause_seconds_count[5m])) > 5
         for: 5m
         labels:
           severity: critical
         annotations:
-          summary: "Too many GC pauses on {{ $labels.application }}"
-          description: "Service {{ $labels.application }} has > 10 GC pauses per second (current: {{ $value }})"
+          summary: "Too many GC pauses on {{ $labels.application }} (instance {{ $labels.instance }})"
+          description: "Service {{ $labels.application }} instance {{ $labels.instance }} has > 5 GC pauses per 5m (current: {{ $value }})"
 
       - alert: HighThreadCount
-        expr: sum by (application) (jvm_threads_live_threads) > 200
+        expr: sum by (application, instance) (jvm_threads_live_threads) > 200
         for: 10m
         labels:
           severity: warning
         annotations:
-          summary: "High thread count on {{ $labels.application }}"
-          description: "Service {{ $labels.application }} has > 200 active threads (current: {{ $value }})"
+          summary: "High thread count on {{ $labels.application }} (instance {{ $labels.instance }})"
+          description: "Service {{ $labels.application }} instance {{ $labels.instance }} has > 200 active threads (current: {{ $value }})"

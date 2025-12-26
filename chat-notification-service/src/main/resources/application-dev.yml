@@ -57,3 +57,11 @@ logging:
     org.springframework.web.socket: DEBUG
     org.springframework.messaging: DEBUG
     org.springframework.web.servlet.handler: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always

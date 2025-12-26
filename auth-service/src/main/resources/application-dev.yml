@@ -45,3 +45,11 @@ openapi:
     title: Keycloak Admin API
     version: 1.0.0
     description: API Documentation for Keycloak Admin Service
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always

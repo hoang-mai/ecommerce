@@ -87,8 +87,8 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (application)",
-          "legendFormat": "{{application}}",
+          "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (application, instance)",
+          "legendFormat": "{{application}} ({{instance}})",
           "refId": "A"
         }
       ],
@@ -168,8 +168,8 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) by (application) / sum(rate(http_server_requests_seconds_count[5m])) by (application)",
-          "legendFormat": "{{application}}",
+          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) by (application, instance) / sum(rate(http_server_requests_seconds_count[5m])) by (application, instance)",
+          "legendFormat": "{{application}} ({{instance}})",
           "refId": "A"
         }
       ],
@@ -253,13 +253,13 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application))",
-          "legendFormat": "{{application}} - P95",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application, instance))",
+          "legendFormat": "{{application}} - {{instance}} - P95",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application))",
-          "legendFormat": "{{application}} - P50",
+          "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application, instance))",
+          "legendFormat": "{{application}} - {{instance}} - P50",
           "refId": "B"
         }
       ],
@@ -335,13 +335,13 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "sum(jvm_memory_used_bytes{area=\"heap\"}) by (application)",
-          "legendFormat": "{{application}} - Heap",
+          "expr": "sum(jvm_memory_used_bytes{area=\\\"heap\\\"}) by (application, instance)",
+          "legendFormat": "{{application}} - {{instance}} - Heap",
           "refId": "A"
         },
         {
-          "expr": "sum(jvm_memory_max_bytes{area=\"heap\"}) by (application)",
-          "legendFormat": "{{application}} - Max Heap",
+          "expr": "sum(jvm_memory_max_bytes{area=\\\"heap\\\"}) by (application, instance)",
+          "legendFormat": "{{application}} - {{instance}} - Max Heap",
           "refId": "B"
         }
       ],
@@ -394,8 +394,8 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "sum(process_cpu_usage * 100) by (application)",
-          "legendFormat": "{{application}}",
+          "expr": "sum(process_cpu_usage * 100) by (application, instance)",
+          "legendFormat": "{{application}} ({{instance}})",
           "refId": "A"
         }
       ],
@@ -471,8 +471,8 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "sum(jvm_threads_live_threads) by (application)",
-          "legendFormat": "{{application}}",
+          "expr": "sum(jvm_threads_live_threads) by (application, instance)",
+          "legendFormat": "{{application}} ({{instance}})",
           "refId": "A"
         }
       ],
@@ -548,8 +548,8 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "sum(rate(jvm_gc_pause_seconds_count[5m])) by (application)",
-          "legendFormat": "{{application}}",
+          "expr": "sum(rate(jvm_gc_pause_seconds_count[5m])) by (application, instance)",
+          "legendFormat": "{{application}} ({{instance}})",
           "refId": "A"
         }
       ],

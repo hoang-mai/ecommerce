@@ -12,10 +12,46 @@ alerting:
             - alertmanager:9093
 
 scrape_configs:
-  - job_name: "read-service"
+  - job_name: "spring-boot-services"
     metrics_path: "/actuator/prometheus"
     static_configs:
       - targets:
-          - host.docker.internal:8086
+          - api-gateway:8080
+        labels:
+          application: "api-gateway"
+      - targets:
+          - auth-service:8081
+        labels:
+          application: "auth-service"
+      - targets:
+          - user-service:8089
+        labels:
+          application: "user-service"
+      - targets:
+          - saga-service:8088
+        labels:
+          application: "saga-service"
+      - targets:
+          - review-service:8087
+        labels:
+          application: "review-service"
+      - targets:
+          - read-service:8086
         labels:
           application: "read-service"
+      - targets:
+          - product-service:8085
+        labels:
+          application: "product-service"
+      - targets:
+          - order-service:8083
+        labels:
+          application: "order-service"
+      - targets:
+          - chat-notification-service:8082
+        labels:
+          application: "chat-notification-service"
+      - targets:
+          - payment-service:8084
+        labels:
+          application: "payment-service"

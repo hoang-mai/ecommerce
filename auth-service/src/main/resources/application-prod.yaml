@@ -36,3 +36,11 @@ keycloak:
   client-id-login: auth-service
   username: ${KC_BOOTSTRAP_ADMIN_USERNAME:admin}
   password: ${KC_BOOTSTRAP_ADMIN_PASSWORD:123456}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always

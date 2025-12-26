@@ -22,7 +22,8 @@ public class WebSecurityConfig {
                     "/v3/api-docs/**",
                     "/api-docs-json/**",
                     "/ws",
-                    "/ws/**"
+                    "/ws/**",
+                    "/actuator/**"
                 ).permitAll()
                 .requestMatchers("/api/v1/push-subscription/unsubscribe").permitAll()
                 .anyRequest().authenticated()
