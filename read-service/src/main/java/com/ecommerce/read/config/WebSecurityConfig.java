@@ -23,7 +23,8 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api-docs-json/**"
+                                "/api-docs-json/**",
+                                "/actuator/**"
                         ).permitAll()
                         .requestMatchers("api/v1/user-view/search-address").permitAll()
                         .requestMatchers("api/v1/product-view/**").permitAll()
