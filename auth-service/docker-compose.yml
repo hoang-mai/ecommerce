@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  auth-service:
+    image: maianhhoang31072003/auth-service:latest
+    container_name: auth-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    ports:
+      - "8081:8081"
+      - "9092:9092"
+
+
