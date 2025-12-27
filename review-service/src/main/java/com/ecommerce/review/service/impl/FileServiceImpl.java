@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,11 @@ public class FileServiceImpl implements FileService {
 
     private final MinioClient minioClient;
 
+    @Value("${minio.target}")
+    private String minioTarget;
+
+    @Value("${minio.replacement}")
+    private String minioReplacement;
     @Value("${minio.bucket-name}")
     private String bucketName;
 
@@ -60,14 +66,16 @@ public class FileServiceImpl implements FileService {
             return null;
         }
         try {
-            return minioClient.getPresignedObjectUrl(
-                    GetPresignedObjectUrlArgs.builder()
-                            .method(Method.GET)
-                            .bucket(bucketName)
-                            .object(objectPath)
-                            .expiry(7 * 24 * 60 * 60)
-                            .build()
+            String internalUrl = minioClient.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                    .method(Method.GET)
+                    .bucket(bucketName)
+                    .object(objectPath)
+                    .expiry(7, TimeUnit.DAYS)
+                    .build()
             );
+
+            return internalUrl.replace(minioTarget, minioReplacement);
         } catch (Exception e) {
             throw new RuntimeException(MessageError.FILE_UPLOAD_FAILED);
         }
