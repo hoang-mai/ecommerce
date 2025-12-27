@@ -29,7 +29,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -99,7 +98,7 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
         vnp_Params.put("vnp_Amount", amountStr);
-        vnp_Params.put("vnp_CreateDate", payment.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        vnp_Params.put("vnp_CreateDate", payment.getCreatedAt().plusHours(7).atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         vnp_Params.put("vnp_CurrCode", vnp_CurrCode);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
         vnp_Params.put("vnp_Locale", vnp_Locale);
@@ -107,7 +106,7 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.put("vnp_OrderInfo", vnp_OrderInfo);
         vnp_Params.put("vnp_OrderType", orderType);
         vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
-        vnp_Params.put("vnp_ExpireDate", payment.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).plusMinutes(15).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        vnp_Params.put("vnp_ExpireDate", payment.getCreatedAt().plusHours(7).atZone(ZoneId.of("Asia/Ho_Chi_Minh")).plusMinutes(15).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         vnp_Params.put("vnp_TxnRef", String.valueOf(payment.getPaymentId()));
 
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
@@ -271,7 +270,7 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.put("vnp_TransactionNo", payment.getTransactionNo());
         vnp_Params.put("vnp_TransactionDate", payment.getPayDate());
         vnp_Params.put("vnp_CreateBy", String.valueOf(payment.getUserId()));
-        vnp_Params.put("vnp_CreateDate", refundPayment.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        vnp_Params.put("vnp_CreateDate", refundPayment.getCreatedAt().plusHours(7).atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
         String hash_Data = String.join("|",
             vnp_Params.get("vnp_RequestId"),

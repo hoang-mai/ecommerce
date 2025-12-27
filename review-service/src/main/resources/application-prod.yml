@@ -29,7 +29,7 @@ spring:
       ddl-auto: update
     show-sql: true
 minio:
-  url: http://${MINIO_HOST:localhost}:${MINIO_PORT:9000}
+  url: http://${MINIO_HOST:host.docker.internal}:${MINIO_PORT:9000}
   access-key: root
   secret-key: password
   bucket-name: ecommerce

@@ -30,7 +30,7 @@ web-push:
 server:
   port: ${SERVER_PORT:8082}
 minio:
-  url: http://${MINIO_HOST:localhost}:${MINIO_PORT:9000}
+  url: http://${MINIO_HOST:host.docker.internal}:${MINIO_PORT:9000}
   access-key: root
   secret-key: password
   bucket-name: ecommerce
