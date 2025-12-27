@@ -18,11 +18,7 @@ public class FileServiceImpl implements FileService {
 
     private final MinioClient minioClient;
 
-    @Value("${minio.target}")
-    private String minioTarget;
 
-    @Value("${minio.replacement}")
-    private String minioReplacement;
 
 
     @Value("${minio.bucket-name}")
@@ -66,7 +62,7 @@ public class FileServiceImpl implements FileService {
             return null;
         }
         try {
-            String internalUrl = minioClient.getPresignedObjectUrl(
+            return minioClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs.builder()
                     .method(Method.GET)
                     .bucket(bucketName)
@@ -75,7 +71,6 @@ public class FileServiceImpl implements FileService {
                     .build()
             );
 
-            return internalUrl.replace(minioTarget, minioReplacement);
         } catch (Exception e) {
             throw new RuntimeException(MessageError.FILE_UPLOAD_FAILED);
         }

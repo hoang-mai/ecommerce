@@ -31,8 +31,7 @@ minio:
   access-key: root
   secret-key: password
   bucket-name: ecommerce
-  target: http://localhost:9000
-  replacement: http://localhost:9000
+
 web-push:
   vapid-private-key: bNjc8_tboWXoOZmzBt0EJxgmLJXkj8A34SkbOZxTVYk
   vapid-public-key: BEp-S9Fb6ObCba-w6hWdCEjQu3FSEcnF_vAMkr7sVYQ1odhQg0gT6MTWXvw41v7BkuaSvT3WGeDC7zHUdnC1gOA

@@ -26,8 +26,6 @@ minio:
   access-key: root
   secret-key: password
   bucket-name: ecommerce
-  target: http://localhost:9000
-  replacement: http://localhost:9000
 server:
   port: 8086
 
