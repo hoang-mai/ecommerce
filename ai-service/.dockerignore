@@ -1,0 +1,63 @@
+# Python cache and temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation and README
+README.md
+*.md
+docs/
+
+# Test files
+test/
+tests/
+*.test.py
+*_test.py
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Logs
+*.log
+logs/
+
+# Environment files (should be passed at runtime)
+.env
+.env.*
+
+# Vector data (might be large, consider mounting as volume)
+# Uncomment if you want to exclude:
+# vector_data/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+

@@ -7,4 +7,11 @@ providers:
     disableDeletion: false
     updateIntervalSeconds: 10
     options:
-      path: /etc/grafana/provisioning/dashboard-files
+      path: /etc/grafana/provisioning/dashboard-files/spring-boot.json
+  - name: "ai-service"
+    folder: "AI Service"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      path: /etc/grafana/provisioning/dashboard-files/ai-service.json

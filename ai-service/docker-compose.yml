@@ -15,7 +15,13 @@ services:
       VECTOR_STORAGE_DIR: /app/vector_data
     env_file:
       - .env
+    networks:
+      - service-network
 
 
 volumes:
   ai_vector_data:
+
+networks:
+  service-network:
+    driver: bridge

@@ -335,12 +335,12 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "sum(jvm_memory_used_bytes{area=\\\"heap\\\"}) by (application, instance)",
+          "expr": "sum(jvm_memory_used_bytes{area=\"heap\"}) by (application, instance)",
           "legendFormat": "{{application}} - {{instance}} - Heap",
           "refId": "A"
         },
         {
-          "expr": "sum(jvm_memory_max_bytes{area=\\\"heap\\\"}) by (application, instance)",
+          "expr": "sum(jvm_memory_max_bytes{area=\"heap\"}) by (application, instance)",
           "legendFormat": "{{application}} - {{instance}} - Max Heap",
           "refId": "B"
         }

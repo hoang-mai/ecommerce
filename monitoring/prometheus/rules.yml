@@ -73,3 +73,89 @@ groups:
         annotations:
           summary: "High thread count on {{ $labels.application }} (instance {{ $labels.instance }})"
           description: "Service {{ $labels.application }} instance {{ $labels.instance }} has > 200 active threads (current: {{ $value }})"
+
+  - name: ai-service-alerts
+    rules:
+      - alert: AIServiceHighErrorRate
+        expr: |
+          sum by (application, instance) (rate(http_requests_total{application="ai-service",status=~"5.."}[5m]))
+          /
+          sum by (application, instance) (rate(http_requests_total{application="ai-service"}[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected on AI Service (instance {{ $labels.instance }})"
+          description: "AI Service instance {{ $labels.instance }} has error rate > 5% in last 5 minutes (current: {{ $value | humanizePercentage }})"
+
+      - alert: AIServiceHighLatency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le, application, instance) (rate(http_request_duration_seconds_bucket{application="ai-service"}[5m]))
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency on AI Service (instance {{ $labels.instance }})"
+          description: "AI Service instance {{ $labels.instance }} has P95 latency > 2s (current: {{ $value }}s)"
+
+      - alert: AIServiceDown
+        expr: up{application="ai-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AI Service instance {{ $labels.instance }} is down"
+          description: "AI Service instance {{ $labels.instance }} has been down for more than 1 minute"
+
+      - alert: AIServiceHighCPUUsage
+        expr: rate(process_cpu_seconds_total{application="ai-service"}[5m]) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on AI Service (instance {{ $labels.instance }})"
+          description: "AI Service instance {{ $labels.instance }} CPU usage > 90% for more than 5 minutes (current: {{ $value }}%)"
+
+      - alert: AIServiceHighMemoryUsage
+        expr: process_resident_memory_bytes{application="ai-service"} > 2147483648
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on AI Service (instance {{ $labels.instance }})"
+          description: "AI Service instance {{ $labels.instance }} memory usage > 2GB for more than 5 minutes (current: {{ $value | humanize1024 }})"
+
+      - alert: AIServiceHighOpenFileDescriptors
+        expr: process_open_fds{application="ai-service"} > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High open file descriptors on AI Service (instance {{ $labels.instance }})"
+          description: "AI Service instance {{ $labels.instance }} has > 1000 open file descriptors (current: {{ $value }})"
+
+      - alert: AIServiceImageSearchSlow
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le, handler) (rate(http_request_duration_seconds_bucket{application="ai-service",handler="/search-images"}[5m]))
+          ) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Image search endpoint is slow on AI Service"
+          description: "AI Service /search-images endpoint has P95 latency > 5s (current: {{ $value }}s)"
+
+      - alert: AIServiceHighRequestRate
+        expr: sum by (application, instance) (rate(http_requests_total{application="ai-service"}[5m])) > 100
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "High request rate on AI Service (instance {{ $labels.instance }})"
+          description: "AI Service instance {{ $labels.instance }} is receiving > 100 requests/second (current: {{ $value }} req/s)"
+

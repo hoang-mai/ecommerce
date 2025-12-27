@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 import logging
 import os
 from dotenv import load_dotenv
+from prometheus_fastapi_instrumentator import Instrumentator
 from messaging.consumer.product_event_consumer import ProductEventConsumer
 from service.search_images import ImageSearchService
 from vertor_storage.vector_storage import VectorStorage
@@ -77,6 +78,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Setup Prometheus metrics
+Instrumentator().instrument(app).expose(app, endpoint="/actuator/prometheus")
 
 
 @app.get("/")

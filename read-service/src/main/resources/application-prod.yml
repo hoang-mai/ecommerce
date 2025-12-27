@@ -22,7 +22,7 @@ spring:
     mongodb:
       uri: mongodb://read-service:read-service@${MONGODB_HOST:mongo}:${MONGODB_PORT:27017}/read-service
 minio:
-  url: http://localhost:9000
+  url: http://${MINIO_HOST:localhost}:${MINIO_PORT:9000}
   access-key: root
   secret-key: password
   bucket-name: ecommerce
@@ -34,3 +34,15 @@ here:
   url: ${HERE_API_URL:https://geocode.search.hereapi.com/v1/geocode}
   api-key: ${HERE_API_KEY:mGVJd3sfQbBjNXCQ_GgvpAdwxWpHW-bvFeBo-9pDr3c}
 
+ai-service:
+  host: ${AI_SERVICE_HOST:ai-service}
+  port: ${AI_SERVICE_PORT:8000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always

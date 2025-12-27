@@ -55,3 +55,10 @@ scrape_configs:
           - payment-service:8084
         labels:
           application: "payment-service"
+  - job_name: "ai-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+          - ai-service:8000
+        labels:
+          application: "ai-service"

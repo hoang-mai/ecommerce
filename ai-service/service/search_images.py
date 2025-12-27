@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from typing import List, Dict, Any, Coroutine
+from typing import Any
 from PIL import Image
 from io import BytesIO
 from fastapi import UploadFile

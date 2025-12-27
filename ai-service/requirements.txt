@@ -20,6 +20,7 @@ confluent-kafka==2.12.2
 # FastAPI & Web Server
 fastapi==0.127.0
 uvicorn==0.40.0
+python-multipart==0.0.21
 
 # Imgae Processing
 Pillow==12.0.0
@@ -27,5 +28,9 @@ requests==2.32.5
 
 # CLIP for Image Embeddings
 git+https://github.com/openai/CLIP.git
+
+# Prometheus Metrics
+prometheus-client==0.23.1
+prometheus-fastapi-instrumentator==7.1.0
 
 
