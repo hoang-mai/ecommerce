@@ -196,12 +196,15 @@ public class ShopViewRepositoryImpl {
 
     /**
      * Lấy top 5 shop theo doanh thu hoặc số lượng bán trong tháng hiện tại
+     * @param ownerId ID chủ shop
      * @param nowDate Thời điểm hiện tại để xác định tháng (optional, mặc định là thời điểm hiện tại)
      * @param type    Loại thống kê: "sold" (bán chạy) hoặc "revenue" (doanh thu cao)
      * @return Danh sách top 5 shop
      */
-    public List<ShopViewStatisticDTO> getTopShopsByRevenue(LocalDateTime nowDate, String type) {
+    public List<ShopViewStatisticDTO> getTopShopsByRevenue(String ownerId,LocalDateTime nowDate, String type) {
         List<Criteria> criteriaList = new ArrayList<>();
+
+        criteriaList.add(Criteria.where("ownerId").is(ownerId));
 
         // Điều kiện lọc dựa trên type
         if ("revenue".equalsIgnoreCase(type)) {

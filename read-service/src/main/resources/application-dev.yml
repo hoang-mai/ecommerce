@@ -21,6 +21,10 @@ spring:
   data:
     mongodb:
       uri: mongodb://read-service:read-service@localhost:27017/read-service
+  elasticsearch:
+    uris: http://localhost:9200
+    username: elastic
+    password: changeme
 minio:
   url: http://localhost:9000
   access-key: root

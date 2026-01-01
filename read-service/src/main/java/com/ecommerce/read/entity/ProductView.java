@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,10 @@ public class ProductView extends BaseEntity {
     @Field("numberOfReviews")
     @Builder.Default
     private Integer numberOfReviews = 0;
+
+    @Field("productDetails")
+    @Builder.Default
+    private Map<String, String> productDetails = new HashMap<>();
 
     @Field("ratingStatistics")
     @Builder.Default

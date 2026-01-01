@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Builder
 @Getter
@@ -29,6 +30,7 @@ public class CreateProductEvent {
     private Double discount;
     private LocalDateTime discountStartDate;
     private LocalDateTime discountEndDate;
+    private Map<String, String> productDetails;
     private List<CreateProductImageEvent> productImages;
     private List<CreateProductAttributeEvent> productAttributes;
     private List<CreateProductVariantEvent> productVariants;

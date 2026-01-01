@@ -142,7 +142,10 @@ public class OrderViewServiceImpl implements OrderViewService {
             int totalQuantity = orderView.getOrderItems().stream()
                 .mapToInt(OrderView.OrderItem::getQuantity)
                 .sum();
-
+            if(shopView.getTotalOrder() == null){
+                shopView.setTotalOrder(0L);
+            }
+            shopView.setTotalOrder(shopView.getTotalOrder() + 1);
             shopView.setTotalSold(shopView.getTotalSold() + totalQuantity);
             shopView.setTotalRevenue(shopView.getTotalRevenue().add(orderView.getTotalPrice()));
             shopViewRepository.save(shopView);

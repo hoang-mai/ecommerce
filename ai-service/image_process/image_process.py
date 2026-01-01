@@ -6,7 +6,7 @@ import clip
 import logging
 from typing import List, Optional
 import numpy as np
-
+import os
 logger = logging.getLogger(__name__)
 
 # Global model instance - will be loaded lazily
@@ -18,7 +18,7 @@ def load_model():
     global _model, _preprocess
     if _model is None:
         logger.info("Loading CLIP model ViT-B/16...")
-        _model, _preprocess = clip.load("ViT-B/16", device="cpu")
+        _model, _preprocess = clip.load("ViT-B/16", device="cpu", download_root=os.getenv('CLIP_MODEL_DIR', './models'))
         logger.info("✅ CLIP model loaded successfully")
     return _model, _preprocess
 

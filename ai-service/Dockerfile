@@ -51,7 +51,7 @@ RUN useradd --create-home --no-log-init appuser
 
 # Copy application code (leverage .dockerignore to exclude unnecessary files)
 COPY --chown=appuser:appuser . /app
-
+RUN mkdir -p /models && chown -R appuser:appuser /models
 # Switch to non-root user
 USER appuser
 

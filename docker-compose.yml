@@ -94,7 +94,7 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093,INTERNAL://kafka:9094
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,INTERNAL://kafka:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:19092,INTERNAL://kafka:9094
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
@@ -108,6 +108,31 @@ services:
       - kafka-secrets:/var/lib/kafka/secrets
       - kafka-config:/mnt/shared/config
       - kafka-etc-secrets:/etc/kafka/secrets
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.3
+    container_name: elasticsearch
+    environment:
+      - USERNAME=elastic
+      - PASSWORD=changeme
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=true
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - es-plugins:/usr/share/elasticsearch/plugins
+    command: >
+      bash -c "
+        if [ ! -d /usr/share/elasticsearch/plugins/analysis-icu ]; then
+          bin/elasticsearch-plugin install --batch analysis-icu
+        fi
+        /usr/local/bin/docker-entrypoint.sh
+      "
+    networks:
+      - service-network
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -330,10 +355,12 @@ services:
       - "8000:8000"
     volumes:
       - ai_vector_data:/app/vector_data
+      - models:/models
     environment:
       PYTHONUNBUFFERED: 1
       PYTHONDONTWRITEBYTECODE: 1
       VECTOR_STORAGE_DIR: /app/vector_data
+      CLIP_MODEL_DIR: /models
     env_file:
       - ai-service/.env
     networks:
@@ -353,6 +380,9 @@ volumes:
   prometheus-data:
   alertmanager-data:
   ai_vector_data:
+  models:
+  es-data:
+  es-plugins:
 networks:
   service-network:
     driver: bridge

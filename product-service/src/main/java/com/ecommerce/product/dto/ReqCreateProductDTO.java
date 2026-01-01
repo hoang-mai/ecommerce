@@ -9,6 +9,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 public class ReqCreateProductDTO {
@@ -32,6 +33,8 @@ public class ReqCreateProductDTO {
     @NotNull(message = MessageError.PRODUCT_ATTRIBUTES_NOT_NULL)
     @Schema(description = "List of product attributes (e.g., Color, Size)")
     private List<ReqProductAttributeDTO> productAttributes;
+
+    private Map<String,String> productDetails;
 
     @Valid
     @NotNull(message = MessageError.PRODUCT_VARIANTS_NOT_NULL)

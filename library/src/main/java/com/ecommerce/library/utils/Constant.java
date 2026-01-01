@@ -37,4 +37,5 @@ public final class Constant {
     public static final String PUSH_SUBSCRIPTION = REQUEST_MAPPING + "/push-subscription";
     public static final String PAYMENT = REQUEST_MAPPING + "/payment";
     public static final String USER_CATEGORY = REQUEST_MAPPING + "/user-category";
+    public static final String SEARCH_KEYWORD = REQUEST_MAPPING + "/search-keyword";
 }

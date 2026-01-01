@@ -1,6 +1,7 @@
 package com.ecommerce.read.service.impl;
 
 import com.ecommerce.library.component.UserHelper;
+import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.review.CreateReviewViewEvent;
 import com.ecommerce.library.kafka.event.review.DeleteReviewViewEvent;
 import com.ecommerce.library.kafka.event.review.UpdateReviewViewEvent;
@@ -9,6 +10,7 @@ import com.ecommerce.library.kafka.event.review.UpdateReviewReplyEvent;
 import com.ecommerce.library.kafka.event.review.DeleteReviewReplyEvent;
 import com.ecommerce.library.kafka.event.user.UpdateAvatarUserEvent;
 import com.ecommerce.library.kafka.event.user.UpdateUserEvent;
+import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.entity.ReviewView;
 import com.ecommerce.read.repository.ReviewViewRepository;
@@ -45,7 +47,9 @@ public class ReviewViewServiceImpl implements ReviewViewService {
     @Override
     public void createReviewView(CreateReviewViewEvent createReviewViewEvent) {
         if (createReviewViewEvent == null) return;
-        UserView userView = userViewRepository.findById(String.valueOf(createReviewViewEvent.getUserId())).orElse(null);
+        UserView userView = userViewRepository.findById(String.valueOf(createReviewViewEvent.getUserId()))
+            .orElseThrow(()-> new NotFoundException(MessageError.USER_NOT_FOUND)
+        );
         ReviewView rv = ReviewView.builder()
             ._id(String.valueOf(createReviewViewEvent.getReviewId()))
             .orderItemId(String.valueOf(createReviewViewEvent.getOrderItemId()))

@@ -57,12 +57,12 @@ public class ProductServiceImpl implements ProductService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .category(category)
+                .productDetails(request.getProductDetails())
                 .productStatus(ProductStatus.ACTIVE)
                 .discount(request.getDiscount() != null ? request.getDiscount() : 0.0)
                 .discountStartDate(request.getDiscountStartDate())
                 .discountEndDate(request.getDiscountEndDate())
                 .build();
-
         if (FnCommon.isNotNullOrEmptyList(request.getProductAttributes())) {
             request.getProductAttributes().forEach(reqProductAttributeDTO -> {
                 ProductAttribute productAttribute = ProductAttribute.builder()
@@ -134,6 +134,7 @@ public class ProductServiceImpl implements ProductService {
                         .ownerId(ownerId)
                         .productStatus(product.getProductStatus())
                         .description(product.getDescription())
+                        .productDetails(request.getProductDetails())
                         .discount(product.getDiscount())
                         .discountStartDate(product.getDiscountStartDate())
                         .discountEndDate(product.getDiscountEndDate())
@@ -171,6 +172,14 @@ public class ProductServiceImpl implements ProductService {
                                                                 .build()).toList())
                                         .build()).toList())
                         .build());
+        productEventProducer.send(
+            UploadProductImageEvent.builder()
+                .productId(product.getProductId())
+                .imageUrls(product.getProductImages().stream()
+                    .map(productImage -> fileService.getPresignedUrl(productImage.getImageUrl()))
+                    .toList())
+                .build()
+        );
     }
 
 
@@ -197,6 +206,7 @@ public class ProductServiceImpl implements ProductService {
         product.setDiscount(request.getDiscount());
         product.setDiscountStartDate(request.getDiscountStartDate());
         product.setDiscountEndDate(request.getDiscountEndDate());
+        product.setProductDetails(request.getProductDetails());
         // Xóa ảnh đã được chỉ định
         if (FnCommon.isNotNullOrEmptyList(request.getDeletedImageIds()) && FnCommon.isNotNullOrEmptyList(product.getProductImages())) {
             request.getDeletedImageIds().forEach(imageId -> product.getProductImages().stream()
@@ -326,6 +336,7 @@ public class ProductServiceImpl implements ProductService {
                         .ownerId(ownerId)
                         .productStatus(product.getProductStatus())
                         .description(product.getDescription())
+                        .productDetails(request.getProductDetails())
                         .discount(product.getDiscount())
                         .discountStartDate(product.getDiscountStartDate())
                         .discountEndDate(product.getDiscountEndDate())

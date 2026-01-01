@@ -6,6 +6,7 @@ import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.shop.CreateShopEvent;
 import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
+import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.OwnerViewStatisticDTO;
@@ -38,6 +39,25 @@ public class ShopViewServiceImpl implements ShopViewService {
 
     @Override
     public void createShopView(CreateShopEvent createShopEvent) {
+        ShopView existing = shopViewRepository.findById(String.valueOf(createShopEvent.getShopId())).orElse(null);
+        if (FnCommon.isNotNull(existing)) {
+            existing.setOwnerId(String.valueOf(createShopEvent.getOwnerId()));
+            existing.setShopName(createShopEvent.getShopName());
+            existing.setShopStatus(createShopEvent.getShopStatus());
+            existing.setDescription(createShopEvent.getDescription());
+            existing.setLogoUrl(createShopEvent.getLogoUrl());
+            existing.setBannerUrl(createShopEvent.getBannerUrl());
+            existing.setProvince(createShopEvent.getProvince());
+            existing.setWard(createShopEvent.getWard());
+            existing.setDetail(createShopEvent.getDetail());
+            existing.setPhoneNumber(createShopEvent.getPhoneNumber());
+            existing.setUpdatedAt(createShopEvent.getUpdatedAt());
+
+            shopViewRepository.save(existing);
+            return;
+        }
+
+        // Create new ShopView if not exists
         shopViewRepository.save(
                 ShopView.builder()
                         ._id(String.valueOf(createShopEvent.getShopId()))
@@ -173,6 +193,7 @@ public class ShopViewServiceImpl implements ShopViewService {
 
     @Override
     public List<ShopViewStatisticDTO> getTopShopsByRevenue(LocalDateTime nowDate, String type) {
-        return shopViewRepositoryImpl.getTopShopsByRevenue(nowDate, type);
+        Long ownerId = userHelper.getCurrentUserId();
+        return shopViewRepositoryImpl.getTopShopsByRevenue(String.valueOf(ownerId),nowDate, type);
     }
 }

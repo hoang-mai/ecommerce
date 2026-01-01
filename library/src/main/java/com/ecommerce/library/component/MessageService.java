@@ -14,7 +14,7 @@ public class MessageService {
     private final MessageSource messageSource;
 
     public String getMessage(String code, Object... args) {
-        Locale locale = LocaleContextHolder.getLocale();
-        return messageSource.getMessage(code, args,locale);
+        Locale locale = new Locale("vi");
+        return messageSource.getMessage(code, args, locale);
     }
 }

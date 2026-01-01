@@ -7,7 +7,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -51,6 +53,13 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
 
+    @ElementCollection
+    @CollectionTable(name = "product_details", joinColumns = @JoinColumn(name = "product_id"))
+    @MapKeyColumn(name = "detail_key")
+    @Column(name = "detail_value")
+    @Builder.Default
+    private Map<String, String> productDetails = new HashMap<>();
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductImage> productImages = new ArrayList<>();
@@ -81,6 +90,29 @@ public class Product extends BaseEntity {
     public void addProductVariant(ProductVariant productVariant) {
         productVariants.add(productVariant);
         productVariant.setProduct(this);
+    }
+
+    public void putProductDetail(String key, String value) {
+        if (productDetails == null) {
+            productDetails = new HashMap<>();
+        }
+        productDetails.put(key, value);
+    }
+
+    public String getProductDetail(String key) {
+        return productDetails != null ? productDetails.get(key) : null;
+    }
+
+    public void removeProductDetail(String key) {
+        if (productDetails != null) {
+            productDetails.remove(key);
+        }
+    }
+
+    public void clearProductDetails() {
+        if (productDetails != null) {
+            productDetails.clear();
+        }
     }
 
 }

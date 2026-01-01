@@ -62,30 +62,33 @@ public class ProductViewServiceImpl implements ProductViewService {
 
     @Override
     public void createProductEvent(CreateProductEvent event) {
+        ProductView productViewExisting = productViewRepository.findById(String.valueOf(event.getProductId()))
+            .orElse(null);
         AtomicReference<BigDecimal> basePrice = new AtomicReference<>(BigDecimal.ZERO);
-        ProductView productView = ProductView.builder()
-            ._id(String.valueOf(event.getProductId()))
-            .shopId(String.valueOf(event.getShopId()))
-            .name(event.getProductName())
-            .description(event.getDescription())
-            .productStatus(event.getProductStatus())
-            .discount(event.getDiscount())
-            .discountStartDate(event.getDiscountStartDate())
-            .discountEndDate(event.getDiscountEndDate())
-            .ownerId(String.valueOf(event.getOwnerId()))
-            .createdAt(event.getCreatedAt())
-            .updatedAt(event.getUpdatedAt())
-            .categoryId(event.getCategoryId() == null ? null : String.valueOf(event.getCategoryId()))
-            .categoryName(event.getCategoryName())
-            .shopId(event.getShopId() == null ? null : String.valueOf(event.getShopId()))
-            .shopStatus(event.getShopStatus())
-            .productImages(event.getProductImages() == null ? null : event.getProductImages().stream()
+
+        if (FnCommon.isNotNull(productViewExisting)) {
+
+            productViewExisting.setName(event.getProductName());
+            productViewExisting.setDescription(event.getDescription());
+            productViewExisting.setProductStatus(event.getProductStatus());
+            productViewExisting.setDiscount(event.getDiscount());
+            productViewExisting.setDiscountStartDate(event.getDiscountStartDate());
+            productViewExisting.setDiscountEndDate(event.getDiscountEndDate());
+            productViewExisting.setOwnerId(String.valueOf(event.getOwnerId()));
+            productViewExisting.setUpdatedAt(event.getUpdatedAt());
+            productViewExisting.setCategoryId(event.getCategoryId() == null ? null : String.valueOf(event.getCategoryId()));
+            productViewExisting.setCategoryName(event.getCategoryName());
+            productViewExisting.setShopId(event.getShopId() == null ? null : String.valueOf(event.getShopId()));
+            productViewExisting.setShopStatus(event.getShopStatus());
+            productViewExisting.setProductDetails(event.getProductDetails());
+            productViewExisting.setProductImages(event.getProductImages() == null ? null : event.getProductImages().stream()
                 .map(img -> ProductView.ProductImage.builder()
                     ._id(String.valueOf(img.getProductImageId()))
                     .imageUrl(img.getImageUrl())
                     .build())
-                .toList())
-            .productAttributes(event.getProductAttributes() == null ? null : event.getProductAttributes().stream()
+                .toList());
+
+            productViewExisting.setProductAttributes(event.getProductAttributes() == null ? null : event.getProductAttributes().stream()
                 .map(attr -> ProductView.ProductAttribute.builder()
                     ._id(String.valueOf(attr.getProductAttributeId()))
                     .productAttributeName(attr.getProductAttributeName())
@@ -96,9 +99,69 @@ public class ProductViewServiceImpl implements ProductViewService {
                             .build())
                         .toList())
                     .build())
-                .toList())
-            .productVariants(event.getProductVariants() == null ? null : event.getProductVariants().stream()
+                .toList());
+
+            productViewExisting.setProductVariants(event.getProductVariants() == null ? null : event.getProductVariants().stream()
                 .map(variant -> {
+                    if (variant.getIsDefault()) {
+                        basePrice.set(variant.getPrice());
+                    }
+                    return ProductView.ProductVariant.builder()
+                        ._id(String.valueOf(variant.getProductVariantId()))
+                        .price(variant.getPrice())
+                        .stockQuantity(variant.getStockQuantity())
+                        .productVariantStatus(variant.getProductVariantStatus())
+                        .isDefault(variant.getIsDefault())
+                        .productVariantAttributeValues(variant.getProductVariantAttributeValues() == null ? null : variant.getProductVariantAttributeValues().stream()
+                            .map(val -> ProductView.ProductVariantAttributeValue.builder()
+                                ._id(String.valueOf(val.getProductVariantAttributeValueId()))
+                                .productAttributeId(String.valueOf(val.getProductAttributeId()))
+                                .productAttributeValueId(String.valueOf(val.getProductAttributeValueId()))
+                                .build())
+                            .toList())
+                        .build();
+                })
+                .toList());
+
+            productViewExisting.setBasePrice(basePrice.get());
+            productViewRepository.save(productViewExisting);
+        } else {
+            ProductView productView = ProductView.builder()
+                ._id(String.valueOf(event.getProductId()))
+                .shopId(event.getShopId() == null ? null : String.valueOf(event.getShopId()))
+                .name(event.getProductName())
+                .description(event.getDescription())
+                .productStatus(event.getProductStatus())
+                .discount(event.getDiscount())
+                .discountStartDate(event.getDiscountStartDate())
+                .discountEndDate(event.getDiscountEndDate())
+                .ownerId(String.valueOf(event.getOwnerId()))
+                .createdAt(event.getCreatedAt())
+                .updatedAt(event.getUpdatedAt())
+                .categoryId(event.getCategoryId() == null ? null : String.valueOf(event.getCategoryId()))
+                .categoryName(event.getCategoryName())
+                .shopStatus(event.getShopStatus())
+                .productDetails(event.getProductDetails())
+                .productImages(event.getProductImages() == null ? null : event.getProductImages().stream()
+                    .map(img -> ProductView.ProductImage.builder()
+                        ._id(String.valueOf(img.getProductImageId()))
+                        .imageUrl(img.getImageUrl())
+                        .build())
+                    .toList())
+                .productAttributes(event.getProductAttributes() == null ? null : event.getProductAttributes().stream()
+                    .map(attr -> ProductView.ProductAttribute.builder()
+                        ._id(String.valueOf(attr.getProductAttributeId()))
+                        .productAttributeName(attr.getProductAttributeName())
+                        .productAttributeValues(attr.getProductAttributeValues() == null ? null : attr.getProductAttributeValues().stream()
+                            .map(val -> ProductView.ProductAttributeValue.builder()
+                                ._id(String.valueOf(val.getProductAttributeValueId()))
+                                .productAttributeValue(val.getValue())
+                                .build())
+                            .toList())
+                        .build())
+                    .toList())
+                .productVariants(event.getProductVariants() == null ? null : event.getProductVariants().stream()
+                    .map(variant -> {
                         if (variant.getIsDefault()) {
                             basePrice.set(variant.getPrice());
                         }
@@ -116,14 +179,15 @@ public class ProductViewServiceImpl implements ProductViewService {
                                     .build())
                                 .toList())
                             .build();
-                    }
-                )
-                .toList())
-            .build();
-        productView.setBasePrice(basePrice.get());
-        productViewRepository.save(productView);
-        if (Boolean.TRUE.equals(event.getCreated())) {
-            shopViewRepositoryImpl.incrementProductCount(event.getShopId());
+                    })
+                    .toList())
+                .build();
+            productView.setBasePrice(basePrice.get());
+            productViewRepository.save(productView);
+
+            if (Boolean.TRUE.equals(event.getCreated())) {
+                shopViewRepositoryImpl.incrementProductCount(event.getShopId());
+            }
         }
     }
 

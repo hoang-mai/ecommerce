@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 public class ReqUpdateProductDTO {
@@ -28,6 +29,8 @@ public class ReqUpdateProductDTO {
     @Valid
     @Schema(description = "List of product attributes (e.g., Color, Size)")
     private List<ReqUpdateProductAttributeDTO> productAttributes;
+
+    private Map<String,String> productDetails;
 
     @Valid
     @Schema(description = "List of product variants with pricing and stock")

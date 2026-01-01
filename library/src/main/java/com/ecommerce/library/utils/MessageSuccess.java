@@ -80,4 +80,6 @@ public final class MessageSuccess {
     public static final String ORDER_STATUS_UPDATED_MESSAGE = "order.status.updated.message";
     public static final String REFUND_SUCCESS = "refund.success";
     public static final String USER_CATEGORY_ADD_SUCCESS = "user.category.add.success";
+    public static final String SEARCH_KEYWORD_CREATED_SUCCESS = "search.keyword.created.success";
+    public static final String SEARCH_KEYWORDS_RETRIEVED_SUCCESS = "search.keywords.retrieved.success";
 }

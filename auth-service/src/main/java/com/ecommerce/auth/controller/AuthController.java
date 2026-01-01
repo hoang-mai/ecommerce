@@ -32,7 +32,7 @@ public class AuthController {
         ResLoginDTO loginDTO = authService.login(reqLoginDTO);
 
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", loginDTO.getAccessToken())
-                .httpOnly(true)
+                .httpOnly(false)
                 .secure(false)
                 .path("/")
                 .maxAge(loginDTO.getRefreshExpiresIn())
@@ -59,7 +59,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<BaseResponse<Void>> logout() {
         ResponseCookie deleteAccessTokenCookie = ResponseCookie.from("accessToken", "")
-                .httpOnly(true)
+                .httpOnly(false)
                 .secure(false)
                 .path("/")
                 .maxAge(0)
@@ -120,7 +120,7 @@ public class AuthController {
         ResRefreshTokenDTO resRefreshTokenDTO = authService.refreshToken(reqRefreshTokenDTO);
 
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", resRefreshTokenDTO.getAccessToken())
-                .httpOnly(true)
+                .httpOnly(false)
                 .secure(false)
                 .path("/")
                 .maxAge(resRefreshTokenDTO.getRefreshExpiresIn())

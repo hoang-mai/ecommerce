@@ -1,0 +1,32 @@
+{
+  "analysis": {
+    "filter": {
+      "edge_ngram_filter": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 5
+      }
+    },
+    "analyzer": {
+      "icu_analyzer": {
+        "type": "custom",
+        "tokenizer": "icu_tokenizer",
+        "filter": ["icu_folding", "lowercase"]
+      },
+      "vietnamese_analyzer": {
+        "type": "custom",
+        "tokenizer": "icu_tokenizer",
+        "filter": [
+          "lowercase",
+          "icu_folding",
+          "icu_normalizer"
+        ]
+      },
+      "edge_ngram_analyzer": {
+        "type": "custom",
+        "tokenizer": "icu_tokenizer",
+        "filter": ["lowercase", "icu_folding", "edge_ngram_filter"]
+      }
+    }
+  }
+}

@@ -72,7 +72,7 @@ class ImageSearchService:
                 metadata = all_metadata.get(str(product_id))
                 if metadata is None:
                     logger.warning(f"⚠️ No metadata found for product {product_id}, skipping...")
-                    continue
+
 
                 # Tính similarity với tất cả ảnh của sản phẩm
                 # Lấy similarity cao nhất
@@ -82,11 +82,11 @@ class ImageSearchService:
                     similarity = self.calculate_similarity(query_vector, product_vector)
                     if similarity > max_similarity:
                         max_similarity = similarity
-
-                similarities.append({
-                    'productId': product_id,
-                    'similarityScore': max_similarity,
-                })
+                if(max_similarity >0.5):
+                    similarities.append({
+                        'productId': product_id,
+                        'similarityScore': max_similarity,
+                    })
 
             # Sort by similarity (cao nhất trước)
             similarities.sort(key=lambda x: x['similarityScore'], reverse=True)

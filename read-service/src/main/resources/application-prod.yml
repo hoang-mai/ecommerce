@@ -21,6 +21,10 @@ spring:
   data:
     mongodb:
       uri: mongodb://read-service:read-service@${MONGODB_HOST:mongo}:${MONGODB_PORT:27017}/read-service
+  elasticsearch:
+    uris: http://${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}
+    username: ${ELASTICSEARCH_USERNAME:elastic}
+    password: ${ELASTICSEARCH_PASSWORD:changeme}
 minio:
   url: http://${MINIO_HOST:host.docker.internal}:${MINIO_PORT:9000}
   access-key: root
