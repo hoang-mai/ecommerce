@@ -16,6 +16,15 @@ public class UserCategoryServiceImpl implements UserCategoryService {
     @Override
     public void addUserCategory(UserCategoryDTO userCategoryDTO) {
         Long userId = userHelper.getCurrentUserId();
+        save(userId, userCategoryDTO);
+    }
+
+    @Override
+    public void addUserCategoryByUserId(Long userId, UserCategoryDTO userCategoryDTO) {
+        save(userId, userCategoryDTO);
+    }
+
+    private void save(Long userId, UserCategoryDTO userCategoryDTO) {
         UserCategoryScore userCategoryScore = userCategoryRepositoryImpl.findById(String.valueOf(userId));
         if (userCategoryScore != null) {
             userCategoryScore.addCategoryScore(String.valueOf(userCategoryDTO.getCategoryId()),userCategoryDTO.getUserCategoryType().getWeight());

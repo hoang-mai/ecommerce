@@ -8,15 +8,18 @@ import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.AddressDTO;
+import com.ecommerce.read.dto.NewUserViewStatisticDTO;
 import com.ecommerce.read.entity.UserView;
 import com.ecommerce.read.service.UserViewService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -77,4 +80,17 @@ public class UserViewController {
         );
     }
 
+    @GetMapping("/statistic/date-range")
+    public ResponseEntity<BaseResponse<List<NewUserViewStatisticDTO>>> getUserAddressInDateRange(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate){
+        List<NewUserViewStatisticDTO> stats = userViewService.getUserStatisticsByDateRange(fromDate, toDate);
+        return ResponseEntity.ok(
+                BaseResponse.<List<NewUserViewStatisticDTO>>builder()
+                        .statusCode(200)
+                        .message(messageService.getMessage(MessageSuccess.GET_USER_STATISTIC_SUCCESS))
+                        .data(stats)
+                        .build()
+        );
+    }
 }

@@ -5,8 +5,10 @@ import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.kafka.event.user.*;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.AddressDTO;
+import com.ecommerce.read.dto.NewUserViewStatisticDTO;
 import com.ecommerce.read.entity.UserView;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface UserViewService {
@@ -49,4 +51,6 @@ public interface UserViewService {
     void updateAvatarUser(UpdateAvatarUserEvent updateAvatarUserEvent);
 
     List<String> searchAddress(String keyword);
+
+    List<NewUserViewStatisticDTO> getUserStatisticsByDateRange(LocalDateTime startDate, LocalDateTime endDate);
 }

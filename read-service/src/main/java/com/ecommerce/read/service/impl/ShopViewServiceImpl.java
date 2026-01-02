@@ -9,6 +9,7 @@ import com.ecommerce.library.kafka.event.shop.UpdateShopStatusEvent;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.NewShopViewStatisticDTO;
 import com.ecommerce.read.dto.OwnerViewStatisticDTO;
 import com.ecommerce.read.dto.ShopViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
@@ -192,8 +193,16 @@ public class ShopViewServiceImpl implements ShopViewService {
     }
 
     @Override
-    public List<ShopViewStatisticDTO> getTopShopsByRevenue(LocalDateTime nowDate, String type) {
-        Long ownerId = userHelper.getCurrentUserId();
-        return shopViewRepositoryImpl.getTopShopsByRevenue(String.valueOf(ownerId),nowDate, type);
+    public List<ShopViewStatisticDTO> getTopShopsByRevenue(Boolean isOwner,LocalDateTime nowDate, String type) {
+        Long ownerId = null;
+        if (Boolean.TRUE.equals(isOwner)) {
+            ownerId = userHelper.getCurrentUserId();
+        }
+        return shopViewRepositoryImpl.getTopShopsByRevenue(ownerId, nowDate, type);
+    }
+
+    @Override
+    public List<NewShopViewStatisticDTO> getStatisticsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        return shopViewRepositoryImpl.getStatisticsByDateRange( startDate, endDate);
     }
 }

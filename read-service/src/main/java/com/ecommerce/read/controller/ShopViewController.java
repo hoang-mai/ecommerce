@@ -6,6 +6,7 @@ import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
 import com.ecommerce.library.utils.PageResponse;
+import com.ecommerce.read.dto.NewShopViewStatisticDTO;
 import com.ecommerce.read.dto.OwnerViewStatisticDTO;
 import com.ecommerce.read.dto.ShopViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
@@ -132,15 +133,28 @@ public class ShopViewController {
      */
     @GetMapping("/statistic/top-revenue")
     public ResponseEntity<BaseResponse<List<ShopViewStatisticDTO>>> getTopShopsByRevenue(
+        @RequestParam(required = false) Boolean isOwner,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime nowDate,
             @RequestParam(required = false, defaultValue = "revenue") String type) {
 
-        List<ShopViewStatisticDTO> stats = shopViewService.getTopShopsByRevenue(nowDate, type);
+        List<ShopViewStatisticDTO> stats = shopViewService.getTopShopsByRevenue(isOwner,nowDate, type);
 
         return ResponseEntity.ok(BaseResponse.<List<ShopViewStatisticDTO>>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(messageService.getMessage(MessageSuccess.GET_STATISTIC_SUCCESS))
                 .data(stats)
                 .build());
+    }
+
+    @GetMapping("/statistic/date-range")
+    public ResponseEntity<BaseResponse<List<NewShopViewStatisticDTO>>> getStatisticsByDateRange(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
+        List<NewShopViewStatisticDTO> stats = shopViewService.getStatisticsByDateRange(fromDate, toDate);
+        return ResponseEntity.ok(BaseResponse.<List<NewShopViewStatisticDTO>>builder()
+            .statusCode(HttpStatus.OK.value())
+            .message(messageService.getMessage(MessageSuccess.GET_STATISTIC_SUCCESS))
+            .data(stats)
+            .build());
     }
 }

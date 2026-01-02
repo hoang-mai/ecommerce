@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Document(indexName = "product_search")
 @AllArgsConstructor
@@ -53,4 +54,7 @@ public class ProductSearch {
 
     @Field(type= FieldType.Integer)
     private Integer totalSold;
+
+    @Field(type = FieldType.Date)
+    private Instant createdAt;
 }

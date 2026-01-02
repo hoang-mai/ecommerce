@@ -67,7 +67,7 @@ public class CartViewServiceImpl implements CartViewService {
                     .categoryId(Long.parseLong(categoryIdStr))
                     .userCategoryType(UserCategoryType.ADD_TO_CART)
                     .build();
-                userCategoryService.addUserCategory(userCategoryDTO);
+                userCategoryService.addUserCategoryByUserId(event.getUserId(), userCategoryDTO);
             }
         })));
     }
@@ -84,29 +84,12 @@ public class CartViewServiceImpl implements CartViewService {
             CartView cartView = cartViewRepository.findById(String.valueOf(event.getCartId()))
                 .orElseThrow(() -> new NotFoundException(MessageError.CART_NOT_FOUND));
 
-            // Track REMOVE_FROM_CART for all items before clearing
-            CompletableFuture.runAsync(() -> cartView.getCartItems().forEach(cartItem ->
+            cartView.getCartItems().forEach(cartItem ->
                 cartItem.getProductCartItems().forEach(productCartItem -> {
-                    try {
-                        Long productId = Long.parseLong(productCartItem.getProductId());
-                        try {
-                            String categoryIdStr = productViewService.getProductById(productId, false).getCategoryId();
-                            if (FnCommon.isNotNullOrEmpty(categoryIdStr)) {
-                                UserCategoryDTO userCategoryDTO = UserCategoryDTO.builder()
-                                        .categoryId(Long.parseLong(categoryIdStr))
-                                        .userCategoryType(UserCategoryType.REMOVE_FROM_CART)
-                                        .build();
-                                userCategoryService.addUserCategory(userCategoryDTO);
-                            }
-                        } catch (Exception ex) {
-                            // swallow
-                        }
-                    } catch (NumberFormatException nfe) {
-                        // skip invalid id
-                    }
-                })
-            ));
+                    subUserCategoryScore(cartView, productCartItem);
 
+                })
+            );
             cartView.clearCart();
             cartViewRepository.save(cartView);
             return;
@@ -119,31 +102,13 @@ public class CartViewServiceImpl implements CartViewService {
                 .findFirst()
                 .orElse(null);
             if (FnCommon.isNotNull(cartItemToRemove)) {
-                // Track REMOVE_FROM_CART for all products in the cart item
-                CartView.CartItem finalCartItemToRemove = cartItemToRemove;
-                CompletableFuture.runAsync(() -> finalCartItemToRemove.getProductCartItems().forEach(productCartItem -> {
-                    try {
-                        Long productId = Long.parseLong(productCartItem.getProductId());
-                        try {
-                            String categoryIdStr = productViewService.getProductById(productId, false).getCategoryId();
-                            if (FnCommon.isNotNullOrEmpty(categoryIdStr)) {
-                                UserCategoryDTO userCategoryDTO = UserCategoryDTO.builder()
-                                        .categoryId(Long.parseLong(categoryIdStr))
-                                        .userCategoryType(UserCategoryType.REMOVE_FROM_CART)
-                                        .build();
-                                userCategoryService.addUserCategory(userCategoryDTO);
-                            }
-                        } catch (Exception ex) {
-                            // swallow
-                        }
-                    } catch (NumberFormatException nfe) {
-                        // skip
-                    }
-                }));
+                cartItemToRemove.getProductCartItems().forEach(productCartItem -> {
+                    subUserCategoryScore(cartView, productCartItem);
 
-                cartView.removeCartItem(cartItemToRemove);
+                    cartView.removeCartItem(cartItemToRemove);
+                });
+                cartViewRepository.save(cartView);
             }
-            cartViewRepository.save(cartView);
         }
     }
 
@@ -152,7 +117,6 @@ public class CartViewServiceImpl implements CartViewService {
         CartView cartView = cartViewRepository.findById(String.valueOf(event.getCartId()))
             .orElseThrow(() -> new NotFoundException(MessageError.CART_NOT_FOUND));
 
-        // Tìm cartItem chứa productCartItem cần xóa
         CartView.CartItem cartItem = cartView.getCartItems().stream()
             .filter(item -> item.get_id().equals(String.valueOf(event.getCartItemId())))
             .findFirst()
@@ -161,64 +125,42 @@ public class CartViewServiceImpl implements CartViewService {
         if (FnCommon.isNotNull(cartItem)) {
             if (event.getIsDeleteCartItem()) {
 
-                // Track REMOVE_FROM_CART for all products in cart item
-                CartView.CartItem finalCartItem = cartItem;
-                CompletableFuture.runAsync(() -> finalCartItem.getProductCartItems().forEach(productCartItem -> {
-                    try {
-                        Long productId = Long.parseLong(productCartItem.getProductId());
-                        try {
-                            String categoryIdStr = productViewService.getProductById(productId, false).getCategoryId();
-                            if (FnCommon.isNotNullOrEmpty(categoryIdStr)) {
-                                UserCategoryDTO userCategoryDTO = UserCategoryDTO.builder()
-                                        .categoryId(Long.parseLong(categoryIdStr))
-                                        .userCategoryType(UserCategoryType.REMOVE_FROM_CART)
-                                        .build();
-                                userCategoryService.addUserCategory(userCategoryDTO);
-                            }
-                        } catch (Exception ex) {
-                            // swallow
-                        }
-                    } catch (NumberFormatException nfe) {
-                        // skip
-                    }
-                }));
+                cartItem.getProductCartItems().forEach(productCartItem -> {
 
-                // Nếu cần xóa luôn cartItem (không còn sản phẩm nào)
+                    subUserCategoryScore(cartView, productCartItem);
+                });
+
+
                 cartView.removeCartItem(cartItem);
             } else {
-                // Chỉ xóa productCartItem
                 CartView.ProductCartItem productCartItemToRemove = cartItem.getProductCartItems().stream()
                     .filter(pci -> pci.get_id().equals(String.valueOf(event.getProductCartItemId())))
                     .findFirst()
                     .orElse(null);
 
                 if (FnCommon.isNotNull(productCartItemToRemove)) {
-                    // Track REMOVE_FROM_CART for this specific product
-                    CartView.ProductCartItem finalProductCartItem = productCartItemToRemove;
-                    CompletableFuture.runAsync(() -> {
-                        try {
-                            Long productId = Long.parseLong(finalProductCartItem.getProductId());
-                            try {
-                                String categoryIdStr = productViewService.getProductById(productId, false).getCategoryId();
-                                if (FnCommon.isNotNullOrEmpty(categoryIdStr)) {
-                                    UserCategoryDTO userCategoryDTO = UserCategoryDTO.builder()
-                                            .categoryId(Long.parseLong(categoryIdStr))
-                                            .userCategoryType(UserCategoryType.REMOVE_FROM_CART)
-                                            .build();
-                                    userCategoryService.addUserCategory(userCategoryDTO);
-                                }
-                            } catch (Exception ex) {
-                                // swallow
-                            }
-                        } catch (NumberFormatException nfe) {
-                            // skip
-                        }
-                    });
+                    subUserCategoryScore(cartView, productCartItemToRemove);
+
 
                     cartItem.getProductCartItems().remove(productCartItemToRemove);
                 }
             }
             cartViewRepository.save(cartView);
+        }
+    }
+
+    private void subUserCategoryScore(CartView cartView, CartView.ProductCartItem productCartItemToRemove) {
+        Long productId = Long.parseLong(productCartItemToRemove.getProductId());
+        try {
+            String categoryIdStr = productViewService.getProductById(productId, false).getCategoryId();
+            if (FnCommon.isNotNullOrEmpty(categoryIdStr)) {
+                UserCategoryDTO userCategoryDTO = UserCategoryDTO.builder()
+                    .categoryId(Long.parseLong(categoryIdStr))
+                    .userCategoryType(UserCategoryType.REMOVE_FROM_CART)
+                    .build();
+                userCategoryService.addUserCategoryByUserId(Long.valueOf(cartView.getUserId()), userCategoryDTO);
+            }
+        } catch (Exception ignored) {
         }
     }
 

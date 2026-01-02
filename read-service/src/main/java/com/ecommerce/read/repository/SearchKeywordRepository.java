@@ -21,32 +21,20 @@ public interface SearchKeywordRepository extends ElasticsearchRepository<SearchK
     Optional<SearchKeyword> findByKeyword(String keyword);
 
     @Query("""
-    {
-        "bool": {
-            "should": [
-                {
-                    "match": {
-                        "keyword": {
-                            "query": "?0",
-                            "fuzziness": "AUTO"
-                        }
-                    }
-                }
-            ]
-        },
-        "sort": [
-            {
-                "search_count": {
-                    "order": "desc"
-                }
-            },
-            {
-                "last_searched_at": {
-                    "order": "desc"
-                }
-            }
-        ]
-    }
+        {
+             "bool": {
+                 "should": [
+                     {
+                         "match": {
+                             "keyword": {
+                                 "query": "?0",
+                                 "fuzziness": "AUTO"
+                             }
+                         }
+                     }
+                 ]
+             }
+         }
     """)
     Page<SearchKeyword> getPopularSearchKeywords(String keyword, Pageable pageable);
 

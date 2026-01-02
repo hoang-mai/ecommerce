@@ -7,6 +7,7 @@ import com.ecommerce.library.kafka.event.user.*;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.AddressDTO;
+import com.ecommerce.read.dto.NewUserViewStatisticDTO;
 import com.ecommerce.read.entity.UserView;
 import com.ecommerce.read.repository.UserViewRepository;
 import com.ecommerce.read.repository.impl.UserViewRepositoryImpl;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -129,6 +131,11 @@ public class UserViewServiceImpl implements UserViewService {
             .stream()
             .map(AddressDTO.Item::getTitle)
             .toList();
+    }
+
+    @Override
+    public List<NewUserViewStatisticDTO> getUserStatisticsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        return userViewRepositoryImpl.getUserStatisticsByDateRange(startDate, endDate);
     }
 
 }

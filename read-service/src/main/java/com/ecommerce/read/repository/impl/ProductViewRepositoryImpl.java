@@ -196,12 +196,17 @@ public class ProductViewRepositoryImpl {
             .first("totalSold").as("totalSold")
             .first("totalRevenue").as("totalRevenue");
 
+        // Project để convert totalRevenue từ string sang double cho việc sort
+        ProjectionOperation projectForSort = Aggregation.project()
+            .andInclude("productName", "totalRevenue", "totalSold")
+            .and(ConvertOperators.ToDouble.toDouble("$totalRevenue")).as("totalRevenueDouble");
+
         // Sắp xếp theo type
-        String sortField = "revenue".equalsIgnoreCase(type) ? "totalRevenue" : "totalSold";
+        String sortField = "revenue".equalsIgnoreCase(type) ? "totalRevenueDouble" : "totalSold";
         SortOperation sort = Aggregation.sort(Sort.Direction.DESC, sortField);
 
         LimitOperation limit = Aggregation.limit(5);
-        Aggregation aggregation = Aggregation.newAggregation(match, group, sort, limit);
+        Aggregation aggregation = Aggregation.newAggregation(match, group, projectForSort, sort, limit);
         AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "product_views", Document.class);
         List<ProductViewStatisticDTO> statistics = new ArrayList<>();
         for (Document doc : results.getMappedResults()) {

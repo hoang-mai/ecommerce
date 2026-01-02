@@ -240,12 +240,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public void refundPayment(Long orderId, String reason) {
+    public void cancelledOrRefundPayment(Long orderId, String reason, PaymentStatus  paymentStatus) {
         OrderCache orderCache = orderCacheRepository.findByOrderId(orderId)
             .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
         Payment payment = orderCache.getPayment();
         Payment refundPayment = Payment.builder()
-            .paymentStatus(PaymentStatus.REFUNDED)
+            .paymentStatus(paymentStatus)
             .userId(payment.getUserId())
             .price(orderCache.getTotalPrice())
             .reason(reason)
@@ -308,7 +308,9 @@ public class PaymentServiceImpl implements PaymentService {
                     OrderStatusEvent.builder()
                         .orderId(orderCache.getOrderId())
                         .ownerId(orderCache.getOwnerId())
-                        .orderStatus(OrderStatus.CANCELLED)
+                        .orderStatus(
+                            PaymentStatus.CANCELLED == paymentStatus ? OrderStatus.CANCELLED : OrderStatus.RETURNED
+                        )
                         .reason(reason)
                         .build()
                 ))

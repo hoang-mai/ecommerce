@@ -4,4 +4,6 @@ import com.ecommerce.read.dto.UserCategoryDTO;
 
 public interface UserCategoryService {
     void addUserCategory(UserCategoryDTO userCategoryDTO);
+
+    void addUserCategoryByUserId(Long userId, UserCategoryDTO userCategoryDTO);
 }

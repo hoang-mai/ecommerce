@@ -13,15 +13,14 @@ import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.ProductViewHomePageDTO;
 import com.ecommerce.read.dto.ProductViewStatisticDTO;
+import com.ecommerce.read.entity.ProductSearch;
 import com.ecommerce.read.entity.ProductView;
 import com.ecommerce.read.entity.SearchView;
 import com.ecommerce.read.entity.UserCategoryScore;
+import com.ecommerce.read.repository.ProductSearchRepository;
 import com.ecommerce.read.repository.ProductViewRepository;
 import com.ecommerce.read.repository.SearchViewRepository;
-import com.ecommerce.read.repository.impl.ProductViewRepositoryImpl;
-import com.ecommerce.read.repository.impl.SearchViewRepositoryImpl;
-import com.ecommerce.read.repository.impl.ShopViewRepositoryImpl;
-import com.ecommerce.read.repository.impl.UserCategoryRepositoryImpl;
+import com.ecommerce.read.repository.impl.*;
 import com.ecommerce.read.service.FileService;
 import com.ecommerce.read.service.ProductViewService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +29,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -38,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -53,6 +54,8 @@ public class ProductViewServiceImpl implements ProductViewService {
     private final FileService fileService;
     private final UserHelper userHelper;
     private final UserCategoryRepositoryImpl userCategoryRepositoryImpl;
+    private final ProductSearchRepository productSearchRepository;
+    private final ProductSearchRepositoryImpl productSearchRepositoryImpl;
 
     @Value("${ai-service.host}")
     private String aiServiceHost;
@@ -125,6 +128,7 @@ public class ProductViewServiceImpl implements ProductViewService {
 
             productViewExisting.setBasePrice(basePrice.get());
             productViewRepository.save(productViewExisting);
+            createProductSearch(productViewExisting, basePrice.get());
         } else {
             ProductView productView = ProductView.builder()
                 ._id(String.valueOf(event.getProductId()))
@@ -184,11 +188,43 @@ public class ProductViewServiceImpl implements ProductViewService {
                 .build();
             productView.setBasePrice(basePrice.get());
             productViewRepository.save(productView);
-
+            createProductSearch(productView, basePrice.get());
             if (Boolean.TRUE.equals(event.getCreated())) {
                 shopViewRepositoryImpl.incrementProductCount(event.getShopId());
             }
         }
+    }
+    @Async
+    public void createProductSearch(ProductView productView, BigDecimal basePrice) {
+        ProductSearch productViewExisting = productSearchRepository.findById(productView.get_id()).orElse(null);
+
+        if (FnCommon.isNotNull(productViewExisting)) {
+            productViewExisting.setName(productView.getName());
+            productViewExisting.setCategoryId(productView.getCategoryId());
+            productViewExisting.setCategoryName(productView.getCategoryName());
+            productViewExisting.setShopId(productView.getShopId());
+            productViewExisting.setBasePrice(basePrice);
+            productViewExisting.setProductStatus(productView.getProductStatus());
+            productViewExisting.setShopStatus(productView.getShopStatus());
+            productSearchRepository.save(productViewExisting);
+        } else {
+            ProductSearch productSearch = ProductSearch.builder()
+                .id(String.valueOf(productView.get_id()))
+                .name(productView.getName())
+                .categoryId(productView.getCategoryId())
+                .categoryName(productView.getCategoryName())
+                .shopId(productView.getShopId())
+                .basePrice(basePrice)
+                .productStatus(productView.getProductStatus())
+                .shopStatus(productView.getShopStatus())
+                .totalSold(0)
+                .rating(0.0)
+                .createdAt(Instant.from(productView.getCreatedAt()))
+                .build();
+            productSearchRepository.save(productSearch);
+        }
+
+
     }
 
     @Override
@@ -198,6 +234,14 @@ public class ProductViewServiceImpl implements ProductViewService {
         productView.setProductStatus(event.getStatus());
         productViewRepository.save(productView);
         shopViewRepositoryImpl.updateProductStatusInShopView(productView.getShopId(), event.getStatus());
+        updateProductSearchStatus(event);
+    }
+    @Async
+    public void updateProductSearchStatus(UpdateProductStatusEvent event) {
+        ProductSearch productSearch = productSearchRepository.findById(String.valueOf(event.getProductId()))
+            .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+        productSearch.setProductStatus(event.getStatus());
+        productSearchRepository.save(productSearch);
     }
 
     @Override
@@ -219,30 +263,60 @@ public class ProductViewServiceImpl implements ProductViewService {
         }
         Long ownerId = null;
         ShopStatus shopStatus = null;
-        if (Boolean.TRUE.equals(isOwner)) {
-            ownerId = userHelper.getCurrentUserId();
-        } else {
-            status = ProductStatus.ACTIVE;
-            shopStatus = ShopStatus.ACTIVE;
-        }
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
             ? Sort.by(sortBy).ascending()
             : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        if (Boolean.TRUE.equals(isOwner)) {
+            ownerId = userHelper.getCurrentUserId();
 
-        Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(productIds, ownerId, shopId, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
 
-        return PageResponse.<ProductView>builder()
-            .data(productsPage.getContent().stream().peek(productView ->
-                productView.getProductImages().forEach(productImage ->
-                    productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
-                )).toList())
-            .pageNo(productsPage.getNumber())
-            .pageSize(productsPage.getSize())
-            .totalElements(productsPage.getTotalElements())
-            .totalPages(productsPage.getTotalPages())
-            .build();
+            Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(productIds, ownerId, shopId, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
+
+            return PageResponse.<ProductView>builder()
+                .data(productsPage.getContent().stream().peek(productView ->
+                    productView.getProductImages().forEach(productImage ->
+                        productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
+                    )).toList())
+                .pageNo(productsPage.getNumber())
+                .pageSize(productsPage.getSize())
+                .totalElements(productsPage.getTotalElements())
+                .totalPages(productsPage.getTotalPages())
+                .hasNextPage(productsPage.hasNext())
+                .hasPreviousPage(productsPage.hasPrevious())
+                .build();
+        } else {
+            status = ProductStatus.ACTIVE;
+            shopStatus = ShopStatus.ACTIVE;
+            Page<ProductSearch> productSearchPage = productSearchRepositoryImpl.getProductSearch(productIds, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
+            if(!FnCommon.isNotNullOrEmptyList(productSearchPage.getContent())){
+                return PageResponse.<ProductView>builder()
+                    .data(Collections.emptyList())
+                    .pageNo(productSearchPage.getNumber())
+                    .pageSize(productSearchPage.getSize())
+                    .totalElements(productSearchPage.getTotalElements())
+                    .totalPages(productSearchPage.getTotalPages())
+                    .hasNextPage(productSearchPage.hasNext())
+                    .hasPreviousPage(productSearchPage.hasPrevious())
+                    .build();
+            }
+            Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(productSearchPage.map(ProductSearch::getId).toList(), null, null, null, null, null, null, null, null, null, null);
+
+            return PageResponse.<ProductView>builder()
+                .data(productsPage.getContent().stream().peek(productView ->
+                    productView.getProductImages().forEach(productImage ->
+                        productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
+                    )).toList())
+                .pageNo(productSearchPage.getNumber())
+                .pageSize(productSearchPage.getSize())
+                .totalElements(productSearchPage.getTotalElements())
+                .totalPages(productSearchPage.getTotalPages())
+                .hasNextPage(productSearchPage.hasNext())
+                .hasPreviousPage(productSearchPage.hasPrevious())
+                .build();
+        }
+
     }
 
     @Override
@@ -304,6 +378,13 @@ public class ProductViewServiceImpl implements ProductViewService {
         List<ProductView> productViews = productViewRepository.findByShopId(String.valueOf(updateShopStatusEvent.getShopId()));
         productViews.forEach(productView -> productView.setShopStatus(updateShopStatusEvent.getShopStatus()));
         productViewRepository.saveAll(productViews);
+        updateProductSearchShopStatus(updateShopStatusEvent);
+    }
+    @Async
+    public void updateProductSearchShopStatus(UpdateShopStatusEvent updateShopStatusEvent) {
+        List<ProductSearch> productSearches = productSearchRepository.findByShopId(String.valueOf(updateShopStatusEvent.getShopId()));
+        productSearches.forEach(productSearch -> productSearch.setShopStatus(updateShopStatusEvent.getShopStatus()));
+        productSearchRepository.saveAll(productSearches);
     }
 
 
@@ -313,6 +394,24 @@ public class ProductViewServiceImpl implements ProductViewService {
         ProductView productView = productViewRepository.findById(String.valueOf(productId))
             .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
         shopViewRepositoryImpl.updateRating(productView.getShopId(), rating, isUpdate, oldRating, isDelete);
+        ProductSearch productSearch = productSearchRepository.findById(String.valueOf(productId))
+            .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+        double currentRating = productSearch.getRating() == null ? 0.0 : productSearch.getRating();
+        int numberOfRatings = productView.getNumberOfRatings() == null ? 0 : productView.getNumberOfRatings();
+        double newRating;
+        if (Boolean.TRUE.equals(isDelete)) {
+            if (numberOfRatings <= 1) {
+                newRating = 0.0;
+            } else {
+                newRating = (currentRating * numberOfRatings - rating.getValue()) / (numberOfRatings - 1);
+            }
+        } else if (Boolean.TRUE.equals(isUpdate)) {
+            newRating = (currentRating * numberOfRatings - oldRating.getValue() + rating.getValue()) / numberOfRatings;
+        } else {
+            newRating = (currentRating * numberOfRatings + rating.getValue()) / (numberOfRatings + 1);
+        }
+        productSearch.setRating(newRating);
+        productSearchRepository.save(productSearch);
     }
 
     @Override
@@ -339,7 +438,6 @@ public class ProductViewServiceImpl implements ProductViewService {
         productView.setTotalSold(productView.getTotalSold() + quantity);
         productView.setTotalRevenue(productView.getTotalRevenue().add(revenue));
 
-        // Update ProductVariant sold and revenue
         productView.getProductVariants().stream()
             .filter(variant -> variant.get_id().equals(productVariantId))
             .findFirst()
@@ -355,6 +453,14 @@ public class ProductViewServiceImpl implements ProductViewService {
             });
 
         productViewRepository.save(productView);
+
+        ProductSearch productSearch = productSearchRepository.findById(productId)
+            .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+        if (productSearch.getTotalSold() == null) {
+            productSearch.setTotalSold(0);
+        }
+        productSearch.setTotalSold(productSearch.getTotalSold() + quantity);
+        productSearchRepository.save(productSearch);
     }
 
     @Override
@@ -437,7 +543,7 @@ public class ProductViewServiceImpl implements ProductViewService {
         int top1Count = (int) Math.round(pageSize * 0.5);
         int top2Count = (int) Math.round(pageSize * 0.3);
 
-        if(!FnCommon.isNotNullOrEmptyList(showProductIds)) {
+        if (!FnCommon.isNotNullOrEmptyList(showProductIds)) {
             showProductIds = new ArrayList<>();
         }
         List<ProductView> listTop1 = productViewRepositoryImpl.getHomepageProducts(showProductIds, top1, Sort.by("totalSold").descending(), top1Count);
@@ -458,7 +564,7 @@ public class ProductViewServiceImpl implements ProductViewService {
         }
 
         int remaining = pageSize - candidates.size();
-        if(remaining> 0){
+        if (remaining > 0) {
             List<ProductView> additionalProducts = productViewRepositoryImpl.getHomepageProducts(
                 showProductIds,
                 null,

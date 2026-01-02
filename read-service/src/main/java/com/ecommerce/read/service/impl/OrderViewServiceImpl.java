@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -94,7 +95,7 @@ public class OrderViewServiceImpl implements OrderViewService {
                         .categoryId(Long.parseLong(categoryIdStr))
                         .userCategoryType(UserCategoryType.PURCHASE)
                         .build();
-                    userCategoryService.addUserCategory(userCategoryDTO);
+                    userCategoryService.addUserCategoryByUserId(createOrderViewEvent.getUserId(), userCategoryDTO);
                 }
             }));
         }
@@ -207,6 +208,7 @@ public class OrderViewServiceImpl implements OrderViewService {
         return orderViewRepositoryImpl.getOrderStatisticsByDateRange(shopId, isOwner, currentUserId, fromDate, toDate);
     }
 
+    @Transactional
     @Override
     public void updateOrderStatusFromOrderEvent(CreateListOrderStatusEvent createListOrderStatusEvent) {
         createListOrderStatusEvent.getOrderStatusEventList().forEach(orderStatusEvent -> {
@@ -221,6 +223,10 @@ public class OrderViewServiceImpl implements OrderViewService {
                 // Restore product stock when order fails
                 if (previousStatus != OrderStatus.CANCELLED && previousStatus != OrderStatus.RETURNED) {
                     restoreProductStock(orderView);
+                }
+                // Reduce sold and revenue when order is returned (only if previously completed)
+                if (orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED && previousStatus == OrderStatus.COMPLETED) {
+                    reduceSoldAndRevenue(orderView);
                 }
             }
 
@@ -245,12 +251,41 @@ public class OrderViewServiceImpl implements OrderViewService {
     }
 
     private void restoreProductStock(OrderView orderView) {
+        orderView.getOrderItems().forEach(orderItem -> productViewService.restoreProductStock(
+            orderItem.getProductId(),
+            orderItem.getProductVariantId(),
+            orderItem.getQuantity()
+        ));
+    }
+
+    private void reduceSoldAndRevenue(OrderView orderView) {
+        // Reduce product sold and revenue
         orderView.getOrderItems().forEach(orderItem -> {
-            productViewService.restoreProductStock(
+            productViewService.updateProductSoldAndRevenue(
                 orderItem.getProductId(),
                 orderItem.getProductVariantId(),
-                orderItem.getQuantity()
+                -orderItem.getQuantity(),
+                orderItem.getTotalFinalPrice().negate()
             );
+        });
+
+        // Reduce shop sold and revenue
+        shopViewRepository.findById(orderView.getShopId()).ifPresent(shopView -> {
+            int totalQuantity = orderView.getOrderItems().stream()
+                .mapToInt(OrderView.OrderItem::getQuantity)
+                .sum();
+
+            if (shopView.getTotalSold() != null) {
+                shopView.setTotalSold(Math.max(0, shopView.getTotalSold() - totalQuantity));
+            }
+            if (shopView.getTotalRevenue() != null) {
+                BigDecimal newRevenue = shopView.getTotalRevenue().subtract(orderView.getTotalPrice());
+                shopView.setTotalRevenue(newRevenue.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : newRevenue);
+            }
+            if (shopView.getTotalOrder() != null && shopView.getTotalOrder() > 0) {
+                shopView.setTotalOrder(shopView.getTotalOrder() - 1);
+            }
+            shopViewRepository.save(shopView);
         });
     }
 }

@@ -4,6 +4,8 @@ import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.RatingNumber;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.utils.FnCommon;
+import com.ecommerce.read.dto.NewShopViewStatisticDTO;
+import com.ecommerce.read.dto.OrderViewStatisticDTO;
 import com.ecommerce.read.dto.OwnerViewStatisticDTO;
 import com.ecommerce.read.dto.ShopViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
@@ -12,6 +14,7 @@ import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,6 +23,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -201,10 +205,12 @@ public class ShopViewRepositoryImpl {
      * @param type    Loại thống kê: "sold" (bán chạy) hoặc "revenue" (doanh thu cao)
      * @return Danh sách top 5 shop
      */
-    public List<ShopViewStatisticDTO> getTopShopsByRevenue(String ownerId,LocalDateTime nowDate, String type) {
+    public List<ShopViewStatisticDTO> getTopShopsByRevenue(Long ownerId,LocalDateTime nowDate, String type) {
         List<Criteria> criteriaList = new ArrayList<>();
 
-        criteriaList.add(Criteria.where("ownerId").is(ownerId));
+        if(FnCommon.isNotNull(ownerId)) {
+            criteriaList.add(Criteria.where("ownerId").is(String.valueOf(ownerId)));
+        }
 
         // Điều kiện lọc dựa trên type
         if ("revenue".equalsIgnoreCase(type)) {
@@ -231,14 +237,19 @@ public class ShopViewRepositoryImpl {
             .first("totalSold").as("totalSold")
             .first("totalOrder").as("totalOrder");
 
+        // Project để convert totalRevenue từ string sang double cho việc sort
+        ProjectionOperation projectForSort = Aggregation.project()
+            .andInclude("shopName", "totalRevenue", "totalSold", "totalOrder")
+            .and(ConvertOperators.ToDouble.toDouble("$totalRevenue")).as("totalRevenueDouble");
+
         // Sắp xếp theo type
-        String sortField = "revenue".equalsIgnoreCase(type) ? "totalRevenue" : "totalSold";
-        SortOperation sort = Aggregation.sort(org.springframework.data.domain.Sort.Direction.DESC, sortField);
+        String sortField = "revenue".equalsIgnoreCase(type) ? "totalRevenueDouble" : "totalSold";
+        SortOperation sort = Aggregation.sort(Sort.Direction.DESC, sortField);
 
         // Giới hạn 5 kết quả
         LimitOperation limit = Aggregation.limit(5);
 
-        Aggregation aggregation = Aggregation.newAggregation(match, group, sort, limit);
+        Aggregation aggregation = Aggregation.newAggregation(match, group, projectForSort, sort, limit);
         AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "shop_views", Document.class);
 
         List<ShopViewStatisticDTO> statistics = new ArrayList<>();
@@ -251,6 +262,57 @@ public class ShopViewRepositoryImpl {
                 .totalOrder(doc.get("totalOrder") != null ? ((Number) doc.get("totalOrder")).longValue() : 0L)
                 .build());
         }
+        return statistics;
+    }
+
+    public List<NewShopViewStatisticDTO> getStatisticsByDateRange(LocalDateTime fromDate, LocalDateTime toDate) {
+        List<Criteria> criteriaList = new ArrayList<>();
+        if (fromDate != null || toDate != null) {
+            LocalDateTime start = (fromDate != null)
+                ? fromDate.toLocalDate().withDayOfMonth(1).atStartOfDay()
+                : LocalDateTime.of(1970, 1, 1, 0, 0);
+            LocalDateTime end = (toDate != null)
+                ? toDate.toLocalDate().withDayOfMonth(1).plusMonths(1).atStartOfDay()
+                : LocalDate.now().withDayOfMonth(1).plusMonths(1).atStartOfDay();
+            criteriaList.add(Criteria.where("createdAt").gte(start).lt(end));
+        }
+
+        Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        MatchOperation match = Aggregation.match(finalCriteria);
+
+
+        ProjectionOperation project = Aggregation.project()
+            .and(DateOperators.dateOf("createdAt").toString("%Y-%m")).as("monthString");
+
+        GroupOperation group = Aggregation.group("monthString")
+            .count().as("newShopViews");
+
+
+        SortOperation sort =
+            Aggregation.sort(Sort.Direction.ASC, "_id");
+
+        Aggregation agg = Aggregation.newAggregation(match, project, group, sort);
+
+        AggregationResults<Document> results = mongoTemplate.aggregate(agg, "shop_views", Document.class);
+
+        List<NewShopViewStatisticDTO> statistics = new ArrayList<>();
+
+        results.getMappedResults().forEach(doc -> {
+            Object id = doc.get("_id");
+            Object count = doc.get("newShopViews");
+            if (id != null && count != null) {
+                try {
+                    String monthString = id.toString();
+                    Integer newShopViews = ((Number) count).intValue();
+                    statistics.add(NewShopViewStatisticDTO.builder()
+                        .localDate(monthString)
+                        .newShopViews(newShopViews)
+                        .build());
+                } catch (Exception ignored) {
+                }
+            }
+        });
+
         return statistics;
     }
 }

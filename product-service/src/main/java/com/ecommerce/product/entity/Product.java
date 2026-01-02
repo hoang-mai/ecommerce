@@ -92,27 +92,5 @@ public class Product extends BaseEntity {
         productVariant.setProduct(this);
     }
 
-    public void putProductDetail(String key, String value) {
-        if (productDetails == null) {
-            productDetails = new HashMap<>();
-        }
-        productDetails.put(key, value);
-    }
-
-    public String getProductDetail(String key) {
-        return productDetails != null ? productDetails.get(key) : null;
-    }
-
-    public void removeProductDetail(String key) {
-        if (productDetails != null) {
-            productDetails.remove(key);
-        }
-    }
-
-    public void clearProductDetails() {
-        if (productDetails != null) {
-            productDetails.clear();
-        }
-    }
 
 }

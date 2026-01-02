@@ -1,9 +1,11 @@
 package com.ecommerce.payment.controller;
 
 import com.ecommerce.library.component.MessageService;
+import com.ecommerce.library.enumeration.PaymentStatus;
 import com.ecommerce.library.utils.BaseResponse;
 import com.ecommerce.library.utils.Constant;
 import com.ecommerce.library.utils.MessageSuccess;
+import com.ecommerce.payment.dto.UpdatePaymentStatusDTO;
 import com.ecommerce.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,13 +35,13 @@ public class PaymentController {
         paymentService.handleIPN(amount, bankCode, bankTranNo, cardType, orderInfo, payDate, responseCode, tmnCode, transactionNo, transactionStatus, txnRef, secureHash);
     }
 
-    @PatchMapping("/refund/{orderId}")
-    public ResponseEntity<BaseResponse<Void>> refundPayment(@PathVariable Long orderId,
-                                                            @RequestBody String reason) {
-        paymentService.refundPayment(orderId, reason);
+    @PatchMapping("/{orderId}")
+    public ResponseEntity<BaseResponse<Void>> cancelledOrRefundPayment(@PathVariable Long orderId,
+                                                            @RequestBody UpdatePaymentStatusDTO updatePaymentStatusDTO) {
+        paymentService.cancelledOrRefundPayment(orderId, updatePaymentStatusDTO.getReason(), updatePaymentStatusDTO.getPaymentStatus());
         return ResponseEntity.ok(
             BaseResponse.<Void>builder()
-                .message(messageService.getMessage(MessageSuccess.REFUND_SUCCESS))
+                .message(messageService.getMessage(PaymentStatus.CANCELLED == updatePaymentStatusDTO.getPaymentStatus() ? MessageSuccess.CANCELLED_SUCCESS : MessageSuccess.REFUND_SUCCESS))
                 .statusCode(200)
                 .build()
         );
