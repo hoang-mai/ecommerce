@@ -29,6 +29,12 @@ public class Order extends BaseEntity {
     @Column(name = "shop_id", nullable = false)
     private Long shopId;
 
+    @Column(name = "cart_item_id")
+    private Long cartItemId;
+
+    @Column(name= "note", columnDefinition = "TEXT")
+    private String note;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
     private OrderStatus orderStatus;

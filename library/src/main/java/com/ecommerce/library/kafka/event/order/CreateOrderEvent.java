@@ -29,4 +29,6 @@ public class CreateOrderEvent {
     private List<CreateOrderItemEvent> createOrderItemEventList;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long cartItemId;
+    private String note;
 }

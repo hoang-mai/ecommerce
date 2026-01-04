@@ -58,6 +58,9 @@ public class OrderView extends BaseEntity {
     @Field(name = "address")
     private String address;
 
+    @Field(name = "note")
+    private String note;
+
     @Field(name = "phoneNumber")
     private String phoneNumber;
 

@@ -46,24 +46,27 @@ public class OrderServiceImpl implements OrderService {
     public void createOrder(ResCreateOrderDTO request) {
         Long userId = userHelper.getCurrentUserId();
         List<Order> orders = new ArrayList<>();
-
+        List<Long> cartItemIds = new ArrayList<>();
 
         request.getItems().forEach(item -> {
             if (!shopCacheRepository.existsById(item.getShopId())) {
                 throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
             }
+            cartItemIds.add(item.getCartItemId());
             Order order = Order.builder()
-                    .userId(userId)
-                    .shopId(item.getShopId())
-                    .orderStatus(OrderStatus.PENDING)
-                    .receiverName(request.getReceiverName())
-                    .address(request.getAddress())
-                    .phoneNumber(request.getPhoneNumber())
-                    .build();
+                .userId(userId)
+                .shopId(item.getShopId())
+                .orderStatus(OrderStatus.PENDING)
+                .receiverName(request.getReceiverName())
+                .address(request.getAddress())
+                .phoneNumber(request.getPhoneNumber())
+                .cartItemId(item.getCartItemId())
+                .note(item.getNote())
+                .build();
             item.getProductOrderItems().forEach(productOrderItem -> {
 
                 ProductCache productCache = productCacheRepository.findById(productOrderItem.getProductId())
-                        .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+                    .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
 
                 if (!productCache.getProductVariantIds().contains(productOrderItem.getProductVariantId())) {
                     throw new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND);
@@ -76,51 +79,53 @@ public class OrderServiceImpl implements OrderService {
                 );
                 BigDecimal totalFinalPrice = totalPrice.subtract(totalDiscount);
                 OrderItem orderItem = OrderItem.builder()
-                        .productId(productOrderItem.getProductId())
-                        .productVariantId(productOrderItem.getProductVariantId())
-                        .totalPrice(totalPrice)
-                        .totalDiscount(totalDiscount)
-                        .totalFinalPrice(totalFinalPrice)
-                        .price(productOrderItem.getPrice())
-                        .quantity(productOrderItem.getQuantity())
-                        .build();
+                    .productId(productOrderItem.getProductId())
+                    .productVariantId(productOrderItem.getProductVariantId())
+                    .totalPrice(totalPrice)
+                    .totalDiscount(totalDiscount)
+                    .totalFinalPrice(totalFinalPrice)
+                    .price(productOrderItem.getPrice())
+                    .quantity(productOrderItem.getQuantity())
+                    .build();
                 order.addTotalPrice(orderItem.getTotalFinalPrice());
                 order.addOrderItem(orderItem);
             });
             orders.add(order);
         });
         orderRepository.saveAll(orders);
-        cartService.clearCartByUserId(userId);
+        cartService.clearCartItems(cartItemIds);
 
         orderEventProducer.send(
-                CreateListOrderEvent.builder()
-                        .userId(userId)
-                        .createOrderEventList(orders.stream().map(order -> CreateOrderEvent.builder()
-                                .orderId(order.getOrderId())
-                                .userId(order.getUserId())
-                                .shopId(order.getShopId())
-                                .orderStatus(order.getOrderStatus())
-                                .totalPrice(order.getTotalPrice())
-                                .receiverName(order.getReceiverName())
-                                .address(order.getAddress())
-                                .phoneNumber(order.getPhoneNumber())
-                                .createdAt(order.getCreatedAt())
-                                .updatedAt(order.getUpdatedAt())
-                                .createOrderItemEventList(
-                                        order.getItems().stream().map(orderItem -> CreateOrderItemEvent.builder()
-                                                .orderItemId(orderItem.getOrderItemId())
-                                                .productId(orderItem.getProductId())
-                                                .productVariantId(orderItem.getProductVariantId())
-                                                .quantity(orderItem.getQuantity())
-                                                .price(orderItem.getPrice())
-                                                .totalPrice(orderItem.getTotalPrice())
-                                                .totalDiscount(orderItem.getTotalDiscount())
-                                                .totalFinalPrice(orderItem.getTotalFinalPrice())
-                                                .build()
-                                        ).toList()
-                                )
-                                .build()).toList())
-                        .build()
+            CreateListOrderEvent.builder()
+                .userId(userId)
+                .createOrderEventList(orders.stream().map(order -> CreateOrderEvent.builder()
+                    .orderId(order.getOrderId())
+                    .userId(order.getUserId())
+                    .shopId(order.getShopId())
+                    .orderStatus(order.getOrderStatus())
+                    .totalPrice(order.getTotalPrice())
+                    .receiverName(order.getReceiverName())
+                    .address(order.getAddress())
+                    .phoneNumber(order.getPhoneNumber())
+                    .createdAt(order.getCreatedAt())
+                    .updatedAt(order.getUpdatedAt())
+                    .cartItemId(order.getCartItemId())
+                    .note(order.getNote())
+                    .createOrderItemEventList(
+                        order.getItems().stream().map(orderItem -> CreateOrderItemEvent.builder()
+                            .orderItemId(orderItem.getOrderItemId())
+                            .productId(orderItem.getProductId())
+                            .productVariantId(orderItem.getProductVariantId())
+                            .quantity(orderItem.getQuantity())
+                            .price(orderItem.getPrice())
+                            .totalPrice(orderItem.getTotalPrice())
+                            .totalDiscount(orderItem.getTotalDiscount())
+                            .totalFinalPrice(orderItem.getTotalFinalPrice())
+                            .build()
+                        ).toList()
+                    )
+                    .build()).toList())
+                .build()
         );
     }
 
@@ -128,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void updateOrderStatus(Long orderId, ReqUpdateOrderStatus reqUpdateOrderStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_ITEM_NOT_FOUND));
+            .orElseThrow(() -> new NotFoundException(MessageError.ORDER_ITEM_NOT_FOUND));
 
         OrderStatus currentStatus = order.getOrderStatus();
         OrderStatus newStatus = reqUpdateOrderStatus.getOrderStatus();
@@ -144,12 +149,12 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
 
         orderEventProducer.send(
-                OrderStatusEvent.builder()
-                        .userId(order.getUserId())
-                        .orderId(order.getOrderId())
-                        .orderStatus(order.getOrderStatus())
-                        .reason(order.getReason())
-                        .build()
+            OrderStatusEvent.builder()
+                .userId(order.getUserId())
+                .orderId(order.getOrderId())
+                .orderStatus(order.getOrderStatus())
+                .reason(order.getReason())
+                .build()
         );
     }
 
@@ -157,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
     public void updateOrderStatus(CreateListOrderStatusEvent createListOrderStatusEvent) {
         createListOrderStatusEvent.getOrderStatusEventList().forEach(orderStatusEvent -> {
             Order order = orderRepository.findById(orderStatusEvent.getOrderId())
-                    .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
             order.setOrderStatus(orderStatusEvent.getOrderStatus());
             if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
                 order.setReason(orderStatusEvent.getReason());
@@ -168,12 +173,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private static final Map<OrderStatus, Set<OrderStatus>> transitions = Map.of(
-            OrderStatus.PENDING, Set.of(OrderStatus.PAID, OrderStatus.CANCELLED),
-            OrderStatus.PAID, Set.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
-            OrderStatus.CONFIRMED, Set.of(OrderStatus.DELIVERED),
-            OrderStatus.DELIVERED, Set.of(OrderStatus.SHIPPED),
-            OrderStatus.SHIPPED, Set.of(OrderStatus.COMPLETED, OrderStatus.RETURNED),
-            OrderStatus.COMPLETED, Set.of(OrderStatus.RETURNED)
+        OrderStatus.PENDING, Set.of(OrderStatus.PAID, OrderStatus.CANCELLED),
+        OrderStatus.PAID, Set.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
+        OrderStatus.CONFIRMED, Set.of(OrderStatus.DELIVERED),
+        OrderStatus.DELIVERED, Set.of(OrderStatus.SHIPPED),
+        OrderStatus.SHIPPED, Set.of(OrderStatus.COMPLETED, OrderStatus.RETURNED),
+        OrderStatus.COMPLETED, Set.of(OrderStatus.RETURNED)
     );
 
 }

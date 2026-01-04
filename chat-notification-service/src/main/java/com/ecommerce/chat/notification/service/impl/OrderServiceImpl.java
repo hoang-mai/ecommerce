@@ -148,7 +148,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         String title = messageService.getMessage(titleKey);
-        String message = messageService.getMessage(messageKey);
+        String message = messageService.getMessage(messageKey, orderStatusEvent.getOrderId(), orderStatus.getValueVi());
 
         // Create and save notification
         Notification notification = Notification.builder()

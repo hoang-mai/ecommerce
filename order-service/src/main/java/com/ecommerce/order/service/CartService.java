@@ -3,6 +3,8 @@ package com.ecommerce.order.service;
 import com.ecommerce.order.dto.ReqAddToCartDTO;
 import com.ecommerce.order.dto.ReqUpdateCartItemDTO;
 
+import java.util.List;
+
 public interface CartService {
 
 
@@ -31,10 +33,6 @@ public interface CartService {
      */
     Integer getCartItemCount();
 
-    /**
-     * Clear cart by userId
-     */
-    void clearCartByUserId(Long userId);
-
+    void clearCartItems(List<Long> cartItemIds);
 }
 

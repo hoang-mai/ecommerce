@@ -21,6 +21,7 @@ import com.ecommerce.library.enumeration.UserCategoryType;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -177,10 +178,18 @@ public class CartViewServiceImpl implements CartViewService {
     }
 
     @Override
-    public void clearCartViewByUserId(String userId) {
-        CartView cartView = cartViewRepository.findByUserId(userId)
+    public void clearCartItems(List<Long> cartItemIds, Long userId) {
+        CartView cartView = cartViewRepository.findByUserId(String.valueOf(userId))
             .orElseThrow(() -> new NotFoundException(MessageError.CART_NOT_FOUND));
-        cartView.clearCart();
+        cartItemIds.forEach(cartItemId -> {
+            CartView.CartItem cartItemToRemove = cartView.getCartItems().stream()
+                .filter(item -> item.get_id().equals(String.valueOf(cartItemId)))
+                .findFirst()
+                .orElse(null);
+            if (FnCommon.isNotNull(cartItemToRemove)) {
+                cartView.removeCartItem(cartItemToRemove);
+            }
+        });
         cartViewRepository.save(cartView);
     }
 }

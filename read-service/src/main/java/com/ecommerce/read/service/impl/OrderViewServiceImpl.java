@@ -52,6 +52,9 @@ public class OrderViewServiceImpl implements OrderViewService {
 
     @Override
     public void createOrderView(CreateListOrderEvent createListOrderEvent) {
+        List<Long> cartItemIds = createListOrderEvent.getCreateOrderEventList().stream()
+            .map(CreateOrderEvent::getCartItemId)
+            .toList();
         for (CreateOrderEvent createOrderViewEvent : createListOrderEvent.getCreateOrderEventList()) {
             OrderView orderView = OrderView.builder()
                 ._id(String.valueOf(createOrderViewEvent.getOrderId()))
@@ -68,6 +71,7 @@ public class OrderViewServiceImpl implements OrderViewService {
                 .createdAt(createOrderViewEvent.getCreatedAt())
                 .updatedAt(createOrderViewEvent.getUpdatedAt())
                 .totalPrice(createOrderViewEvent.getTotalPrice())
+                .note(createOrderViewEvent.getNote())
                 .orderItems(createOrderViewEvent.getCreateOrderItemEventList().stream().map(createOrderItemEvent -> OrderView.OrderItem.builder()
                     ._id(String.valueOf(createOrderItemEvent.getOrderItemId()))
                     .productId(String.valueOf(createOrderItemEvent.getProductId()))
@@ -99,7 +103,7 @@ public class OrderViewServiceImpl implements OrderViewService {
                 }
             }));
         }
-        cartViewService.clearCartViewByUserId(String.valueOf(createListOrderEvent.getUserId()));
+        cartViewService.clearCartItems(cartItemIds,createListOrderEvent.getUserId());
         productViewService.updateStockAfterCreateOrder(createListOrderEvent);
     }
 

@@ -53,7 +53,7 @@ public class OrderController {
 
         return ResponseEntity.ok(BaseResponse.<Void>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message(MessageSuccess.UPDATE_ORDER_STATUS_SUCCESS)
+                .message(messageService.getMessage(MessageSuccess.UPDATE_ORDER_STATUS_SUCCESS))
 
                 .build());
     }

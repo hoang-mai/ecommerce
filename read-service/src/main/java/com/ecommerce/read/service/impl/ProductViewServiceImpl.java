@@ -38,8 +38,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -194,6 +194,7 @@ public class ProductViewServiceImpl implements ProductViewService {
             }
         }
     }
+
     @Async
     public void createProductSearch(ProductView productView, BigDecimal basePrice) {
         ProductSearch productViewExisting = productSearchRepository.findById(productView.get_id()).orElse(null);
@@ -219,7 +220,10 @@ public class ProductViewServiceImpl implements ProductViewService {
                 .shopStatus(productView.getShopStatus())
                 .totalSold(0)
                 .rating(0.0)
-                .createdAt(Instant.from(productView.getCreatedAt()))
+                .createdAt(
+                    productView.getCreatedAt()
+                        .toInstant(ZoneOffset.UTC)
+                )
                 .build();
             productSearchRepository.save(productSearch);
         }
@@ -236,6 +240,7 @@ public class ProductViewServiceImpl implements ProductViewService {
         shopViewRepositoryImpl.updateProductStatusInShopView(productView.getShopId(), event.getStatus());
         updateProductSearchStatus(event);
     }
+
     @Async
     public void updateProductSearchStatus(UpdateProductStatusEvent event) {
         ProductSearch productSearch = productSearchRepository.findById(String.valueOf(event.getProductId()))
@@ -290,7 +295,7 @@ public class ProductViewServiceImpl implements ProductViewService {
             status = ProductStatus.ACTIVE;
             shopStatus = ShopStatus.ACTIVE;
             Page<ProductSearch> productSearchPage = productSearchRepositoryImpl.getProductSearch(productIds, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
-            if(!FnCommon.isNotNullOrEmptyList(productSearchPage.getContent())){
+            if (!FnCommon.isNotNullOrEmptyList(productSearchPage.getContent())) {
                 return PageResponse.<ProductView>builder()
                     .data(Collections.emptyList())
                     .pageNo(productSearchPage.getNumber())
@@ -301,7 +306,7 @@ public class ProductViewServiceImpl implements ProductViewService {
                     .hasPreviousPage(productSearchPage.hasPrevious())
                     .build();
             }
-            Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(productSearchPage.map(ProductSearch::getId).toList(), null, null, null, null, null, null, null, null, null, null);
+            Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(productSearchPage.getContent().stream().map(ProductSearch::getId).toList(), null, null, null, null, null, null, null, null, null, pageable);
 
             return PageResponse.<ProductView>builder()
                 .data(productsPage.getContent().stream().peek(productView ->
@@ -380,6 +385,7 @@ public class ProductViewServiceImpl implements ProductViewService {
         productViewRepository.saveAll(productViews);
         updateProductSearchShopStatus(updateShopStatusEvent);
     }
+
     @Async
     public void updateProductSearchShopStatus(UpdateShopStatusEvent updateShopStatusEvent) {
         List<ProductSearch> productSearches = productSearchRepository.findByShopId(String.valueOf(updateShopStatusEvent.getShopId()));

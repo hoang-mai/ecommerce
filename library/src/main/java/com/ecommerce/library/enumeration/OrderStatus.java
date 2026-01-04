@@ -6,14 +6,15 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum OrderStatus {
-    PENDING("PENDING"),
-    CONFIRMED("CONFIRMED"),
-    PAID("PAID"),
-    DELIVERED("DELIVERED"),
-    SHIPPED("SHIPPED"),
-    COMPLETED("COMPLETED"),
-    RETURNED("RETURNED"),
-    CANCELLED("CANCELLED");
+    PENDING("PENDING", "Đang chờ"),
+    CONFIRMED("CONFIRMED", "Đã xác nhận"),
+    PAID("PAID", "Đã thanh toán"),
+    DELIVERED("DELIVERED", "Đang vận chuyển"),
+    SHIPPED("SHIPPED", "Đang giao"),
+    COMPLETED("COMPLETED", "Hoàn thành"),
+    RETURNED("RETURNED", "Đã trả hàng"),
+    CANCELLED("CANCELLED", "Đã hủy");
 
     private final String value;
+    private final String valueVi;
 }

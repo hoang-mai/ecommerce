@@ -187,12 +187,8 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void clearCartByUserId(Long userId) {
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException(MessageError.CART_NOT_FOUND));
-
-        cart.clearCart();
-        cartRepository.save(cart);
+    public void clearCartItems(List<Long> cartItemIds) {
+        cartItemRepository.deleteAllById(cartItemIds);
     }
 
     private Cart createNewCart(Long userId) {

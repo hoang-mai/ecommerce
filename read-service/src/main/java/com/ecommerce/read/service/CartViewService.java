@@ -6,6 +6,8 @@ import com.ecommerce.library.kafka.event.cart.DeleteCartItemEvent;
 import com.ecommerce.library.kafka.event.cart.DeleteProductCartItemEvent;
 import com.ecommerce.read.dto.CartViewDTO;
 
+import java.util.List;
+
 public interface CartViewService {
     void createCart(CreateCartEvent event);
     void updateCartItem(UpdateProductCartItemEvent event);
@@ -14,5 +16,6 @@ public interface CartViewService {
 
     CartViewDTO getCurrentUserCart();
 
-    void clearCartViewByUserId(String userId);
+
+    void clearCartItems(List<Long> cartItemIds, Long userId);
 }
