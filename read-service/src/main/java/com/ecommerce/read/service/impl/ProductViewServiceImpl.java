@@ -42,6 +42,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -257,27 +258,34 @@ public class ProductViewServiceImpl implements ProductViewService {
     @Override
     public PageResponse<ProductView> searchProducts(String searchId, Boolean isOwner, Long shopId, Long categoryId, ProductStatus status, String keyword, Integer star, BigDecimal startPrice, BigDecimal endPrice, int pageNo, int pageSize, String sortBy, String sortDir) {
 
-        List<String> productIds = null;
+        Map<String, Float> imageScoreMap = Map.of();
+
         if (FnCommon.isNotNullOrEmpty(searchId)) {
             SearchView searchView = searchViewRepositoryImpl.getById(searchId);
             if (!FnCommon.isNotNull(searchView)) {
                 throw new NotFoundException(MessageError.PRODUCT_NOT_FOUND);
             }
-            productIds = searchView.getProductIds();
+            imageScoreMap= searchView.getSearchImages().stream()
+                .collect(Collectors.toMap(
+                    SearchView.SearchImageResult::getProductId,
+                    SearchView.SearchImageResult::getSimilarityScore,
+                    (a, b) -> a
+                ));
 
         }
         Long ownerId = null;
         ShopStatus shopStatus = null;
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-            ? Sort.by(sortBy).ascending()
-            : Sort.by(sortBy).descending();
 
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
         if (Boolean.TRUE.equals(isOwner)) {
+            Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+            Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
             ownerId = userHelper.getCurrentUserId();
 
 
-            Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(productIds, ownerId, shopId, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
+            Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(null, ownerId, shopId, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
 
             return PageResponse.<ProductView>builder()
                 .data(productsPage.getContent().stream().peek(productView ->
@@ -292,9 +300,11 @@ public class ProductViewServiceImpl implements ProductViewService {
                 .hasPreviousPage(productsPage.hasPrevious())
                 .build();
         } else {
+
+            Pageable pageable = PageRequest.of(pageNo, pageSize);
             status = ProductStatus.ACTIVE;
             shopStatus = ShopStatus.ACTIVE;
-            Page<ProductSearch> productSearchPage = productSearchRepositoryImpl.getProductSearch(productIds, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
+            Page<ProductSearch> productSearchPage = productSearchRepositoryImpl.getProductSearch(imageScoreMap, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
             if (!FnCommon.isNotNullOrEmptyList(productSearchPage.getContent())) {
                 return PageResponse.<ProductView>builder()
                     .data(Collections.emptyList())
@@ -306,10 +316,12 @@ public class ProductViewServiceImpl implements ProductViewService {
                     .hasPreviousPage(productSearchPage.hasPrevious())
                     .build();
             }
-            Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(productSearchPage.getContent().stream().map(ProductSearch::getId).toList(), null, null, null, null, null, null, null, null, null, pageable);
+            List<ProductView> productViews = productViewRepositoryImpl.getProductViewByIdsPreserveOrder(
+                productSearchPage.getContent().stream().map(ProductSearch::getId).toList()
+            );
 
             return PageResponse.<ProductView>builder()
-                .data(productsPage.getContent().stream().peek(productView ->
+                .data(productViews.stream().peek(productView ->
                     productView.getProductImages().forEach(productImage ->
                         productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
                     )).toList())
@@ -504,7 +516,7 @@ public class ProductViewServiceImpl implements ProductViewService {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", resource);
         body.add("top_k", "5");
-        List<String> searchImagesDTOList = RestClient.builder()
+        List<SearchView.SearchImageResult> searchImagesDTOList = RestClient.builder()
             .baseUrl(String.format("http://%s:%s/search-images", aiServiceHost, aiServicePort))
             .build()
             .post()
@@ -516,7 +528,7 @@ public class ProductViewServiceImpl implements ProductViewService {
         if (!FnCommon.isNotNullOrEmptyList(searchImagesDTOList)) return null;
         SearchView view = SearchView.builder()
             .createdAt(LocalDateTime.now())
-            .productIds(searchImagesDTOList)
+            .searchImages(searchImagesDTOList)
             .build();
         searchViewRepository.save(view);
         return view.get_id();

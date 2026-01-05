@@ -107,6 +107,23 @@ public class ProductViewRepositoryImpl {
         return new PageImpl<>(productViews, pageable, total);
     }
 
+    public List<ProductView> getProductViewByIdsPreserveOrder(List<String> productIds) {
+        if (!FnCommon.isNotNullOrEmptyList(productIds)) {
+            return List.of();
+        }
+        Query query = new Query(Criteria.where("_id").in(productIds));
+        List<ProductView> productViews = mongoTemplate.find(query, ProductView.class);
+
+        // Sắp xếp lại theo thứ tự của productIds từ Elasticsearch
+        return productIds.stream()
+            .map(id -> productViews.stream()
+                .filter(pv -> pv.get_id().equals(id))
+                .findFirst()
+                .orElse(null))
+            .filter(pv -> pv != null)
+            .toList();
+    }
+
     public void updateRating(Long productId, RatingNumber rating, Boolean isUpdate, RatingNumber oldRating, Boolean isDelete) {
         Query query = new Query(Criteria.where("_id").is(String.valueOf(productId)));
         Update update;

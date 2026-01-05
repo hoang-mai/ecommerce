@@ -21,7 +21,7 @@ public class PaymentController {
     public void ipn(
         @RequestParam(value = "vnp_Amount") String amount,
         @RequestParam(value = "vnp_BankCode") String bankCode,
-        @RequestParam(value = "vnp_BankTranNo") String bankTranNo,
+        @RequestParam(value = "vnp_BankTranNo", required = false) String bankTranNo,
         @RequestParam(value = "vnp_CardType") String cardType,
         @RequestParam(value = "vnp_OrderInfo") String orderInfo,
         @RequestParam(value = "vnp_PayDate") String payDate,

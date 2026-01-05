@@ -2,6 +2,8 @@ package com.ecommerce.read.repository.impl;
 
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.json.JsonData;
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.utils.FnCommon;
@@ -19,15 +21,20 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
 public class ProductSearchRepositoryImpl {
     private final ElasticsearchOperations elasticsearchOperations;
 
-    public Page<ProductSearch> getProductSearch(List<String> productIds, Long categoryId, ProductStatus status, ShopStatus shopStatus, String keyword, Integer star, BigDecimal startPrice, BigDecimal endPrice, Pageable pageable) {
+    public Page<ProductSearch> getProductSearch(Map<String, Float> imageScoreMap, Long categoryId, ProductStatus status, ShopStatus shopStatus, String keyword, Integer star, BigDecimal startPrice, BigDecimal endPrice, Pageable pageable) {
         BoolQuery.Builder boolQuery = new BoolQuery.Builder();
-
+        List<String> productIds = imageScoreMap != null ? imageScoreMap.keySet().stream().toList() : null;
+        final String[] scriptSource = {
+            "def id = doc['id'].value;" +
+                "return params.scores.containsKey(id) ? params.scores.get(id) : 0.0;"
+        };
         if (FnCommon.isNotNullOrEmptyList(productIds)) {
             boolQuery.filter(f -> f.terms(t -> t
                 .field("id")
@@ -67,6 +74,9 @@ public class ProductSearchRepositoryImpl {
                 .fields("name^3", "categoryName^2")
                 .fuzziness("AUTO")
             ));
+            scriptSource[0] = "def id = doc['id'].value;" +
+                "def img = params.scores.containsKey(id) ? params.scores.get(id) : 0.0;" +
+                "return (params.w_img * img) + (params.w_txt * _score);";
         }
 
         if (star != null) {
@@ -92,9 +102,23 @@ public class ProductSearchRepositoryImpl {
                 })
             ));
         }
+        Query finalQuery;
+        if (imageScoreMap != null) {
+            Map<String, JsonData> scoreParams = new java.util.HashMap<>();
+            scoreParams.put("scores", JsonData.of(imageScoreMap));
+            scoreParams.put("w_img", JsonData.of(100.0));
+            scoreParams.put("w_txt", JsonData.of(1.0));
+
+            finalQuery = Query.of(q -> q.scriptScore(ss -> ss
+                .query(q2 -> q2.bool(boolQuery.build()))
+                .script(sc -> sc.source(scriptSource[0]).params(scoreParams))
+            ));
+        } else {
+            finalQuery = Query.of(q -> q.bool(boolQuery.build()));
+        }
 
         NativeQuery searchQuery = NativeQuery.builder()
-            .withQuery(q -> q.bool(boolQuery.build()))
+            .withQuery(finalQuery)
             .withPageable(pageable)
             .build();
 

@@ -19,7 +19,17 @@ public class SearchView extends BaseEntity {
     @Id
     private String _id;
 
-    @Field("productIds")
+    @Field("searchImages")
     @Builder.Default
-    private List<String> productIds = new ArrayList<>();
+    private List<SearchImageResult> searchImages = new ArrayList<>();
+
+    @Getter
+    @Setter
+    @SuperBuilder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SearchImageResult{
+        private String productId;
+        private Float similarityScore;
+    }
 }

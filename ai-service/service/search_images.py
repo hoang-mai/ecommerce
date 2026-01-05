@@ -98,9 +98,7 @@ class ImageSearchService:
             for i, result in enumerate(top_results[:3], 1):
                 logger.info(f"   {i}. Product {result['productId']}: {result['similarityScore']:.4f}")
 
-            product_ids = [str(item['productId']) for item in top_results]
-
-            return product_ids
+            return top_results
 
         except Exception as e:
             logger.error(f"❌ Error finding similar products: {e}", exc_info=True)
