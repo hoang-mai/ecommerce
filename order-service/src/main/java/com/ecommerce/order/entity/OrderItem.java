@@ -44,4 +44,7 @@ public class OrderItem extends BaseEntity {
 
     @Column(name = "total_final_price", nullable = false)
     private BigDecimal totalFinalPrice;
+
+    @Column(name = "is_flash_sale")
+    private Boolean isFlashSale;
 }

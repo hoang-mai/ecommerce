@@ -2,7 +2,7 @@ package com.ecommerce.library.kafka.event.cart;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Builder
@@ -14,6 +14,6 @@ public class CreateCartEvent {
     private Long cartId;
     private Long userId;
     private List<CreateCartItemEvent> createCartItemEventList;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 }

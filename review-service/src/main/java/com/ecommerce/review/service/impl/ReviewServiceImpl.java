@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -82,7 +82,7 @@ public class ReviewServiceImpl implements ReviewService {
             .comment(review.getComment())
             .imageUrls(review.getImageUrls())
             .attributes(review.getAttributes())
-            .createdAt(LocalDateTime.now())
+            .createdAt(Instant.now())
             .build();
 
         reviewEventProducer.send(event);

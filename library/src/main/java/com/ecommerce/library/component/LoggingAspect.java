@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class LoggingAspect {
     public Object logBefore(ProceedingJoinPoint pjp) throws Throwable {
         Object[] args = pjp.getArgs();
         String methodName = pjp.getSignature().getName();
-        LocalDateTime startTime = LocalDateTime.now();
+        Instant startTime = Instant.now();
         Object[] loggableArgs = Arrays.stream(args)
                 .map(arg -> {
                     if (arg instanceof MultipartFile file) {
@@ -75,11 +75,11 @@ public class LoggingAspect {
         try {
             object = pjp.proceed();
         } catch (Throwable e) {
-            LocalDateTime exceptionTime = LocalDateTime.now();
+            Instant exceptionTime = Instant.now();
             log.error("Method {} failed with exception: {}. Exception time: {}", methodName, e.getMessage(), exceptionTime);
             throw e;
         }
-        LocalDateTime endTime = LocalDateTime.now();
+        Instant endTime = Instant.now();
         long duration = Duration.between(startTime, endTime).toMillis();
         log.info("Method {} completed with result: {}. End time: {}. Duration: {} ms",
                  methodName, objectMapper.writeValueAsString(object), endTime, duration);
@@ -89,7 +89,7 @@ public class LoggingAspect {
     @AfterReturning(value = "within(com.ecommerce.*.exception.RestException)", returning = "result")
     public void logAfterReturning(JoinPoint joinPoint, Object result) throws JsonProcessingException {
         String methodName = joinPoint.getSignature().getName();
-        LocalDateTime endTime = LocalDateTime.now();
+        Instant endTime = Instant.now();
         log.info("Method {} returned successfully with result: {}. End time: {}", methodName, objectMapper.writeValueAsString(result), endTime);
     }
 
@@ -97,7 +97,7 @@ public class LoggingAspect {
     public void logBeforeConsumer(JoinPoint joinPoint) throws JsonProcessingException {
         Object[] args = joinPoint.getArgs();
         String methodName = joinPoint.getSignature().getName();
-        LocalDateTime startTime = LocalDateTime.now();
+        Instant startTime = Instant.now();
         log.info("Consumer Method {} called with args: {}. Start time: {}", methodName, objectMapper.writeValueAsString(args), startTime);
     }
 }

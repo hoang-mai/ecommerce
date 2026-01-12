@@ -34,5 +34,9 @@ CREATE DATABASE IF NOT EXISTS payment_service;
 CREATE USER IF NOT EXISTS 'payment_service'@'%' IDENTIFIED BY 'payment_service';
 GRANT ALL PRIVILEGES ON payment_service.* TO 'payment_service'@'%';
 
+CREATE DATABASE IF NOT EXISTS flash_sale_service;
+CREATE USER IF NOT EXISTS 'flash_sale_service'@'%' IDENTIFIED BY 'flash_sale_service';
+GRANT ALL PRIVILEGES ON flash_sale_service.* TO 'flash_sale_service'@'%';
+
 
 FLUSH PRIVILEGES;

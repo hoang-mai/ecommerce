@@ -29,7 +29,7 @@ minio:
   access-key: root
   secret-key: password
   bucket-name: ecommerce
-
+  url-public: http://localhost:9000
 server:
   port: ${SERVER_PORT:8089}
 

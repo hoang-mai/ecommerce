@@ -84,4 +84,22 @@ public final class MessageSuccess {
     public static final String SEARCH_KEYWORDS_RETRIEVED_SUCCESS = "search.keywords.retrieved.success";
     public static final String CANCELLED_SUCCESS =  "cancelled.success";
     public static final String GET_USER_STATISTIC_SUCCESS = "get.user.statistic.success";
+    public static final String FLASH_SALE_CAMPAIGN_SCHEDULE_CREATED_SUCCESS = "flash.sale.campaign.schedule.created.success";
+    public static final String FLASH_SALE_CAMPAIGN_SCHEDULE_UPDATED_SUCCESS = "flash.sale.campaign.schedule.updated.success";
+    public static final String FLASH_SALE_CAMPAIGN_SCHEDULE_STATUS_UPDATED_SUCCESS = "flash.sale.campaign.schedule.status.updated.success";
+    public static final String FLASH_SALE_CAMPAIGN_SCHEDULE_RETRIEVED_SUCCESS = "flash.sale.campaign.schedule.retrieved.success";
+    public static final String FLASH_SALE_CAMPAIGN_SCHEDULES_RETRIEVED_SUCCESS = "flash.sale.campaign.schedules.retrieved.success";
+    public static final String FLASH_SALE_CAMPAIGN_SCHEDULE_DELETED_SUCCESS = "flash.sale.campaign.schedule.deleted.success";
+    public static final String FLASH_SALE_CAMPAIGN_CREATED_SUCCESS = "flash.sale.campaign.created.success";
+    public static final String FLASH_SALE_CAMPAIGN_UPDATED_SUCCESS = "flash.sale.campaign.updated.success";
+    public static final String FLASH_SALE_CAMPAIGN_STATUS_UPDATED_SUCCESS = "flash.sale.campaign.status.updated.success";
+    public static final String FLASH_SALE_CAMPAIGN_RETRIEVED_SUCCESS = "flash.sale.campaign.retrieved.success";
+    public static final String FLASH_SALE_CAMPAIGNS_RETRIEVED_SUCCESS = "flash.sale.campaigns.retrieved.success";
+    public static final String FLASH_SALE_CAMPAIGNS_BY_DATE_RETRIEVED_SUCCESS = "flash.sale.campaigns.by.date.retrieved.success";
+    public static final String FLASH_SALE_PRODUCT_CREATED_SUCCESS = "flash.sale.product.created.success";
+    public static final String FLASH_SALE_PRODUCT_UPDATED_SUCCESS = "flash.sale.product.updated.success";
+    public static final String FLASH_SALE_PRODUCT_DELETED_SUCCESS = "flash.sale.product.deleted.success";
+    public static final String FLASH_SALE_PRODUCT_RETRIEVED_SUCCESS = "flash.sale.product.retrieved.success";
+    public static final String FLASH_SALE_PRODUCTS_RETRIEVED_SUCCESS = "flash.sale.products.retrieved.success";
+    public static final String USER_PURCHASE_LIMIT_CHECKED_SUCCESS = "user.purchase.limit.checked.success";
 }

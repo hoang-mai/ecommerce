@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
             ResKeycloakLoginDTO resKeycloakLoginDTO = keyCloakService.login(reqLoginDTO);
 
             if (resKeycloakLoginDTO == null) {
-                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
             }
             return ResLoginDTO.builder()
                     .accessToken(resKeycloakLoginDTO.getAccessToken())
@@ -57,15 +57,15 @@ public class AuthServiceImpl implements AuthService {
         } catch (HttpClientErrorException e) {
             String errorJson = e.getResponseBodyAsString();
             if (errorJson.contains("Invalid user credentials")) {
-                throw new HttpRequestException(messageService.getMessage(MessageError.INVALID_USER_CREDENTIALS), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
+                throw new HttpRequestException(messageService.getMessage(MessageError.INVALID_USER_CREDENTIALS), HttpStatus.BAD_REQUEST.value(), Instant.now());
             } else if (errorJson.contains("Account disabled")) {
-                throw new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_DISABLED), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
+                throw new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_DISABLED), HttpStatus.BAD_REQUEST.value(), Instant.now());
             } else {
-                throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_PARSE_ERROR_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+                throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_PARSE_ERROR_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
             }
 
         } catch (Exception e) {
-            throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER), HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
         }
     }
 
@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void updateAccount(ReqUpdateAccountDTO reqUpdateStatusAccountDTO) {
         Account account = accountRepository.findById(userHelper.getCurrentUserId())
-                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), LocalDateTime.now()));
+                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), Instant.now()));
         if (FnCommon.isNotNull(reqUpdateStatusAccountDTO.getAccountStatus())) {
             account.setAccountStatus(reqUpdateStatusAccountDTO.getAccountStatus());
             userEventProducer.send(UpdateAccountStatusEvent.builder()
@@ -83,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
         }
         if (FnCommon.isNotNullOrEmpty(reqUpdateStatusAccountDTO.getCurrentPassword()) && FnCommon.isNotNullOrEmpty(reqUpdateStatusAccountDTO.getNewPassword())) {
             if (!passwordEncoder.matches(reqUpdateStatusAccountDTO.getCurrentPassword(), account.getPassword())) {
-                throw new HttpRequestException(messageService.getMessage(MessageError.CURRENT_PASSWORD_INCORRECT), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
+                throw new HttpRequestException(messageService.getMessage(MessageError.CURRENT_PASSWORD_INCORRECT), HttpStatus.BAD_REQUEST.value(), Instant.now());
             }
             account.setPassword(passwordEncoder.encode(reqUpdateStatusAccountDTO.getNewPassword()));
         }
@@ -100,7 +100,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, Long userId) {
         Account account = accountRepository.findById(userId)
-                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), LocalDateTime.now()));
+                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), Instant.now()));
         if (FnCommon.isNotNull(reqUpdateAccountDTO.getAccountStatus())) {
             account.setAccountStatus(reqUpdateAccountDTO.getAccountStatus());
         }
@@ -127,14 +127,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void deleteAccount(String accountId) {
         Account account = accountRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), LocalDateTime.now()));
+                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), Instant.now()));
         accountRepository.delete(account);
     }
 
     @Override
     public void updateRole(long userId, Role role) {
         Account account = accountRepository.findById(userId)
-                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), LocalDateTime.now()));
+                .orElseThrow(() -> new HttpRequestException(messageService.getMessage(MessageError.ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND.value(), Instant.now()));
         keyCloakService.updateRole(role, account.getAccountId());
     }
 
@@ -143,7 +143,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             ResKeyCloakRefreshTokenDTO resKeyCloakRefreshTokenDTO = keyCloakService.refreshToken(reqRefreshTokenDTO);
             if (resKeyCloakRefreshTokenDTO == null) {
-                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
             }
             return ResRefreshTokenDTO.builder()
                     .accessToken(resKeyCloakRefreshTokenDTO.getAccessToken())
@@ -158,13 +158,13 @@ public class AuthServiceImpl implements AuthService {
         }catch (HttpClientErrorException e) {
             String errorJson = e.getResponseBodyAsString();
             if (errorJson.contains("Token is not active")) {
-                throw new HttpRequestException(messageService.getMessage(MessageError.TOKEN_EXPIRED), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
+                throw new HttpRequestException(messageService.getMessage(MessageError.TOKEN_EXPIRED), HttpStatus.BAD_REQUEST.value(), Instant.now());
             } else {
-                throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_PARSE_ERROR_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+                throw new HttpRequestException(messageService.getMessage(MessageError.CANNOT_PARSE_ERROR_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
             }
 
         } catch (Exception e) {
-            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
         }
     }
 }

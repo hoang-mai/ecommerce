@@ -22,4 +22,5 @@ public class CreateOrderItemEvent {
     private BigDecimal price;
     private String productImageUrl;
     private List<CreateProductAttribute> createProductAttributeList;
+    private Boolean isFlashSale;
 }

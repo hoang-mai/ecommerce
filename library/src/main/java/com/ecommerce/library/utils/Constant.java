@@ -38,4 +38,13 @@ public final class Constant {
     public static final String PAYMENT = REQUEST_MAPPING + "/payment";
     public static final String USER_CATEGORY = REQUEST_MAPPING + "/user-category";
     public static final String SEARCH_KEYWORD = REQUEST_MAPPING + "/search-keyword";
+    public static final String FLASH_SALE_CAMPAIGN_SCHEDULE = REQUEST_MAPPING + "/flash-sale-campaign-schedule";
+    public static final String FLASH_SALE_CAMPAIGN = REQUEST_MAPPING + "/flash-sale-campaign";
+    public static final String FLASH_SALE_PRODUCT = REQUEST_MAPPING + "/flash-sale-product";
+    public static final String FLASH_SALE_PRODUCT_VIEW = REQUEST_MAPPING + "/flash-sale-product-view";
+
+    public static final double MIN_DISCOUNT_PERCENTAGE = 20.0;
+    public static final double MAX_DISCOUNT_PERCENTAGE = 70.0;
+    public static final String USER_PURCHASE_LIMIT = REQUEST_MAPPING + "/user-purchase-limit";
+    public static final String ORDER_FLASH_SALE = REQUEST_MAPPING + "/order-flash-sale";
 }

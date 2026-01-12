@@ -5,7 +5,6 @@ import com.ecommerce.library.enumeration.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,16 +33,6 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "product_status", nullable = false)
     private ProductStatus productStatus;
-
-    @Column(name = "discount")
-    @Builder.Default
-    private Double discount = 0.0;
-
-    @Column(name = "discount_start_date")
-    private LocalDateTime discountStartDate;
-
-    @Column(name = "discount_end_date")
-    private LocalDateTime discountEndDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)

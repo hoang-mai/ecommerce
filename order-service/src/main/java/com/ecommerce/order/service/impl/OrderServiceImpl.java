@@ -4,6 +4,7 @@ import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.exception.HttpRequestException;
 import com.ecommerce.library.exception.NotFoundException;
+import com.ecommerce.library.kafka.event.flash.sale.FlashSaleOrderEvent;
 import com.ecommerce.library.kafka.event.order.*;
 import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.order.dto.ReqUpdateOrderStatus;
@@ -12,7 +13,6 @@ import com.ecommerce.order.entity.Order;
 import com.ecommerce.order.entity.OrderItem;
 import com.ecommerce.order.entity.ProductCache;
 import com.ecommerce.order.messaging.producer.OrderEventProducer;
-import com.ecommerce.order.repository.OrderItemRepository;
 import com.ecommerce.order.repository.OrderRepository;
 import com.ecommerce.order.repository.ProductCacheRepository;
 import com.ecommerce.order.repository.ShopCacheRepository;
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +86,7 @@ public class OrderServiceImpl implements OrderService {
                     .totalFinalPrice(totalFinalPrice)
                     .price(productOrderItem.getPrice())
                     .quantity(productOrderItem.getQuantity())
+                    .isFlashSale(productOrderItem.getIsFlashSale())
                     .build();
                 order.addTotalPrice(orderItem.getTotalFinalPrice());
                 order.addOrderItem(orderItem);
@@ -121,6 +122,97 @@ public class OrderServiceImpl implements OrderService {
                             .totalPrice(orderItem.getTotalPrice())
                             .totalDiscount(orderItem.getTotalDiscount())
                             .totalFinalPrice(orderItem.getTotalFinalPrice())
+                            .isFlashSale(orderItem.getIsFlashSale())
+                            .build()
+                        ).toList()
+                    )
+                    .build()).toList())
+                .build()
+        );
+    }
+
+    @Transactional
+    @Override
+    public void createFlashSaleOrder(FlashSaleOrderEvent flashSaleOrderEvent) {
+        Long userId = flashSaleOrderEvent.getUserId();
+        List<Order> orders = new ArrayList<>();
+        List<Long> cartItemIds = new ArrayList<>();
+
+        flashSaleOrderEvent.getItems().forEach(item -> {
+            if (!shopCacheRepository.existsById(item.getShopId())) {
+                throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
+            }
+            cartItemIds.add(item.getCartItemId());
+            Order order = Order.builder()
+                .userId(userId)
+                .shopId(item.getShopId())
+                .orderStatus(OrderStatus.PENDING)
+                .receiverName(flashSaleOrderEvent.getReceiverName())
+                .address(flashSaleOrderEvent.getAddress())
+                .phoneNumber(flashSaleOrderEvent.getPhoneNumber())
+                .cartItemId(item.getCartItemId())
+                .note(item.getNote())
+                .build();
+            item.getProductOrderItems().forEach(productOrderItem -> {
+
+                ProductCache productCache = productCacheRepository.findById(productOrderItem.getProductId())
+                    .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+
+                if (!productCache.getProductVariantIds().contains(productOrderItem.getProductVariantId())) {
+                    throw new NotFoundException(MessageError.PRODUCT_VARIANT_NOT_FOUND);
+                }
+
+                BigDecimal totalPrice = productOrderItem.getPrice().multiply(BigDecimal.valueOf(productOrderItem.getQuantity()));
+                BigDecimal totalDiscount = totalPrice.multiply(
+                    BigDecimal.valueOf(productOrderItem.getDiscount())
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                );
+                BigDecimal totalFinalPrice = totalPrice.subtract(totalDiscount);
+                OrderItem orderItem = OrderItem.builder()
+                    .productId(productOrderItem.getProductId())
+                    .productVariantId(productOrderItem.getProductVariantId())
+                    .totalPrice(totalPrice)
+                    .totalDiscount(totalDiscount)
+                    .totalFinalPrice(totalFinalPrice)
+                    .price(productOrderItem.getPrice())
+                    .quantity(productOrderItem.getQuantity())
+                    .isFlashSale(productOrderItem.getIsFlashSale())
+                    .build();
+                order.addTotalPrice(orderItem.getTotalFinalPrice());
+                order.addOrderItem(orderItem);
+            });
+            orders.add(order);
+        });
+        orderRepository.saveAll(orders);
+        cartService.clearCartItems(cartItemIds);
+
+        orderEventProducer.send(
+            CreateListOrderEvent.builder()
+                .userId(userId)
+                .createOrderEventList(orders.stream().map(order -> CreateOrderEvent.builder()
+                    .orderId(order.getOrderId())
+                    .userId(order.getUserId())
+                    .shopId(order.getShopId())
+                    .orderStatus(order.getOrderStatus())
+                    .totalPrice(order.getTotalPrice())
+                    .receiverName(order.getReceiverName())
+                    .address(order.getAddress())
+                    .phoneNumber(order.getPhoneNumber())
+                    .createdAt(order.getCreatedAt())
+                    .updatedAt(order.getUpdatedAt())
+                    .cartItemId(order.getCartItemId())
+                    .note(order.getNote())
+                    .createOrderItemEventList(
+                        order.getItems().stream().map(orderItem -> CreateOrderItemEvent.builder()
+                            .orderItemId(orderItem.getOrderItemId())
+                            .productId(orderItem.getProductId())
+                            .productVariantId(orderItem.getProductVariantId())
+                            .quantity(orderItem.getQuantity())
+                            .price(orderItem.getPrice())
+                            .totalPrice(orderItem.getTotalPrice())
+                            .totalDiscount(orderItem.getTotalDiscount())
+                            .totalFinalPrice(orderItem.getTotalFinalPrice())
+                            .isFlashSale(orderItem.getIsFlashSale())
                             .build()
                         ).toList()
                     )
@@ -138,7 +230,7 @@ public class OrderServiceImpl implements OrderService {
         OrderStatus currentStatus = order.getOrderStatus();
         OrderStatus newStatus = reqUpdateOrderStatus.getOrderStatus();
         if (!transitions.getOrDefault(currentStatus, Set.of()).contains(newStatus)) {
-            throw new HttpRequestException(MessageError.INVALID_ORDER_STATUS_TRANSITION, 400, LocalDateTime.now());
+            throw new HttpRequestException(MessageError.INVALID_ORDER_STATUS_TRANSITION, 400, Instant.now());
         }
         order.setOrderStatus(newStatus);
 

@@ -1,7 +1,7 @@
 package com.ecommerce.user.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import com.ecommerce.library.enumeration.Gender;
 import com.ecommerce.library.enumeration.Role;
@@ -20,7 +20,7 @@ public class ResInfoUserDTO {
     private String avatarUrl;
     private Role role;
     private Gender gender;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
     private Boolean isVerification;
 }

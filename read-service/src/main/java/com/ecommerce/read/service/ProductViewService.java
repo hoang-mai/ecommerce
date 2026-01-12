@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 
@@ -38,7 +38,7 @@ public interface ProductViewService {
 
     void updateRating(Long productId, RatingNumber rating, Boolean isUpdate, RatingNumber oldRating, Boolean isDelete);
 
-    List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, LocalDateTime nowDate, String type);
+    List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, Instant nowDate, String type);
 
     void updateProductSoldAndRevenue(String productId, String productVariantId, Integer quantity, BigDecimal revenue);
 

@@ -28,7 +28,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +83,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
             throw new DuplicateException(MessageError.ACCOUNT_DUPLICATE);
         }
         if (status != Response.Status.CREATED.getStatusCode()) {
-            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
         }
         return response.getLocation().getPath().replaceAll(".*/users/", "");
 
@@ -94,10 +94,10 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         try (Response response = keycloak.realm(realm).users().delete(accountId)) {
             int status = response.getStatus();
             if (status != Response.Status.NO_CONTENT.getStatusCode()) {
-                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
             }
         } catch (Exception e) {
-            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
         }
     }
 
@@ -120,7 +120,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     public void adminUpdateAccountStatus(ReqUpdateAccountDTO reqUpdateAccountDTO, String accountId) {
         UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
         if (user == null) {
-            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), Instant.now());
         }
         if (FnCommon.isNotNull(reqUpdateAccountDTO.getAccountStatus())) {
             user.setEnabled(AccountStatus.ACTIVE.equals(reqUpdateAccountDTO.getAccountStatus()));
@@ -128,7 +128,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         try {
             keycloak.realm(realm).users().get(accountId).update(user);
         } catch (Exception e) {
-            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
         }
     }
 
@@ -136,7 +136,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
     public void updateRole( Role role, String accountId) {
         UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
         if (user == null) {
-            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), Instant.now());
         }
 
         Map<String, List<String>> attributes = user.getAttributes();
@@ -150,7 +150,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         try {
             keycloak.realm(realm).users().get(accountId).update(user);
         } catch (Exception e) {
-            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
         }
     }
 
@@ -183,7 +183,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
 
         UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
         if (user == null) {
-            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), Instant.now());
         }
 
         CredentialRepresentation credential = new CredentialRepresentation();
@@ -195,7 +195,7 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         try {
             keycloak.realm(realm).users().get(accountId).update(user);
         } catch (Exception e) {
-            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
         }
     }
 
@@ -208,13 +208,13 @@ public class KeyCloakServiceImpl implements KeyCloakService {
         String accountId = userHelper.getAccountId();
         UserRepresentation user = keycloak.realm(realm).users().get(accountId).toRepresentation();
         if (user == null) {
-            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND.value(), Instant.now());
         }
         user.setEnabled(AccountStatus.ACTIVE.equals(accountStatus));
         try {
             keycloak.realm(realm).users().get(accountId).update(user);
         } catch (Exception e) {
-            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+            throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
         }
     }
 

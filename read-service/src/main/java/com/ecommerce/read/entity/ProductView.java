@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,16 +76,6 @@ public class ProductView extends BaseEntity {
     @Builder.Default
     private BigDecimal totalRevenue = BigDecimal.ZERO;
 
-    @Field("discount")
-    @Builder.Default
-    private Double discount = 0.0;
-
-    @Field("discountStartDate")
-    private LocalDateTime discountStartDate;
-
-    @Field("discountEndDate")
-    private LocalDateTime discountEndDate;
-
     @Field("categoryId")
     private String categoryId;
 
@@ -112,6 +102,8 @@ public class ProductView extends BaseEntity {
     @Field("productVariants")
     @Builder.Default
     private List<ProductVariant> productVariants = new ArrayList<>();
+
+    private List<FlashSaleProductView> flashSaleProductViews;
 
     public void addSold(Integer quantity) {
         totalSold += quantity;
@@ -180,6 +172,9 @@ public class ProductView extends BaseEntity {
 
         @Field("price")
         private BigDecimal price;
+
+        @Field("salePrice")
+        private BigDecimal salePrice;
 
         @Field("stockQuantity")
         private Integer stockQuantity;

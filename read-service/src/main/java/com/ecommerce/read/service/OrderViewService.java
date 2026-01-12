@@ -10,7 +10,7 @@ import com.ecommerce.read.dto.OrderViewStatisticRevenueDTO;
 import com.ecommerce.read.entity.OrderView;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -23,10 +23,12 @@ public interface OrderViewService {
 
     Map<OrderStatus, Long> getOrderStatistics(String shopId, Boolean isOwner, Integer month, Integer year);
 
-    List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, LocalDateTime fromDate, LocalDateTime toDate);
+    List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, Instant fromDate, Instant toDate);
 
     void updateOrderStatusFromOrderEvent(CreateListOrderStatusEvent createListOrderStatusEvent);
 
-    List<OrderViewStatisticRevenueDTO> getRevenueStatisticsByDateRange(String shopId, Boolean isOwner, LocalDateTime fromDate, LocalDateTime toDate);
+    List<OrderViewStatisticRevenueDTO> getRevenueStatisticsByDateRange(String shopId, Boolean isOwner, Instant fromDate, Instant toDate);
+
+    OrderView getOrderViewById(String orderId);
 }
 

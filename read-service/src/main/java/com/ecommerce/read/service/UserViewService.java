@@ -8,7 +8,7 @@ import com.ecommerce.read.dto.AddressDTO;
 import com.ecommerce.read.dto.NewUserViewStatisticDTO;
 import com.ecommerce.read.entity.UserView;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public interface UserViewService {
@@ -52,5 +52,5 @@ public interface UserViewService {
 
     List<String> searchAddress(String keyword);
 
-    List<NewUserViewStatisticDTO> getUserStatisticsByDateRange(LocalDateTime startDate, LocalDateTime endDate);
+    List<NewUserViewStatisticDTO> getUserStatisticsByDateRange(Instant startDate, Instant endDate);
 }

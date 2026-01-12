@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -27,15 +27,12 @@ public class CreateProductEvent {
     private String productName;
     private String description;
     private ProductStatus productStatus;
-    private Double discount;
-    private LocalDateTime discountStartDate;
-    private LocalDateTime discountEndDate;
     private Map<String, String> productDetails;
     private List<CreateProductImageEvent> productImages;
     private List<CreateProductAttributeEvent> productAttributes;
     private List<CreateProductVariantEvent> productVariants;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
     private Boolean created;
 
     @Builder
@@ -74,6 +71,7 @@ public class CreateProductEvent {
     public static class CreateProductVariantEvent {
         private Long productVariantId;
         private BigDecimal price;
+        private BigDecimal salePrice;
         private Integer stockQuantity;
         private ProductVariantStatus productVariantStatus;
         private Boolean isDefault;

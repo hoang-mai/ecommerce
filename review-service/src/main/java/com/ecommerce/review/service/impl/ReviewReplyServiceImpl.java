@@ -16,7 +16,7 @@ import com.ecommerce.library.utils.MessageError;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +42,7 @@ public class ReviewReplyServiceImpl implements ReviewReplyService {
                 .reviewId(review.getReviewId())
                 .replierId(replierId)
                 .content(saved.getContent())
-                .createdAt(LocalDateTime.now())
+                .createdAt(Instant.now())
                 .build()
         );
     }
@@ -59,7 +59,7 @@ public class ReviewReplyServiceImpl implements ReviewReplyService {
                 .reviewId(saved.getReview().getReviewId())
                 .replierId(saved.getReplierId())
                 .content(saved.getContent())
-                .updatedAt(LocalDateTime.now())
+                .updatedAt(Instant.now())
                 .build()
         );
     }

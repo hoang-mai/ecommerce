@@ -153,8 +153,8 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         return ResCreateUserDTO.newBuilder()
                 .setUserId(user.getUserId())
-                .setCreatedAt(FnCommon.convertLocalDateTimeToTimestamp(user.getCreatedAt()))
-                .setUpdatedAt(FnCommon.convertLocalDateTimeToTimestamp(user.getUpdatedAt()))
+                .setCreatedAt(FnCommon.convertInstantToTimestamp(user.getCreatedAt()))
+                .setUpdatedAt(FnCommon.convertInstantToTimestamp(user.getUpdatedAt()))
                 .build();
 
     }
@@ -209,4 +209,3 @@ public class UserServiceImpl implements UserService {
     }
 
 }
- 

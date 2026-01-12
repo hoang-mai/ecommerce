@@ -18,8 +18,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -34,7 +35,6 @@ public class OrderViewRepositoryImpl {
         List<Criteria> criteriaList = new ArrayList<>();
         if(FnCommon.isNotNullOrEmpty(shopId)){
             criteriaList.add(Criteria.where("shopId").is(shopId));
-            criteriaList.add(Criteria.where("ownerId").is(String.valueOf(currentUserId)));
         }else if(Boolean.TRUE.equals(isOwner)){
             criteriaList.add(Criteria.where("ownerId").is(String.valueOf(currentUserId)));
         }else {
@@ -131,8 +131,9 @@ public class OrderViewRepositoryImpl {
 
         if (month != null) {
             int useYear = (year != null) ? year : LocalDate.now().getYear();
-            LocalDateTime start = LocalDate.of(useYear, month, 1).atStartOfDay();
-            LocalDateTime next = start.plusMonths(1);
+            LocalDate startLocal = LocalDate.of(useYear, month, 1);
+            Instant start = startLocal.atStartOfDay(ZoneOffset.UTC).toInstant();
+            Instant next = startLocal.plusMonths(1).atStartOfDay(ZoneOffset.UTC).toInstant();
             criteriaList.add(Criteria.where("createdAt").gte(start).lt(next));
         }
 
@@ -176,14 +177,13 @@ public class OrderViewRepositoryImpl {
      * @return List thống kê theo ngày
      */
     public List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(
-            String shopId, Boolean isOwner, Long currentUserId, LocalDateTime fromDate, LocalDateTime toDate) {
+            String shopId, Boolean isOwner, Long currentUserId, Instant fromDate, Instant toDate) {
 
         List<Criteria> criteriaList = new ArrayList<>();
 
 
         if(FnCommon.isNotNullOrEmpty(shopId)){
             criteriaList.add(Criteria.where("shopId").is(shopId));
-            criteriaList.add(Criteria.where("ownerId").is(String.valueOf(currentUserId)));
         } else if(Boolean.TRUE.equals(isOwner)){
             criteriaList.add(Criteria.where("ownerId").is(String.valueOf(currentUserId)));
         } else {
@@ -192,12 +192,8 @@ public class OrderViewRepositoryImpl {
 
 
         if (fromDate != null || toDate != null) {
-            LocalDateTime start = (fromDate != null)
-                    ? fromDate.toLocalDate().withDayOfMonth(1).atStartOfDay()
-                    : LocalDateTime.of(1970, 1, 1, 0, 0);
-            LocalDateTime end = (toDate != null)
-                    ? toDate.toLocalDate().withDayOfMonth(1).plusMonths(1).atStartOfDay()
-                    : LocalDate.now().withDayOfMonth(1).plusMonths(1).atStartOfDay();
+            Instant start = (fromDate != null) ? fromDate : Instant.EPOCH;
+            Instant end = (toDate != null) ? toDate : Instant.now();
             criteriaList.add(Criteria.where("createdAt").gte(start).lt(end));
         }
 
@@ -206,7 +202,7 @@ public class OrderViewRepositoryImpl {
 
 
         ProjectionOperation project = Aggregation.project()
-                .and(DateOperators.dateOf("createdAt").toString("%Y-%m")).as("monthString")
+                .and(DateOperators.dateOf("createdAt").toString("%Y-%m").withTimezone(DateOperators.Timezone.valueOf("Asia/Ho_Chi_Minh"))).as("monthString")
                 .andInclude("shopId", "ownerId", "userId");
 
         GroupOperation group = Aggregation.group("monthString")
@@ -241,30 +237,25 @@ public class OrderViewRepositoryImpl {
         return statistics;
     }
 
-    public List<OrderViewStatisticRevenueDTO> getOrderStatisticRevenuesByDateRange(String shopId, Boolean isOwner, Long currentUserId, LocalDateTime fromDate, LocalDateTime toDate) {
+    public List<OrderViewStatisticRevenueDTO> getOrderStatisticRevenuesByDateRange(String shopId, Boolean isOwner, Long currentUserId, Instant fromDate, Instant toDate) {
         List<Criteria> criteriaList = new ArrayList<>();
         if(FnCommon.isNotNullOrEmpty(shopId)){
             criteriaList.add(Criteria.where("shopId").is(shopId));
-            criteriaList.add(Criteria.where("ownerId").is(String.valueOf(currentUserId)));
         } else if(Boolean.TRUE.equals(isOwner)){
             criteriaList.add(Criteria.where("ownerId").is(String.valueOf(currentUserId)));
         } else {
             criteriaList.add(Criteria.where("userId").is(String.valueOf(currentUserId)));
         }
         if (fromDate != null || toDate != null) {
-            LocalDateTime start = (fromDate != null)
-                    ? fromDate.toLocalDate().withDayOfMonth(1).atStartOfDay()
-                    : LocalDateTime.of(1970, 1, 1, 0, 0);
-            LocalDateTime end = (toDate != null)
-                    ? toDate.toLocalDate().withDayOfMonth(1).plusMonths(1).atStartOfDay()
-                    : LocalDate.now().withDayOfMonth(1).plusMonths(1).atStartOfDay();
+            Instant start = (fromDate != null) ? fromDate : Instant.EPOCH;
+            Instant end = (toDate != null) ? toDate : Instant.now();
             criteriaList.add(Criteria.where("createdAt").gte(start).lt(end));
         }
         criteriaList.add(Criteria.where("orderStatus").is(OrderStatus.COMPLETED));
         Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
         MatchOperation match = Aggregation.match(finalCriteria);
         ProjectionOperation project = Aggregation.project()
-                .and(DateOperators.dateOf("createdAt").toString("%Y-%m")).as("monthString")
+                .and(DateOperators.dateOf("createdAt").toString("%Y-%m").withTimezone(DateOperators.Timezone.valueOf("Asia/Ho_Chi_Minh"))).as("monthString")
                 .and(ConvertOperators.ToDouble.toDouble("$totalPrice")).as("totalPriceDouble");
         GroupOperation group = Aggregation.group("monthString")
                 .sum("totalPriceDouble").as("totalRevenue");

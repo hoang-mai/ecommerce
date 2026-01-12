@@ -27,6 +27,7 @@ spring:
     password: changeme
 minio:
   url: http://localhost:9000
+  url-public: http://localhost:9000
   access-key: root
   secret-key: password
   bucket-name: ecommerce

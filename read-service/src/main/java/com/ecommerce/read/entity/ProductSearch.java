@@ -22,7 +22,7 @@ public class ProductSearch {
     @Field(type = FieldType.Keyword)
     private String id;
 
-    @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "edge_ngram_analyzer", searchAnalyzer = "vietnamese_analyzer"),
+    @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "vietnamese_analyzer", searchAnalyzer = "vietnamese_analyzer"),
             otherFields = {
                     @InnerField(suffix = "keyword", type = FieldType.Keyword)
             })
@@ -34,7 +34,7 @@ public class ProductSearch {
     @Field(type = FieldType.Keyword)
     private String shopId;
 
-    @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "edge_ngram_analyzer", searchAnalyzer = "vietnamese_analyzer"),
+    @MultiField(mainField = @Field(type = FieldType.Text, analyzer = "vietnamese_analyzer", searchAnalyzer = "vietnamese_analyzer"),
             otherFields = {
                     @InnerField(suffix = "keyword", type = FieldType.Keyword)
             })

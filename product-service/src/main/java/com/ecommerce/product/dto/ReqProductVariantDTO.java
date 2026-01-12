@@ -18,6 +18,9 @@ public class ReqProductVariantDTO {
     @Schema(description = "Price of the variant", example = "29999000")
     private BigDecimal price;
 
+    @Schema(description = "Sale price of the variant (optional)", example = "24999000")
+    private BigDecimal salePrice;
+
     @NotNull(message = MessageError.STOCK_QUANTITY_NOT_NULL)
     @PositiveOrZero(message = MessageError.STOCK_QUANTITY_POSITIVE_OR_ZERO)
     @Schema(description = "Available stock quantity", example = "100")

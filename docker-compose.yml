@@ -280,6 +280,7 @@ services:
       - mongo
       - minio
       - kafka
+      - elasticsearch
     networks:
       - service-network
   product-service:
@@ -340,6 +341,21 @@ services:
       - .env
     ports:
       - "8084:8084"
+    depends_on:
+      - mysql
+      - kafka
+    networks:
+      - service-network
+  flash-sale-service:
+    image: maianhhoang31072003/flash-sale-service:latest
+    container_name: flash-sale-service
+    build:
+      context: ./flash-sale-service
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8090:8090"
     depends_on:
       - mysql
       - kafka

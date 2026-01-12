@@ -8,6 +8,8 @@ import lombok.Getter;
 public enum ProductStatus {
 
     ACTIVE("ACTIVE"),
-    INACTIVE("INACTIVE");
+    INACTIVE("INACTIVE"),
+    DELETED("DELETED"),
+    SUSPENDED("SUSPENDED");
     private final String value;
 }

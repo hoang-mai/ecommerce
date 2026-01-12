@@ -32,4 +32,6 @@ public class ResCreateProductOrderItemDTO {
     @Positive(message = MessageError.PRICE_POSITIVE)
     @Schema(description = "Price per unit", example = "100000")
     private BigDecimal price;
+
+    private Boolean isFlashSale;
 }

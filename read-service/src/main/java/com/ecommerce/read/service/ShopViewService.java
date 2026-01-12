@@ -10,7 +10,7 @@ import com.ecommerce.read.dto.OwnerViewStatisticDTO;
 import com.ecommerce.read.dto.ShopViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public interface ShopViewService {
@@ -27,7 +27,7 @@ public interface ShopViewService {
 
     OwnerViewStatisticDTO getOverviewStatistics();
 
-    List<ShopViewStatisticDTO> getTopShopsByRevenue(Boolean isOwner,LocalDateTime nowDate, String type);
+    List<ShopViewStatisticDTO> getTopShopsByRevenue(Boolean isOwner,Instant nowDate, String type);
 
-    List<NewShopViewStatisticDTO> getStatisticsByDateRange(LocalDateTime startDate, LocalDateTime endDate);
+    List<NewShopViewStatisticDTO> getStatisticsByDateRange(Instant startDate, Instant endDate);
 }

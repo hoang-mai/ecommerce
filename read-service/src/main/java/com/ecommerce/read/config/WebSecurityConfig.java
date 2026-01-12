@@ -26,14 +26,15 @@ public class WebSecurityConfig {
                                 "/api-docs-json/**",
                                 "/actuator/**",
                                 "/api/v1/search-keyword/**",
-                                "/api/v1/search-keyword"
+                                "/api/v1/search-keyword",
+                                "/api/v1/flash-sale-product-view/**"
                         ).permitAll()
                         .requestMatchers("api/v1/user-view/search-address").permitAll()
                         .requestMatchers("api/v1/product-view/**").permitAll()
                         .requestMatchers("api/v1/review-view/**").permitAll()
                         .requestMatchers("api/v1/shop-view").hasAuthority("OWNER")
                         .requestMatchers("api/v1/shop-view/**").permitAll()
-                        .requestMatchers("api/v1/order-view/**").hasAnyAuthority("OWNER", "USER")
+                        .requestMatchers("api/v1/order-view/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )

@@ -1,5 +1,6 @@
 package com.ecommerce.product.service.impl;
 
+import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.component.MessageService;
 import com.ecommerce.library.component.UserHelper;
 import com.ecommerce.library.enumeration.OrderStatus;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductVariantRepository productVariantRepository;
     private final MessageService messageService;
     private final UserHelper userHelper;
+    private final FlashSaleProductCacheRepository flashSaleProductCacheRepository;
 
     @Override
     @Transactional
@@ -59,9 +62,6 @@ public class ProductServiceImpl implements ProductService {
                 .category(category)
                 .productDetails(request.getProductDetails())
                 .productStatus(ProductStatus.ACTIVE)
-                .discount(request.getDiscount() != null ? request.getDiscount() : 0.0)
-                .discountStartDate(request.getDiscountStartDate())
-                .discountEndDate(request.getDiscountEndDate())
                 .build();
         if (FnCommon.isNotNullOrEmptyList(request.getProductAttributes())) {
             request.getProductAttributes().forEach(reqProductAttributeDTO -> {
@@ -85,6 +85,7 @@ public class ProductServiceImpl implements ProductService {
             request.getProductVariants().forEach(reqProductVariantDTO -> {
                 ProductVariant productVariant = ProductVariant.builder()
                         .price(reqProductVariantDTO.getPrice())
+                        .salePrice(reqProductVariantDTO.getSalePrice())
                         .stockQuantity(reqProductVariantDTO.getStockQuantity())
                         .productVariantStatus(reqProductVariantDTO.getStockQuantity() > 0 ? ProductVariantStatus.ACTIVE : ProductVariantStatus.OUT_OF_STOCK)
                         .isDefault(reqProductVariantDTO.getIsDefault() != null ? reqProductVariantDTO.getIsDefault() : false)
@@ -135,9 +136,6 @@ public class ProductServiceImpl implements ProductService {
                         .productStatus(product.getProductStatus())
                         .description(product.getDescription())
                         .productDetails(request.getProductDetails())
-                        .discount(product.getDiscount())
-                        .discountStartDate(product.getDiscountStartDate())
-                        .discountEndDate(product.getDiscountEndDate())
                         .createdAt(product.getCreatedAt())
                         .updatedAt(product.getUpdatedAt())
                         .created(Boolean.TRUE)
@@ -160,6 +158,7 @@ public class ProductServiceImpl implements ProductService {
                                 productVariant -> CreateProductEvent.CreateProductVariantEvent.builder()
                                         .productVariantId(productVariant.getProductVariantId())
                                         .price(productVariant.getPrice())
+                                        .salePrice(productVariant.getSalePrice())
                                         .productVariantStatus(productVariant.getProductVariantStatus())
                                         .stockQuantity(productVariant.getStockQuantity())
                                         .isDefault(productVariant.getIsDefault())
@@ -193,6 +192,11 @@ public class ProductServiceImpl implements ProductService {
         if (!product.getShop().getOwnerId().equals(ownerId)) {
             throw new NotFoundException(MessageError.PRODUCT_NOT_FOUND);
         }
+
+        if (flashSaleProductCacheRepository.existsByProductIdAndCurrentTimeInFlashSale(productId, Instant.now())) {
+            throw new IllegalStateException(MessageError.PRODUCT_IN_FLASH_SALE);
+        }
+
         if (FnCommon.isNotNull(request.getCategoryId())) {
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new NotFoundException(MessageError.CATEGORY_NOT_FOUND));
@@ -203,9 +207,7 @@ public class ProductServiceImpl implements ProductService {
 
         product.setName(request.getName());
         product.setDescription(request.getDescription());
-        product.setDiscount(request.getDiscount());
-        product.setDiscountStartDate(request.getDiscountStartDate());
-        product.setDiscountEndDate(request.getDiscountEndDate());
+        // product-level discount fields removed; variant sale prices are updated below
         product.setProductDetails(request.getProductDetails());
         // Xóa ảnh đã được chỉ định
         if (FnCommon.isNotNullOrEmptyList(request.getDeletedImageIds()) && FnCommon.isNotNullOrEmptyList(product.getProductImages())) {
@@ -282,6 +284,7 @@ public class ProductServiceImpl implements ProductService {
                             .findFirst()
                             .ifPresent(variant -> {
                                 variant.setPrice(variantReq.getPrice());
+                                variant.setSalePrice(variantReq.getSalePrice());
                                 variant.setProductVariantStatus(variantReq.getStockQuantity() > 0 ? ProductVariantStatus.ACTIVE : ProductVariantStatus.OUT_OF_STOCK);
 
                                 variant.setStockQuantity(variantReq.getStockQuantity());
@@ -295,6 +298,7 @@ public class ProductServiceImpl implements ProductService {
                     ProductVariant newVariant = ProductVariant.builder()
                             .product(product)
                             .price(variantReq.getPrice())
+                            .salePrice(variantReq.getSalePrice())
                             .stockQuantity(variantReq.getStockQuantity())
                             .productVariantStatus(variantReq.getStockQuantity() > 0 ? ProductVariantStatus.ACTIVE : ProductVariantStatus.OUT_OF_STOCK)
                             .isDefault(variantReq.getIsDefault() != null ? variantReq.getIsDefault() : false)
@@ -337,9 +341,6 @@ public class ProductServiceImpl implements ProductService {
                         .productStatus(product.getProductStatus())
                         .description(product.getDescription())
                         .productDetails(request.getProductDetails())
-                        .discount(product.getDiscount())
-                        .discountStartDate(product.getDiscountStartDate())
-                        .discountEndDate(product.getDiscountEndDate())
                         .createdAt(product.getCreatedAt())
                         .created(Boolean.FALSE)
                         .productImages(product.getProductImages().stream()
@@ -361,6 +362,7 @@ public class ProductServiceImpl implements ProductService {
                                 productVariant -> CreateProductEvent.CreateProductVariantEvent.builder()
                                         .productVariantId(productVariant.getProductVariantId())
                                         .price(productVariant.getPrice())
+                                        .salePrice(productVariant.getSalePrice())
                                         .productVariantStatus(productVariant.getProductVariantStatus())
                                         .stockQuantity(productVariant.getStockQuantity())
                                         .isDefault(productVariant.getIsDefault())
@@ -409,7 +411,7 @@ public class ProductServiceImpl implements ProductService {
     public void updateProductStatusByProductId(Long productId, ReqUpdateProductStatusDTO status) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
-        if (!product.getShop().getOwnerId().equals(userHelper.getCurrentUserId())) {
+        if (!product.getShop().getOwnerId().equals(userHelper.getCurrentUserId()) && !Role.ADMIN.equals(userHelper.getRole())) {
             throw new NotFoundException(MessageError.PRODUCT_NOT_FOUND);
         }
         product.setProductStatus(status.getProductStatus());

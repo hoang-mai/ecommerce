@@ -30,7 +30,10 @@ public class WebSecurityConfig {
                                 "ws/**",
                                 "/actuator/**",
                             "/api/v1/search-keyword/**",
-                            "/api/v1/search-keyword"
+                            "/api/v1/search-keyword",
+                            "/api/v1/category/**",
+                            "/api/v1/flash-sale-product-view/**",
+                            "/api/v1/flash-sale-campaign/**"
                         ).permitAll()
                         .pathMatchers("api/v1/user-view/search-address").permitAll()
                         .pathMatchers("/api/v1/push-subscription/unsubscribe").permitAll()
@@ -51,7 +54,7 @@ public class WebSecurityConfig {
                         .pathMatchers(HttpMethod.POST,"/api/v1/shop").hasAuthority("OWNER")
                         .pathMatchers(HttpMethod.PATCH,"/api/v1/shop/{shopId}").hasAuthority("OWNER")
                         .pathMatchers(HttpMethod.PATCH,"/api/v1/shop/{shopId}/status").hasAnyAuthority("ADMIN", "OWNER")
-                        .pathMatchers("api/v1/order-view/**").hasAnyAuthority("OWNER", "USER")
+                        .pathMatchers("api/v1/order-view/**").permitAll()
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyExchange().authenticated()
                 )

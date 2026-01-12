@@ -27,6 +27,7 @@
         <module>read-service</module>
         <module>saga-service</module>
         <module>payment-service</module>
+        <module>flash-sale-service</module>
     </modules>
     <url/>
     <licenses>

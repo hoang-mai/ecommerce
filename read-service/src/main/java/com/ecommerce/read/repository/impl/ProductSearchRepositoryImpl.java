@@ -72,7 +72,6 @@ public class ProductSearchRepositoryImpl {
             boolQuery.must(m -> m.multiMatch(mm -> mm
                 .query(keyword)
                 .fields("name^3", "categoryName^2")
-                .fuzziness("AUTO")
             ));
             scriptSource[0] = "def id = doc['id'].value;" +
                 "def img = params.scores.containsKey(id) ? params.scores.get(id) : 0.0;" +

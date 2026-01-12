@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +56,7 @@ public class Message extends BaseEntity{
     private Boolean isDeleted;
 
     @Field("deletedAt")
-    private LocalDateTime deletedAt;
+    private Instant deletedAt;
 
     @Field("readBy")
     @Builder.Default

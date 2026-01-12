@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -18,9 +18,8 @@ public class ResCategoryDTO {
     private String description;
     private CategoryStatus categoryStatus;
     private int countChildren;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
     private List<ResCategoryDTO> subCategories;
     private ResCategoryDTO parentCategory;
 }
-

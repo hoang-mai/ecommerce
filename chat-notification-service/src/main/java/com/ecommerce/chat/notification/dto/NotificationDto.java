@@ -4,14 +4,14 @@ import com.ecommerce.chat.notification.entity.NotificationType;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 
 @Getter
 @Builder
 public class NotificationDto {
-    private final LocalDateTime createdAt;
-    private final LocalDateTime updatedAt;
+    private final Instant createdAt;
+    private final Instant updatedAt;
     private final String notificationId;
     private final Long userId;
     private final String title;

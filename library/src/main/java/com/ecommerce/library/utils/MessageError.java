@@ -140,4 +140,19 @@ public final class MessageError {
     public static final String INTERACTION_NOT_FOUND = "interactive.not.found";
     public static final String PAYMENT_NOT_FOUND = "";
     public static final String REFUND_FAILED = "";
+    public static final String START_TIME_MUST_BE_BEFORE_END_TIME = "start.time.must.be.before.end.time";
+
+    public static final String FLASH_SALE_CAMPAIGN_SCHEDULE_NOT_FOUND = "flash.sale.campaign.schedule.not.found";
+    public static final String FLASH_SALE_CAMPAIGN_NOT_FOUND = "flash.sale.campaign.not.found";
+    public static final String FLASH_SALE_CAMPAIGN_SCHEDULE_CONFLICT = "flash.sale.campaign.schedule.conflict";
+    public static final String FLASH_SALE_PRODUCT_ALREADY_EXISTS_IN_CAMPAIGN = "flash.sale.product.already.exists.in.campaign";
+    public static final String MAX_QUANTITY_PER_USER_EXCEEDS_TOTAL_QUANTITY = "max.quantity.per.user.exceeds.total.quantity";
+    public static final String FLASH_SALE_PRODUCT_NOT_FOUND = "flash.sale.product.not.found";
+    public static final String INVALID_DISCOUNT_PERCENTAGE = "invalid.discount.percentage";
+    public static final String CANNOT_DELETE_FLASH_SALE_PRODUCT_ALREADY_STARTED = "cannot.delete.flash.sale.product.already.started";
+    public static final String CANNOT_UPDATE_FLASH_SALE_PRODUCT_ALREADY_STARTED = "cannot.update.flash.sale.product.already.started";
+    public static final String FLASH_SALE_PURCHASE_LIMIT_EXCEEDED = "flash.sale.purchase.limit.exceeded";
+    public static final String FLASH_SALE_TOTAL_QUANTITY_EXCEEDED = "flash.sale.total.quantity.exceeded";
+    public static final String FLASH_SALE_PRODUCT_SOLD_OUT = "flash.sale.product.sold.out";
+    public static final String PRODUCT_IN_FLASH_SALE = "product.in.flash.sale";
 }

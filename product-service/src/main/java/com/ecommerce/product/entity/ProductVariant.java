@@ -30,6 +30,9 @@ public class ProductVariant extends BaseEntity {
     @Column(name = "price", nullable = false)
     private BigDecimal price;
 
+    @Column(name = "sale_price")
+    private BigDecimal salePrice;
+
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity;
 

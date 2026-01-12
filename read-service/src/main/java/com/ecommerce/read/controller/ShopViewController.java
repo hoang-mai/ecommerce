@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -134,7 +134,7 @@ public class ShopViewController {
     @GetMapping("/statistic/top-revenue")
     public ResponseEntity<BaseResponse<List<ShopViewStatisticDTO>>> getTopShopsByRevenue(
         @RequestParam(required = false) Boolean isOwner,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime nowDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant nowDate,
             @RequestParam(required = false, defaultValue = "revenue") String type) {
 
         List<ShopViewStatisticDTO> stats = shopViewService.getTopShopsByRevenue(isOwner,nowDate, type);
@@ -148,8 +148,8 @@ public class ShopViewController {
 
     @GetMapping("/statistic/date-range")
     public ResponseEntity<BaseResponse<List<NewShopViewStatisticDTO>>> getStatisticsByDateRange(
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant fromDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant toDate) {
         List<NewShopViewStatisticDTO> stats = shopViewService.getStatisticsByDateRange(fromDate, toDate);
         return ResponseEntity.ok(BaseResponse.<List<NewShopViewStatisticDTO>>builder()
             .statusCode(HttpStatus.OK.value())

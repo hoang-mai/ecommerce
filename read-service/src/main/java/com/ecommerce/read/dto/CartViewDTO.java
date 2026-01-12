@@ -1,12 +1,13 @@
 package com.ecommerce.read.dto;
 
 
+import com.ecommerce.read.entity.FlashSaleProductView;
 import com.ecommerce.read.entity.ProductView;
 import com.ecommerce.read.entity.ShopView;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 @Getter
 @Builder
@@ -41,6 +42,8 @@ public class CartViewDTO {
         private String productVariantId;
 
         private Integer quantity;
+
+        private List<FlashSaleProductView> flashSaleProductView;
 
     }
 }

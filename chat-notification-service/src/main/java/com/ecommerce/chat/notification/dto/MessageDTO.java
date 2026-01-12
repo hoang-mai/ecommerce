@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Builder
@@ -21,8 +21,8 @@ public class MessageDTO {
     private String replyToMessageId;
     private Boolean isEdited;
     private Boolean isDeleted;
-    private LocalDateTime deletedAt;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant deletedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
     private List<String> readBy;
 }

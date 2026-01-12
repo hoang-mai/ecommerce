@@ -7,7 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -41,10 +41,10 @@ public class Notification {
 
     @Field("createdAt")
     @CreatedDate
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Field("updatedAt")
     @LastModifiedDate
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
 }

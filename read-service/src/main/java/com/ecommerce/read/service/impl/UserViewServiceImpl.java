@@ -22,7 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -134,7 +134,7 @@ public class UserViewServiceImpl implements UserViewService {
     }
 
     @Override
-    public List<NewUserViewStatisticDTO> getUserStatisticsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+    public List<NewUserViewStatisticDTO> getUserStatisticsByDateRange(Instant startDate, Instant endDate) {
         return userViewRepositoryImpl.getUserStatisticsByDateRange(startDate, endDate);
     }
 

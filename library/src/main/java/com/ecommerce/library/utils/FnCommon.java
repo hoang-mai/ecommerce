@@ -8,7 +8,7 @@ import com.ecommerce.library.enumeration.UserVerificationStatus;
 import com.google.protobuf.Timestamp;
 import io.grpc.Status;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
@@ -198,30 +198,30 @@ public final class FnCommon {
     }
 
     /**
-     * Chuyển đổi Timestamp gRPC sang LocalDateTime
+     * Chuyển đổi Timestamp gRPC sang Instant
      *
      * @param timestamp đối tượng Timestamp từ gRPC
-     * @return đối tượng LocalDateTime tương ứng
+     * @return đối tượng Instant tương ứng
      */
-    public static LocalDateTime convertTimestampToLocalDateTime(Timestamp timestamp) {
+    public static Instant convertTimestampToInstant(Timestamp timestamp) {
         if (timestamp == null) {
             return null;
         }
-        return LocalDateTime.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos(), ZoneOffset.UTC);
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
 
     /**
-     * Chuyển đổi LocalDateTime sang Timestamp gRPC
+     * Chuyển đổi Instant sang Timestamp gRPC
      *
-     * @param localDateTime đối tượng LocalDateTime
+     * @param instant đối tượng Instant
      * @return đối tượng Timestamp tương ứng
      */
-    public static Timestamp convertLocalDateTimeToTimestamp(LocalDateTime localDateTime) {
-        if (localDateTime == null) {
+    public static Timestamp convertInstantToTimestamp(Instant instant) {
+        if (instant == null) {
             return null;
         }
-        long seconds = localDateTime.toEpochSecond(ZoneOffset.UTC);
-        int nanos = localDateTime.getNano();
+        long seconds = instant.getEpochSecond();
+        int nanos = instant.getNano();
         return Timestamp.newBuilder()
                 .setSeconds(seconds)
                 .setNanos(nanos)
@@ -255,3 +255,4 @@ public final class FnCommon {
         };
     }
 }
+

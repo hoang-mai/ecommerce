@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -36,17 +36,5 @@ public class ReqUpdateProductDTO {
     @Schema(description = "List of product variants with pricing and stock")
     private List<ReqUpdateProductVariantDTO> productVariants;
 
-    @Schema(description = "Discount percentage for the product", example = "10.5")
-    private Double discount;
-
-    @Schema(description = "Discount start date (timestamp in milliseconds)", example = "1700000000000")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime discountStartDate;
-
-    @Schema(description = "Discount end date (timestamp in milliseconds)", example = "1700086400000")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime discountEndDate;
-
     private List<Long> deletedImageIds;
 }
-

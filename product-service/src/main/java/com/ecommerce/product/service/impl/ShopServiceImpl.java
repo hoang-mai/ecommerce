@@ -175,9 +175,6 @@ public class ShopServiceImpl implements ShopService {
         } else if (currentUserRole == Role.ADMIN) {
             shop = shopRepository.findById(shopId)
                     .orElseThrow(() -> new NotFoundException(MessageError.SHOP_NOT_FOUND));
-            if (reqUpdateShopStatusDTO.getShopStatus() == ShopStatus.INACTIVE) {
-                throw new IllegalStateException(MessageError.UNAUTHORIZED_ACTION);
-            }
         } else {
             throw new IllegalStateException(MessageError.UNAUTHORIZED_ACTION);
         }

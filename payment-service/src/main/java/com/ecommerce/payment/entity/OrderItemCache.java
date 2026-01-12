@@ -4,7 +4,6 @@ import com.ecommerce.library.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 
 @Entity
 @Getter
@@ -31,4 +30,6 @@ public class OrderItemCache extends BaseEntity {
     @JoinColumn(name = "order_id")
     private OrderCache orderCache;
 
+    @Column(name = "is_flash_sale")
+    private Boolean isFlashSale;
 }

@@ -4,7 +4,7 @@ import com.ecommerce.library.enumeration.CategoryStatus;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Builder
@@ -15,7 +15,6 @@ public class ResCategorySearchDTO {
     private String description;
     private CategoryStatus categoryStatus;
     private String parentCategoryName;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 }
-

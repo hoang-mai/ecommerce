@@ -31,11 +31,15 @@ public final class Constant {
     public static final String CREATE_REVIEW_REPLY_TOPIC = READ_SERVICE_TOPIC + ".create-review-reply";
     public static final String UPDATE_REVIEW_REPLY_TOPIC = READ_SERVICE_TOPIC + ".update-review-reply";
     public static final String DELETE_REVIEW_REPLY_TOPIC = READ_SERVICE_TOPIC + ".delete-review-reply";
+    public static final String CREATE_FLASH_SALE_PRODUCT_TOPIC = READ_SERVICE_TOPIC + ".create-flash-sale-product";
+    public static final String UPDATE_FLASH_SALE_PRODUCT_TOPIC = READ_SERVICE_TOPIC + ".update-flash-sale-product";
+    public static final String DELETE_FLASH_SALE_PRODUCT_TOPIC = READ_SERVICE_TOPIC + ".delete-flash-sale-product";
     // Order Service Kafka Topics and Group
     public static final String ORDER_SERVICE_TOPIC = "order-service-topic";
     public static final String ORDER_SERVICE_GROUP = "order-service-group";
     public static final String UPDATE_ORDER_STATUS_TOPIC = ORDER_SERVICE_TOPIC + ".update-order-status";
     public static final String CREATE_SHOP_CACHE_TOPIC = ORDER_SERVICE_TOPIC + ".create-shop-cache";
+    public static final String CREATE_FLASH_SALE_ORDER_TOPIC = ORDER_SERVICE_TOPIC + ".create-flash-sale-order";
 
     // Product Service Kafka Topics and Group
     public static final String PRODUCT_SERVICE_TOPIC = "product-service-topic";

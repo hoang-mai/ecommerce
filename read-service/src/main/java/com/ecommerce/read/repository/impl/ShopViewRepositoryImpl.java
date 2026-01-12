@@ -5,9 +5,8 @@ import com.ecommerce.library.enumeration.RatingNumber;
 import com.ecommerce.library.enumeration.ShopStatus;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.read.dto.NewShopViewStatisticDTO;
-import com.ecommerce.read.dto.OrderViewStatisticDTO;
-import com.ecommerce.read.dto.OwnerViewStatisticDTO;
 import com.ecommerce.read.dto.ShopViewStatisticDTO;
+import com.ecommerce.read.dto.OwnerViewStatisticDTO;
 import com.ecommerce.read.entity.ShopView;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
@@ -23,8 +22,9 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,7 +121,7 @@ public class ShopViewRepositoryImpl {
         Update update = new Update();
         if (status == ProductStatus.ACTIVE) {
             update.inc("activeProducts", 1);
-        } else if (status == ProductStatus.INACTIVE) {
+        } else if (status == ProductStatus.INACTIVE || status == ProductStatus.SUSPENDED || status == ProductStatus.DELETED) {
             update.inc("activeProducts", -1);
         }
         mongoTemplate.updateFirst(query, update, ShopView.class);
@@ -161,7 +161,7 @@ public class ShopViewRepositoryImpl {
                 try {
                     totalRevenue = new BigDecimal(rev.toString());
                 } catch (Exception ignored) {
-                    totalRevenue = BigDecimal.ZERO;
+                    // keep default BigDecimal.ZERO
                 }
             }
             Object prod = doc.get("totalProducts");
@@ -169,7 +169,7 @@ public class ShopViewRepositoryImpl {
                 try {
                     totalProducts = ((Number) prod).intValue();
                 } catch (Exception ignored) {
-                    totalProducts = 0;
+                    // keep default 0
                 }
             }
             Object ord = doc.get("totalOrders");
@@ -177,7 +177,7 @@ public class ShopViewRepositoryImpl {
                 try {
                     totalOrders = ((Number) ord).intValue();
                 } catch (Exception ignored) {
-                    totalOrders = 0;
+                    // keep default 0
                 }
             }
             Object shops = doc.get("totalSold");
@@ -185,7 +185,7 @@ public class ShopViewRepositoryImpl {
                 try {
                     totalSold = ((Number) shops).intValue();
                 } catch (Exception ignored) {
-                    totalSold = 0;
+                    // keep default 0
                 }
             }
         }
@@ -205,24 +205,33 @@ public class ShopViewRepositoryImpl {
      * @param type    Loại thống kê: "sold" (bán chạy) hoặc "revenue" (doanh thu cao)
      * @return Danh sách top 5 shop
      */
-    public List<ShopViewStatisticDTO> getTopShopsByRevenue(Long ownerId,LocalDateTime nowDate, String type) {
+    public List<ShopViewStatisticDTO> getTopShopsByRevenue(Long ownerId,Instant nowDate, String type) {
         List<Criteria> criteriaList = new ArrayList<>();
 
         if(FnCommon.isNotNull(ownerId)) {
             criteriaList.add(Criteria.where("ownerId").is(String.valueOf(ownerId)));
         }
 
-        // Điều kiện lọc dựa trên type
         if ("revenue".equalsIgnoreCase(type)) {
             criteriaList.add(Criteria.where("totalRevenue").gt(BigDecimal.ZERO));
         } else {
             criteriaList.add(Criteria.where("totalSold").gt(0L));
         }
 
-        // Filter theo tháng nếu có nowDate
         if (FnCommon.isNotNull(nowDate)) {
-            LocalDateTime startOfMonth = nowDate.toLocalDate().withDayOfMonth(1).atStartOfDay();
-            LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
+            ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+
+            Instant startOfMonth = nowDate
+                .atZone(zoneId)
+                .toLocalDate()
+                .withDayOfMonth(1)
+                .atStartOfDay(zoneId)
+                .toInstant();
+
+            Instant endOfMonth = startOfMonth
+                .atZone(zoneId)
+                .plusMonths(1)
+                .toInstant();
             criteriaList.add(Criteria.where("createdAt").gte(startOfMonth).lt(endOfMonth));
         }
 
@@ -265,16 +274,14 @@ public class ShopViewRepositoryImpl {
         return statistics;
     }
 
-    public List<NewShopViewStatisticDTO> getStatisticsByDateRange(LocalDateTime fromDate, LocalDateTime toDate) {
+    public List<NewShopViewStatisticDTO> getStatisticsByDateRange(Instant fromDate, Instant toDate) {
         List<Criteria> criteriaList = new ArrayList<>();
         if (fromDate != null || toDate != null) {
-            LocalDateTime start = (fromDate != null)
-                ? fromDate.toLocalDate().withDayOfMonth(1).atStartOfDay()
-                : LocalDateTime.of(1970, 1, 1, 0, 0);
-            LocalDateTime end = (toDate != null)
-                ? toDate.toLocalDate().withDayOfMonth(1).plusMonths(1).atStartOfDay()
-                : LocalDate.now().withDayOfMonth(1).plusMonths(1).atStartOfDay();
+
+            Instant start = (fromDate != null) ? fromDate : Instant.EPOCH;
+            Instant end = (toDate != null) ? toDate : Instant.now();
             criteriaList.add(Criteria.where("createdAt").gte(start).lt(end));
+
         }
 
         Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
@@ -282,7 +289,8 @@ public class ShopViewRepositoryImpl {
 
 
         ProjectionOperation project = Aggregation.project()
-            .and(DateOperators.dateOf("createdAt").toString("%Y-%m")).as("monthString");
+            .and(DateOperators.dateOf("createdAt").toString("%Y-%m")
+                .withTimezone(DateOperators.Timezone.valueOf("Asia/Ho_Chi_Minh"))).as("monthString");
 
         GroupOperation group = Aggregation.group("monthString")
             .count().as("newShopViews");

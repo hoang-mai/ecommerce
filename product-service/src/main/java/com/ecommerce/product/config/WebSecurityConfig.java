@@ -24,7 +24,8 @@ public class WebSecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api-docs-json/**",
-                            "/actuator/**"
+                                "/actuator/**",
+                                "/api/v1/category/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/shop").hasAuthority("OWNER")
@@ -32,7 +33,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/shop/{shopId}/status").hasAnyAuthority("ADMIN", "OWNER")
                         .requestMatchers(HttpMethod.POST,"/api/v1/product").hasAuthority("OWNER")
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/product/{productId}").hasAuthority("OWNER")
-                        .requestMatchers(HttpMethod.PATCH,"/api/v1/product/{productId}/product-status").hasAuthority("OWNER")
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/product/{productId}/product-status").hasAnyAuthority("ADMIN", "OWNER")
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/product/{productVariantId}/status").hasAuthority("OWNER")
                         .anyRequest().authenticated()
                 )

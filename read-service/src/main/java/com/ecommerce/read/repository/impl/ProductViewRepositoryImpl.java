@@ -24,9 +24,11 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
@@ -96,14 +98,58 @@ public class ProductViewRepositoryImpl {
                 ));
             }
         }
-        Criteria finalCriteria = new Criteria();
+
+        Instant now = Instant.now();
+
+        // Build match criteria
+        Criteria matchCriteria = new Criteria();
         if (!criteriaList.isEmpty()) {
-            finalCriteria = finalCriteria.andOperator(criteriaList.toArray(new Criteria[0]));
+            matchCriteria = matchCriteria.andOperator(criteriaList.toArray(new Criteria[0]));
         }
-        Query query = new Query(finalCriteria);
-        long total = mongoTemplate.count(query, ProductView.class);
-        query.with(pageable);
-        List<ProductView> productViews = mongoTemplate.find(query, ProductView.class);
+
+        // Count aggregation for total
+        Aggregation countAggregation = Aggregation.newAggregation(
+            Aggregation.match(matchCriteria),
+            Aggregation.count().as("total")
+        );
+        AggregationResults<Document> countResult = mongoTemplate.aggregate(countAggregation, "product_views", Document.class);
+        long total = countResult.getMappedResults().isEmpty() ? 0 : countResult.getMappedResults().get(0).getInteger("total", 0);
+
+        // Main aggregation with lookup for flash sale products
+        List<AggregationOperation> operations = new ArrayList<>();
+        operations.add(Aggregation.match(matchCriteria));
+
+        // Lookup flash sale products that are currently active
+        operations.add(Aggregation.lookup()
+            .from("flash_sale_product_views")
+            .localField("_id")
+            .foreignField("productId")
+            .as("flashSaleProductViews"));
+
+        // Filter flash sale products to only include active ones
+        operations.add(Aggregation.addFields()
+            .addField("flashSaleProductViews")
+            .withValue(new Document("$filter", new Document()
+                .append("input", "$flashSaleProductViews")
+                .append("as", "fsp")
+                .append("cond", new Document("$and", List.of(
+                    new Document("$lte", List.of("$$fsp.startTime", now)),
+                    new Document("$gte", List.of("$$fsp.endTime", now)),
+                    new Document("$ne", List.of("$$fsp.isSoldOut", true))
+                )))))
+            .build());
+
+        // Sort and pagination
+        if (pageable.getSort().isSorted()) {
+            operations.add(Aggregation.sort(pageable.getSort()));
+        }
+        operations.add(Aggregation.skip((long) pageable.getPageNumber() * pageable.getPageSize()));
+        operations.add(Aggregation.limit(pageable.getPageSize()));
+
+        Aggregation aggregation = Aggregation.newAggregation(operations);
+        AggregationResults<ProductView> results = mongoTemplate.aggregate(aggregation, "product_views", ProductView.class);
+        List<ProductView> productViews = results.getMappedResults();
+
         return new PageImpl<>(productViews, pageable, total);
     }
 
@@ -114,13 +160,12 @@ public class ProductViewRepositoryImpl {
         Query query = new Query(Criteria.where("_id").in(productIds));
         List<ProductView> productViews = mongoTemplate.find(query, ProductView.class);
 
-        // Sắp xếp lại theo thứ tự của productIds từ Elasticsearch
         return productIds.stream()
             .map(id -> productViews.stream()
                 .filter(pv -> pv.get_id().equals(id))
                 .findFirst()
                 .orElse(null))
-            .filter(pv -> pv != null)
+            .filter(Objects::nonNull)
             .toList();
     }
 
@@ -181,7 +226,7 @@ public class ProductViewRepositoryImpl {
      * @return Danh sách thống kê sản phẩm
      */
     public List<ProductViewStatisticDTO> getProductStatistics(
-        String shopId, Boolean isOwner, Long currentUserId, LocalDateTime nowDate, String type) {
+        String shopId, Boolean isOwner, Long currentUserId, Instant nowDate, String type) {
 
         List<Criteria> criteriaList = new ArrayList<>();
 
@@ -192,8 +237,19 @@ public class ProductViewRepositoryImpl {
             criteriaList.add(Criteria.where("totalSold").gt(0));
         }
         if (FnCommon.isNotNull(nowDate)) {
-            LocalDateTime startOfMonth = nowDate.toLocalDate().withDayOfMonth(1).atStartOfDay();
-            LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
+            ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+
+            Instant startOfMonth = nowDate
+                .atZone(zoneId)
+                .toLocalDate()
+                .withDayOfMonth(1)
+                .atStartOfDay(zoneId)
+                .toInstant();
+
+            Instant endOfMonth = startOfMonth
+                .atZone(zoneId)
+                .plusMonths(1)
+                .toInstant();
             criteriaList.add(Criteria.where("createdAt").gte(startOfMonth).lt(endOfMonth));
         }
 
@@ -238,18 +294,52 @@ public class ProductViewRepositoryImpl {
     }
 
     public List<ProductView> getHomepageProducts(List<String> showProductIds, String categoryId, Sort sort, int limit) {
-        Query query = new Query();
+        Instant now = Instant.now();
+
+        List<Criteria> criteriaList = new ArrayList<>();
         if (FnCommon.isNotNullOrEmptyList(showProductIds)) {
-            query.addCriteria(Criteria.where("_id").nin(showProductIds));
+            criteriaList.add(Criteria.where("_id").nin(showProductIds));
         }
         if (FnCommon.isNotNullOrEmpty(categoryId)) {
-            query.addCriteria(Criteria.where("categoryId").is(categoryId));
+            criteriaList.add(Criteria.where("categoryId").is(categoryId));
         }
-        query.addCriteria(Criteria.where("productStatus").is(ProductStatus.ACTIVE));
-        query.addCriteria(Criteria.where("shopStatus").is(ShopStatus.ACTIVE));
-        query.limit(limit);
-        query.with(sort);
-        return mongoTemplate.find(query, ProductView.class);
+        criteriaList.add(Criteria.where("productStatus").is(ProductStatus.ACTIVE));
+        criteriaList.add(Criteria.where("shopStatus").is(ShopStatus.ACTIVE));
+
+        Criteria matchCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+
+        List<AggregationOperation> operations = new ArrayList<>();
+        operations.add(Aggregation.match(matchCriteria));
+
+        // Lookup flash sale products
+        operations.add(Aggregation.lookup()
+            .from("flash_sale_product_views")
+            .localField("_id")
+            .foreignField("productId")
+            .as("flashSaleProductViews"));
+
+        // Filter flash sale products to only include active ones
+        operations.add(Aggregation.addFields()
+            .addField("flashSaleProductViews")
+            .withValue(new Document("$filter", new Document()
+                .append("input", "$flashSaleProductViews")
+                .append("as", "fsp")
+                .append("cond", new Document("$and", List.of(
+                    new Document("$lte", List.of("$$fsp.startTime", now)),
+                    new Document("$gte", List.of("$$fsp.endTime", now)),
+                    new Document("$ne", List.of("$$fsp.isSoldOut", true))
+                )))))
+            .build());
+
+        // Sort
+        operations.add(Aggregation.sort(sort));
+
+        // Limit
+        operations.add(Aggregation.limit(limit));
+
+        Aggregation aggregation = Aggregation.newAggregation(operations);
+        AggregationResults<ProductView> results = mongoTemplate.aggregate(aggregation, "product_views", ProductView.class);
+        return results.getMappedResults();
     }
 
     public Long countProductsForHomepage() {

@@ -10,7 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 
 @ControllerAdvice
@@ -37,7 +37,7 @@ public class RestException {
                 .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.CONFLICT.value())
                         .message(messageService.getMessage(e.getMessage()))
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(Instant.now())
                         .build());
     }
 
@@ -48,7 +48,7 @@ public class RestException {
                 .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.BAD_REQUEST.value())
                         .message(messageService.getMessage(e.getBindingResult().getFieldError() != null ? e.getBindingResult().getFieldError().getDefaultMessage() : MessageError.INVALID_INPUT_DATA))
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(Instant.now())
                         .build());
     }
 
@@ -59,7 +59,7 @@ public class RestException {
                 .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .message(messageService.getMessage(e.getMessage()))
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(Instant.now())
                         .build());
     }
 
@@ -70,7 +70,7 @@ public class RestException {
                 .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.BAD_REQUEST.value())
                         .message(messageService.getMessage(e.getMessage()))
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(Instant.now())
                         .build());
     }
 
@@ -81,7 +81,7 @@ public class RestException {
                 .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.BAD_REQUEST.value())
                         .message(messageService.getMessage(e.getMessage()))
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(Instant.now())
                         .build());
     }
 
@@ -92,7 +92,7 @@ public class RestException {
                 .body(BaseResponse.<Void>builder()
                         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .message(messageService.getMessage(e.getMessage()))
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(Instant.now())
                         .build());
     }
 

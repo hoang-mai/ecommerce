@@ -4,7 +4,7 @@ import com.ecommerce.library.enumeration.UserVerificationStatus;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Builder
 @Getter
@@ -21,7 +21,6 @@ public class ResUserVerificationDTO {
     private Long userId;
     private String userName;
     private String userEmail;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 }
-

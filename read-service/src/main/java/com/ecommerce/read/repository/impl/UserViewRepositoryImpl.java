@@ -4,7 +4,6 @@ package com.ecommerce.read.repository.impl;
 import com.ecommerce.library.enumeration.AccountStatus;
 import com.ecommerce.library.enumeration.Role;
 import com.ecommerce.library.utils.FnCommon;
-import com.ecommerce.read.dto.NewShopViewStatisticDTO;
 import com.ecommerce.read.dto.NewUserViewStatisticDTO;
 import com.ecommerce.read.entity.UserView;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +18,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,24 +54,24 @@ public class UserViewRepositoryImpl  {
         return new PageImpl<>(userViews, pageable, total);
     }
 
-    public List<NewUserViewStatisticDTO> getUserStatisticsByDateRange(LocalDateTime fromDate, LocalDateTime toDate) {
+    public List<NewUserViewStatisticDTO> getUserStatisticsByDateRange(Instant fromDate, Instant toDate) {
         List<Criteria> criteriaList = new ArrayList<>();
         if (fromDate != null || toDate != null) {
-            LocalDateTime start = (fromDate != null)
-                ? fromDate.toLocalDate().withDayOfMonth(1).atStartOfDay()
-                : LocalDateTime.of(1970, 1, 1, 0, 0);
-            LocalDateTime end = (toDate != null)
-                ? toDate.toLocalDate().withDayOfMonth(1).plusMonths(1).atStartOfDay()
-                : LocalDate.now().withDayOfMonth(1).plusMonths(1).atStartOfDay();
+            Instant start = (fromDate != null) ? fromDate : Instant.EPOCH;
+            Instant end = (toDate != null) ? toDate : Instant.now();
             criteriaList.add(Criteria.where("createdAt").gte(start).lt(end));
         }
 
-        Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        Criteria finalCriteria = new Criteria();
+        if(!criteriaList.isEmpty()) {
+            finalCriteria = finalCriteria.andOperator(criteriaList.toArray(new Criteria[0]));
+        }
         MatchOperation match = Aggregation.match(finalCriteria);
 
 
         ProjectionOperation project = Aggregation.project()
-            .and(DateOperators.dateOf("createdAt").toString("%Y-%m")).as("monthString");
+            .and(DateOperators.dateOf("createdAt").toString("%Y-%m")
+                .withTimezone(DateOperators.Timezone.valueOf("Asia/Ho_Chi_Minh"))).as("monthString");
 
         GroupOperation group = Aggregation.group("monthString")
             .count().as("newUserViews");

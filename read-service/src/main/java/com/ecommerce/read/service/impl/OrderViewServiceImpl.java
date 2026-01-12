@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -161,11 +161,6 @@ public class OrderViewServiceImpl implements OrderViewService {
     public PageResponse<OrderView> getOrderViews(String shopId, Boolean isOwner, OrderStatus orderStatus, String keyword, String productId, int pageNo, int pageSize, String sortBy, String sortDir) {
 
         Long currentUserId = userHelper.getCurrentUserId();
-        if (FnCommon.isNotNullOrEmpty(shopId)) {
-            if (!shopViewRepository.existsBy_idAndOwnerId(shopId, String.valueOf(currentUserId))) {
-                throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
-            }
-        }
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
             ? Sort.by(sortBy).ascending()
             : Sort.by(sortBy).descending();
@@ -202,13 +197,8 @@ public class OrderViewServiceImpl implements OrderViewService {
     }
 
     @Override
-    public List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, LocalDateTime fromDate, LocalDateTime toDate) {
+    public List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, Instant fromDate, Instant toDate) {
         Long currentUserId = userHelper.getCurrentUserId();
-        if (FnCommon.isNotNullOrEmpty(shopId)) {
-            if (!shopViewRepository.existsBy_idAndOwnerId(shopId, String.valueOf(currentUserId))) {
-                throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
-            }
-        }
         return orderViewRepositoryImpl.getOrderStatisticsByDateRange(shopId, isOwner, currentUserId, fromDate, toDate);
     }
 
@@ -244,14 +234,20 @@ public class OrderViewServiceImpl implements OrderViewService {
     }
 
     @Override
-    public List<OrderViewStatisticRevenueDTO> getRevenueStatisticsByDateRange(String shopId, Boolean isOwner, LocalDateTime fromDate, LocalDateTime toDate) {
+    public List<OrderViewStatisticRevenueDTO> getRevenueStatisticsByDateRange(String shopId, Boolean isOwner, Instant fromDate, Instant toDate) {
         Long currentUserId = userHelper.getCurrentUserId();
-        if (FnCommon.isNotNullOrEmpty(shopId)) {
-            if (!shopViewRepository.existsBy_idAndOwnerId(shopId, String.valueOf(currentUserId))) {
-                throw new NotFoundException(MessageError.SHOP_NOT_FOUND);
-            }
-        }
         return orderViewRepositoryImpl.getOrderStatisticRevenuesByDateRange(shopId, isOwner, currentUserId, fromDate, toDate);
+    }
+
+    @Override
+    public OrderView getOrderViewById(String orderId) {
+        OrderView orderView = orderViewRepository.findById(orderId)
+            .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+        orderView.setShopLogoUrl(fileService.getPresignedUrl(orderView.getShopLogoUrl()));
+        orderView.getOrderItems().forEach(orderItem ->
+            orderItem.setProductImageUrl(fileService.getPresignedUrl(orderItem.getProductImageUrl()))
+        );
+        return orderView;
     }
 
     private void restoreProductStock(OrderView orderView) {

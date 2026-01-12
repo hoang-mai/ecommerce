@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Builder
@@ -19,7 +19,7 @@ public class ChatDTO {
     private String userId;
     private String fullName;
     private String avatarUrl;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
     private MessageDTO lastMessage;
 }

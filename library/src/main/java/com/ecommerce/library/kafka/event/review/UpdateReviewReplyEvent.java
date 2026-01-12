@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Builder
 @Getter
@@ -16,6 +16,5 @@ public class UpdateReviewReplyEvent {
     private Long reviewId;
     private Long replierId;
     private String content;
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 }
-

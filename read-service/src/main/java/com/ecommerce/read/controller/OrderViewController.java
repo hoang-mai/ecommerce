@@ -13,12 +13,9 @@ import com.ecommerce.read.service.OrderViewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -65,6 +62,21 @@ public class OrderViewController {
         );
     }
 
+    @GetMapping("/{orderId}")
+    public ResponseEntity<BaseResponse<OrderView>> getOrderViewById(
+            @PathVariable String orderId
+    ) {
+        OrderView orderView = orderViewService.getOrderViewById(orderId);
+        return ResponseEntity.ok(
+                BaseResponse.<OrderView>builder()
+                        .statusCode(200)
+                        .message(messageService.getMessage(MessageSuccess.GET_ORDER_SUCCESS))
+                        .data(orderView)
+                        .build()
+        );
+    }
+
+
     /**
      * Thống kê đơn hàng theo trạng thái
      *
@@ -103,8 +115,8 @@ public class OrderViewController {
     public ResponseEntity<BaseResponse<List<OrderViewStatisticDTO>>> getOrderStatisticsByDateRange(
             @RequestParam(required = false) String shopId,
             @RequestParam(required = false) Boolean isOwner,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant toDate
     ) {
         List<OrderViewStatisticDTO> stats = orderViewService.getOrderStatisticsByDateRange(shopId, isOwner, fromDate, toDate);
         return ResponseEntity.ok(
@@ -128,8 +140,8 @@ public class OrderViewController {
     public ResponseEntity<BaseResponse<List<OrderViewStatisticRevenueDTO>>> getRevenueStatisticsByDateRange(
             @RequestParam(required = false) String shopId,
             @RequestParam(required = false) Boolean isOwner,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant toDate
     ) {
         List<OrderViewStatisticRevenueDTO> stats = orderViewService.getRevenueStatisticsByDateRange(shopId, isOwner, fromDate, toDate);
         return ResponseEntity.ok(

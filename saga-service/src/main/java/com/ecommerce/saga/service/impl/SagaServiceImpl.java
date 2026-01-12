@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -50,10 +50,10 @@ public class SagaServiceImpl implements SagaService {
                     .build());
         } catch (WorkflowFailedException e) {
             if (e.getCause().getCause() instanceof ApplicationFailure failure) {
-                throw new HttpRequestException(failure.getOriginalMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
+                throw new HttpRequestException(failure.getOriginalMessage(), HttpStatus.BAD_REQUEST.value(), Instant.now());
 
             }
-            throw new HttpRequestException(e.getCause().getCause().getLocalizedMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
+            throw new HttpRequestException(e.getCause().getCause().getLocalizedMessage(), HttpStatus.BAD_REQUEST.value(), Instant.now());
         }
 
     }
@@ -76,13 +76,13 @@ public class SagaServiceImpl implements SagaService {
                 throw new HttpRequestException(
                         failure.getOriginalMessage(),
                         HttpStatus.BAD_REQUEST.value(),
-                        LocalDateTime.now()
+                        Instant.now()
                 );
             }
             throw new HttpRequestException(
                     e.getCause().getCause().getLocalizedMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    LocalDateTime.now()
+                    Instant.now()
             );
         }
     }

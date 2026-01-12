@@ -22,7 +22,7 @@ import org.springframework.grpc.client.interceptor.security.BearerTokenAuthentic
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -55,18 +55,22 @@ public class ApproveOwnerActivitiesImpl implements ApproveOwnerActivities {
                     approveOwnerData.setOldUserVerificationStatus(FnCommon.convertUserVerificationStatusProtoToJava(res.getOldVerificationStatus()));
                     return approveOwnerData;
                 } catch (InvalidProtocolBufferException e) {
-                    throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+                    throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
                 }
             } else {
-                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
+                throw new HttpRequestException(MessageError.CANNOT_READ_RESPONSE_FROM_SERVER, HttpStatus.INTERNAL_SERVER_ERROR.value(), Instant.now());
             }
         } catch (StatusRuntimeException e) {
             Metadata metadata = e.getTrailers();
-            LocalDateTime timestamp = LocalDateTime.now();
+            Instant timestamp = Instant.now();
             if (metadata != null && metadata.containsKey(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER))) {
                 String timeStamp = metadata.get(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER));
                 if (timeStamp != null && !timeStamp.isEmpty()) {
-                    timestamp = LocalDateTime.parse(timeStamp);
+                    try {
+                        timestamp = Instant.parse(timeStamp);
+                    } catch (Exception ex) {
+                        // ignore parse error
+                    }
                 }
             }
             throw new HttpRequestException(
@@ -96,16 +100,20 @@ public class ApproveOwnerActivitiesImpl implements ApproveOwnerActivities {
                 throw new HttpRequestException(
                         MessageError.CANNOT_UPDATE_USER,
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        LocalDateTime.now()
+                        Instant.now()
                 );
             }
         } catch (StatusRuntimeException e) {
             Metadata metadata = e.getTrailers();
-            LocalDateTime timestamp = LocalDateTime.now();
+            Instant timestamp = Instant.now();
             if (metadata != null && metadata.containsKey(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER))) {
                 String timeStamp = metadata.get(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER));
                 if (timeStamp != null && !timeStamp.isEmpty()) {
-                    timestamp = LocalDateTime.parse(timeStamp);
+                    try {
+                        timestamp = Instant.parse(timeStamp);
+                    } catch (Exception ex) {
+                        // ignore parse error
+                    }
                 }
             }
             throw new HttpRequestException(
@@ -134,16 +142,20 @@ public class ApproveOwnerActivitiesImpl implements ApproveOwnerActivities {
                 throw new HttpRequestException(
                         MessageError.CANNOT_UPDATE_ACCOUNT,
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        LocalDateTime.now()
+                        Instant.now()
                 );
             }
         } catch (StatusRuntimeException e) {
             Metadata metadata = e.getTrailers();
-            LocalDateTime timestamp = LocalDateTime.now();
+            Instant timestamp = Instant.now();
             if (metadata != null && metadata.containsKey(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER))) {
                 String timeStamp = metadata.get(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER));
                 if (timeStamp != null && !timeStamp.isEmpty()) {
-                    timestamp = LocalDateTime.parse(timeStamp);
+                    try {
+                        timestamp = Instant.parse(timeStamp);
+                    } catch (Exception ex) {
+                        // ignore parse error
+                    }
                 }
             }
             throw new HttpRequestException(
@@ -172,16 +184,20 @@ public class ApproveOwnerActivitiesImpl implements ApproveOwnerActivities {
                 throw new HttpRequestException(
                         MessageError.CANNOT_UPDATE_ACCOUNT,
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        LocalDateTime.now()
+                        Instant.now()
                 );
             }
         } catch (StatusRuntimeException e) {
             Metadata metadata = e.getTrailers();
-            LocalDateTime timestamp = LocalDateTime.now();
+            Instant timestamp = Instant.now();
             if (metadata != null && metadata.containsKey(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER))) {
                 String timeStamp = metadata.get(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER));
                 if (timeStamp != null && !timeStamp.isEmpty()) {
-                    timestamp = LocalDateTime.parse(timeStamp);
+                    try {
+                        timestamp = Instant.parse(timeStamp);
+                    } catch (Exception ex) {
+                        // ignore parse error
+                    }
                 }
             }
             throw new HttpRequestException(

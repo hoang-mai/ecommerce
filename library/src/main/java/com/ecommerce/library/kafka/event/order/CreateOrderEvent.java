@@ -5,7 +5,7 @@ import com.ecommerce.library.enumeration.OrderStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Builder
@@ -27,8 +27,8 @@ public class CreateOrderEvent {
     private String address;
     private String phoneNumber;
     private List<CreateOrderItemEvent> createOrderItemEventList;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
     private Long cartItemId;
     private String note;
 }

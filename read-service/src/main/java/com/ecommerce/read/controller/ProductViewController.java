@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -107,7 +107,7 @@ public class ProductViewController {
     public ResponseEntity<BaseResponse<List<ProductViewStatisticDTO>>> getProductStatistics(
         @RequestParam(required = false) String shopId,
         @RequestParam(required = false) Boolean isOwner,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime nowDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant nowDate,
         @RequestParam(required = false, defaultValue = "sold") String type
     ) {
         List<ProductViewStatisticDTO> stats = productViewService.getProductStatistics(shopId, isOwner, nowDate, type);

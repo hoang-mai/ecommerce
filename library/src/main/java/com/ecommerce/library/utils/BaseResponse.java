@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Builder
@@ -16,5 +16,5 @@ public class BaseResponse<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T data;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 }

@@ -51,7 +51,7 @@ spring:
         - id: read-service
           uri: http://localhost:8086
           predicates:
-            - Path=/api/v1/user-view/**,/api/v1/product-view/**,/api/v1/order-view/**,/api/v1/cart-view/**,/api/v1/shop-view/**,/api/v1/review-view/**,/api/v1/user-category/**,/api/v1/search-keyword/**
+            - Path=/api/v1/user-view/**,/api/v1/product-view/**,/api/v1/order-view/**,/api/v1/cart-view/**,/api/v1/shop-view/**,/api/v1/review-view/**,/api/v1/user-category/**,/api/v1/search-keyword/**,/api/v1/flash-sale-product-view/**
         - id: review-service
           uri: http://localhost:8087
           predicates:
@@ -64,3 +64,7 @@ spring:
           uri: http://localhost:8089
           predicates:
             - Path=/api/v1/user/**,/api/v1/address/**,/api/v1/user-verification/**
+        - id: flash-sale-service
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/v1/flash-sale-campaign-schedule/**,/api/v1/flash-sale-campaign/**,/api/v1/flash-sale-product/**,/api/v1/user-purchase-limit/**,/api/v1/order-flash-sale/**

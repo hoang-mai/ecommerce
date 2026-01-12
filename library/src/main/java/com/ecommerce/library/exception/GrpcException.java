@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.server.exception.GrpcExceptionHandler;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Configuration
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class GrpcException {
     @Bean
     public GrpcExceptionHandler grpcExceptionHandler() {
         Metadata metadata = new Metadata();
-        metadata.put(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER), String.valueOf(LocalDateTime.now()));
+        metadata.put(Metadata.Key.of("timestamp", Metadata.ASCII_STRING_MARSHALLER), String.valueOf(Instant.now()));
         return exception -> {
             if (exception instanceof HttpRequestException) {
                 return Status.INTERNAL

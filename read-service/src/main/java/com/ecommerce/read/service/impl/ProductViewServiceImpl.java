@@ -13,16 +13,20 @@ import com.ecommerce.library.utils.MessageError;
 import com.ecommerce.library.utils.PageResponse;
 import com.ecommerce.read.dto.ProductViewHomePageDTO;
 import com.ecommerce.read.dto.ProductViewStatisticDTO;
+import com.ecommerce.read.dto.SearchKeywordDTO;
+import com.ecommerce.read.entity.FlashSaleProductView;
 import com.ecommerce.read.entity.ProductSearch;
 import com.ecommerce.read.entity.ProductView;
 import com.ecommerce.read.entity.SearchView;
 import com.ecommerce.read.entity.UserCategoryScore;
+import com.ecommerce.read.repository.FlashSaleProductViewRepository;
 import com.ecommerce.read.repository.ProductSearchRepository;
 import com.ecommerce.read.repository.ProductViewRepository;
 import com.ecommerce.read.repository.SearchViewRepository;
 import com.ecommerce.read.repository.impl.*;
 import com.ecommerce.read.service.FileService;
 import com.ecommerce.read.service.ProductViewService;
+import com.ecommerce.read.service.SearchKeywordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -38,8 +42,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -57,6 +62,8 @@ public class ProductViewServiceImpl implements ProductViewService {
     private final UserCategoryRepositoryImpl userCategoryRepositoryImpl;
     private final ProductSearchRepository productSearchRepository;
     private final ProductSearchRepositoryImpl productSearchRepositoryImpl;
+    private final FlashSaleProductViewRepository flashSaleProductViewRepository;
+    private final SearchKeywordService searchKeywordService;
 
     @Value("${ai-service.host}")
     private String aiServiceHost;
@@ -75,9 +82,6 @@ public class ProductViewServiceImpl implements ProductViewService {
             productViewExisting.setName(event.getProductName());
             productViewExisting.setDescription(event.getDescription());
             productViewExisting.setProductStatus(event.getProductStatus());
-            productViewExisting.setDiscount(event.getDiscount());
-            productViewExisting.setDiscountStartDate(event.getDiscountStartDate());
-            productViewExisting.setDiscountEndDate(event.getDiscountEndDate());
             productViewExisting.setOwnerId(String.valueOf(event.getOwnerId()));
             productViewExisting.setUpdatedAt(event.getUpdatedAt());
             productViewExisting.setCategoryId(event.getCategoryId() == null ? null : String.valueOf(event.getCategoryId()));
@@ -113,6 +117,7 @@ public class ProductViewServiceImpl implements ProductViewService {
                     return ProductView.ProductVariant.builder()
                         ._id(String.valueOf(variant.getProductVariantId()))
                         .price(variant.getPrice())
+                        .salePrice(variant.getSalePrice())
                         .stockQuantity(variant.getStockQuantity())
                         .productVariantStatus(variant.getProductVariantStatus())
                         .isDefault(variant.getIsDefault())
@@ -137,9 +142,6 @@ public class ProductViewServiceImpl implements ProductViewService {
                 .name(event.getProductName())
                 .description(event.getDescription())
                 .productStatus(event.getProductStatus())
-                .discount(event.getDiscount())
-                .discountStartDate(event.getDiscountStartDate())
-                .discountEndDate(event.getDiscountEndDate())
                 .ownerId(String.valueOf(event.getOwnerId()))
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
@@ -173,6 +175,7 @@ public class ProductViewServiceImpl implements ProductViewService {
                         return ProductView.ProductVariant.builder()
                             ._id(String.valueOf(variant.getProductVariantId()))
                             .price(variant.getPrice())
+                            .salePrice(variant.getSalePrice())
                             .stockQuantity(variant.getStockQuantity())
                             .productVariantStatus(variant.getProductVariantStatus())
                             .isDefault(variant.getIsDefault())
@@ -193,7 +196,12 @@ public class ProductViewServiceImpl implements ProductViewService {
             if (Boolean.TRUE.equals(event.getCreated())) {
                 shopViewRepositoryImpl.incrementProductCount(event.getShopId());
             }
+            searchKeywordService.createSearchKeyword(SearchKeywordDTO.builder()
+                .keyword(event.getProductName())
+                .build());
         }
+
+        updateFlashSaleProductsAsync(event);
     }
 
     @Async
@@ -221,15 +229,66 @@ public class ProductViewServiceImpl implements ProductViewService {
                 .shopStatus(productView.getShopStatus())
                 .totalSold(0)
                 .rating(0.0)
-                .createdAt(
-                    productView.getCreatedAt()
-                        .toInstant(ZoneOffset.UTC)
-                )
+                .createdAt(productView.getCreatedAt())
                 .build();
             productSearchRepository.save(productSearch);
         }
+    }
+
+    /**
+     * Update flash sale products asynchronously when product is updated
+     * Only updates flash sale products with startTime > current date (future flash sales)
+     */
+    @Async
+    public void updateFlashSaleProductsAsync(CreateProductEvent event) {
+
+        Instant now = Instant.now();
+
+        String productId = String.valueOf(event.getProductId());
+
+        List<FlashSaleProductView> flashSaleProducts = flashSaleProductViewRepository
+            .findByProductIdAndStartTimeAfter(productId, now);
+
+        if (flashSaleProducts.isEmpty()) {
+            return;
+        }
+
+        List<ProductView.ProductImage> productImages = null;
+        if (event.getProductImages() != null && !event.getProductImages().isEmpty()) {
+            productImages = event.getProductImages().stream()
+                .map(img -> ProductView.ProductImage.builder()
+                    ._id(String.valueOf(img.getProductImageId()))
+                    .imageUrl(img.getImageUrl())
+                    .build())
+                .toList();
+        }
 
 
+        Map<String, BigDecimal> variantPriceMap = new HashMap<>();
+        if (event.getProductVariants() != null) {
+            for (CreateProductEvent.CreateProductVariantEvent variant : event.getProductVariants()) {
+                variantPriceMap.put(String.valueOf(variant.getProductVariantId()), variant.getPrice());
+            }
+        }
+
+        List<ProductView.ProductImage> finalProductImages = productImages;
+        flashSaleProducts.forEach(flashSaleProduct -> {
+
+            flashSaleProduct.setProductName(event.getProductName());
+
+            if (finalProductImages != null) {
+                flashSaleProduct.setProductImages(finalProductImages);
+            }
+
+            String variantId = flashSaleProduct.getProductVariantId();
+            if (variantId != null && variantPriceMap.containsKey(variantId)) {
+                BigDecimal variantPrice = variantPriceMap.get(variantId);
+                if (variantPrice != null) {
+                    flashSaleProduct.setOriginalPrice(variantPrice);
+                }
+            }
+        });
+        flashSaleProductViewRepository.saveAll(flashSaleProducts);
     }
 
     @Override
@@ -259,13 +318,18 @@ public class ProductViewServiceImpl implements ProductViewService {
     public PageResponse<ProductView> searchProducts(String searchId, Boolean isOwner, Long shopId, Long categoryId, ProductStatus status, String keyword, Integer star, BigDecimal startPrice, BigDecimal endPrice, int pageNo, int pageSize, String sortBy, String sortDir) {
 
         Map<String, Float> imageScoreMap = Map.of();
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+            ? Sort.by(sortBy).ascending()
+            : Sort.by(sortBy).descending();
 
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
         if (FnCommon.isNotNullOrEmpty(searchId)) {
+            pageable = PageRequest.of(pageNo, pageSize);
             SearchView searchView = searchViewRepositoryImpl.getById(searchId);
             if (!FnCommon.isNotNull(searchView)) {
                 throw new NotFoundException(MessageError.PRODUCT_NOT_FOUND);
             }
-            imageScoreMap= searchView.getSearchImages().stream()
+            imageScoreMap = searchView.getSearchImages().stream()
                 .collect(Collectors.toMap(
                     SearchView.SearchImageResult::getProductId,
                     SearchView.SearchImageResult::getSimilarityScore,
@@ -273,15 +337,33 @@ public class ProductViewServiceImpl implements ProductViewService {
                 ));
 
         }
-        Long ownerId = null;
+        Long ownerId;
         ShopStatus shopStatus = null;
 
-        if (Boolean.TRUE.equals(isOwner)) {
-            Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+        try {
+            Role currentUserRole = userHelper.getRole();
 
-            Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+            if (currentUserRole == Role.ADMIN) {
+                Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(null, null, shopId, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
+
+                return PageResponse.<ProductView>builder()
+                    .data(productsPage.getContent().stream().peek(productView ->
+                        productView.getProductImages().forEach(productImage ->
+                            productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
+                        )).toList())
+                    .pageNo(productsPage.getNumber())
+                    .pageSize(productsPage.getSize())
+                    .totalElements(productsPage.getTotalElements())
+                    .totalPages(productsPage.getTotalPages())
+                    .hasNextPage(productsPage.hasNext())
+                    .hasPreviousPage(productsPage.hasPrevious())
+                    .build();
+            }
+        } catch (Exception ignored) {
+        }
+
+        if (Boolean.TRUE.equals(isOwner)) {
+
             ownerId = userHelper.getCurrentUserId();
 
 
@@ -299,9 +381,25 @@ public class ProductViewServiceImpl implements ProductViewService {
                 .hasNextPage(productsPage.hasNext())
                 .hasPreviousPage(productsPage.hasPrevious())
                 .build();
+        } else if (FnCommon.isNotNull(shopId)) {
+            status = ProductStatus.ACTIVE;
+            shopStatus = ShopStatus.ACTIVE;
+            Page<ProductView> productsPage = productViewRepositoryImpl.getProductView(null, null, shopId, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
+
+            return PageResponse.<ProductView>builder()
+                .data(productsPage.getContent().stream().peek(productView ->
+                    productView.getProductImages().forEach(productImage ->
+                        productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
+                    )).toList())
+                .pageNo(productsPage.getNumber())
+                .pageSize(productsPage.getSize())
+                .totalElements(productsPage.getTotalElements())
+                .totalPages(productsPage.getTotalPages())
+                .hasNextPage(productsPage.hasNext())
+                .hasPreviousPage(productsPage.hasPrevious())
+                .build();
         } else {
 
-            Pageable pageable = PageRequest.of(pageNo, pageSize);
             status = ProductStatus.ACTIVE;
             shopStatus = ShopStatus.ACTIVE;
             Page<ProductSearch> productSearchPage = productSearchRepositoryImpl.getProductSearch(imageScoreMap, categoryId, status, shopStatus, keyword, star, startPrice, endPrice, pageable);
@@ -347,11 +445,32 @@ public class ProductViewServiceImpl implements ProductViewService {
             );
             return productView;
         }
+        try {
+            Role currentUserRole = userHelper.getRole();
+
+            if (currentUserRole == Role.ADMIN) {
+                ProductView productView = productViewRepository.findById(String.valueOf(productId))
+                    .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
+                productView.getProductImages().forEach(productImage ->
+                    productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
+                );
+                return productView;
+            }
+        } catch (Exception ignored) {
+        }
         ProductView productView = productViewRepository.findBy_idAndProductStatusAndShopStatus(String.valueOf(productId), ProductStatus.ACTIVE, ShopStatus.ACTIVE)
             .orElseThrow(() -> new NotFoundException(MessageError.PRODUCT_NOT_FOUND));
         productView.getProductImages().forEach(productImage ->
             productImage.setImageUrl(fileService.getPresignedUrl(productImage.getImageUrl()))
         );
+
+        List<FlashSaleProductView> ongoingFlashSales = flashSaleProductViewRepository
+            .findOngoingFlashSalesByProductId(String.valueOf(productId), Instant.now());
+
+        if (!ongoingFlashSales.isEmpty()) {
+            productView.setFlashSaleProductViews(ongoingFlashSales);
+        }
+
         return productView;
     }
 
@@ -433,7 +552,7 @@ public class ProductViewServiceImpl implements ProductViewService {
     }
 
     @Override
-    public List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, LocalDateTime nowDate, String type) {
+    public List<ProductViewStatisticDTO> getProductStatistics(String shopId, Boolean isOwner, Instant nowDate, String type) {
         Long currentUserId = null;
         if (Boolean.TRUE.equals(isOwner)) {
             currentUserId = userHelper.getCurrentUserId();
@@ -527,7 +646,7 @@ public class ProductViewServiceImpl implements ProductViewService {
             });
         if (!FnCommon.isNotNullOrEmptyList(searchImagesDTOList)) return null;
         SearchView view = SearchView.builder()
-            .createdAt(LocalDateTime.now())
+            .createdAt(Instant.now())
             .searchImages(searchImagesDTOList)
             .build();
         searchViewRepository.save(view);

@@ -25,7 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -193,7 +193,7 @@ public class ShopViewServiceImpl implements ShopViewService {
     }
 
     @Override
-    public List<ShopViewStatisticDTO> getTopShopsByRevenue(Boolean isOwner,LocalDateTime nowDate, String type) {
+    public List<ShopViewStatisticDTO> getTopShopsByRevenue(Boolean isOwner,Instant nowDate, String type) {
         Long ownerId = null;
         if (Boolean.TRUE.equals(isOwner)) {
             ownerId = userHelper.getCurrentUserId();
@@ -202,7 +202,7 @@ public class ShopViewServiceImpl implements ShopViewService {
     }
 
     @Override
-    public List<NewShopViewStatisticDTO> getStatisticsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+    public List<NewShopViewStatisticDTO> getStatisticsByDateRange(Instant startDate, Instant endDate) {
         return shopViewRepositoryImpl.getStatisticsByDateRange( startDate, endDate);
     }
 }
