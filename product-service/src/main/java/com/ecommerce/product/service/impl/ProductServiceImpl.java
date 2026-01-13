@@ -414,6 +414,9 @@ public class ProductServiceImpl implements ProductService {
         if (!product.getShop().getOwnerId().equals(userHelper.getCurrentUserId()) && !Role.ADMIN.equals(userHelper.getRole())) {
             throw new NotFoundException(MessageError.PRODUCT_NOT_FOUND);
         }
+        if (flashSaleProductCacheRepository.existsByProductIdAndCurrentTimeInFlashSale(productId, Instant.now())) {
+            throw new IllegalStateException(MessageError.PRODUCT_IN_FLASH_SALE);
+        }
         product.setProductStatus(status.getProductStatus());
         productRepository.save(product);
         productEventProducer.send(

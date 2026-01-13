@@ -8,10 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
-import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -105,7 +102,8 @@ public class FlashSaleProductViewRepositoryImpl {
 
             Aggregation.project()
                 .andInclude("soldQuantity", "totalQuantity", "salePrice",
-                    "flashSaleCampaignId", "flashSaleCampaignName", "startTime", "endTime","totalRevenue"),
+                    "flashSaleCampaignId", "flashSaleCampaignName", "startTime", "endTime","totalRevenue")
+                .and(ConvertOperators.ToDouble.toDouble("$totalRevenue")).as("totalRevenueNum"),
 
             Aggregation.group()
                 .first("flashSaleCampaignId").as("flashSaleCampaignId")
@@ -114,7 +112,7 @@ public class FlashSaleProductViewRepositoryImpl {
                 .first("endTime").as("endTime")
                 .sum("soldQuantity").as("totalSoldQuantity")
                 .sum("totalQuantity").as("totalQuantity")
-                .sum("totalRevenue").as("totalRevenue"),
+                .sum("totalRevenueNum").as("totalRevenue"),
 
             Aggregation.project()
                 .andInclude("flashSaleCampaignId", "flashSaleCampaignName",
