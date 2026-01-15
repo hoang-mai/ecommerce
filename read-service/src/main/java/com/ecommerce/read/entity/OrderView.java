@@ -25,6 +25,9 @@ public class OrderView extends BaseEntity {
     @JsonProperty("orderId")
     private String _id;
 
+    @Field(name = "orderCode")
+    private String orderCode;
+
     @Field(name = "userId")
     private String userId;
 
@@ -106,7 +109,6 @@ public class OrderView extends BaseEntity {
 
         @Field(name = "totalFinalPrice")
         private BigDecimal totalFinalPrice;
-
 
         @Field(name = "productAttributes")
         @Builder.Default

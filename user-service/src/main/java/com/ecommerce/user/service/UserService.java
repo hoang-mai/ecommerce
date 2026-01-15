@@ -5,9 +5,7 @@ import com.ecommerce.user.dto.*;
 import com.ecommerce.library.utils.PageResponse;
 import org.springframework.web.multipart.MultipartFile;
 
-
 public interface UserService {
-
 
     /**
      * Tạo người dùng mới với thông tin từ CreateUserData.
@@ -25,7 +23,6 @@ public interface UserService {
      */
     ResInfoUserDTO getUserById(Long id);
 
-
     /**
      * Cập nhật thông tin người dùng theo ID.
      *
@@ -40,13 +37,12 @@ public interface UserService {
      */
     void deleteUser(Long userId);
 
-
     /**
-     * Tìm kiếm người dùng theo tên  hoặc email.
+     * Tìm kiếm người dùng theo tên hoặc email.
      *
      * @param pageNo   Số trang
      * @param pageSize Kích thước trang
-     * @param query    Chuỗi tìm kiếm (tên  hoặc email)
+     * @param query    Chuỗi tìm kiếm (tên hoặc email)
      * @return Danh sách người dùng phù hợp với trang và kích thước trang
      */
     PageResponse<ResInfoPreviewUserDTO> searchUsers(int pageNo, int pageSize, String query);
@@ -65,7 +61,9 @@ public interface UserService {
      */
     void uploadAvatar(MultipartFile file, Boolean isDelete);
 
-    void rollbackUpdateUserRoleAndVerificationStatus(ReqRollbackUpdateUserRoleAndVerificationStatusDTO reqRollbackUpdateUserRoleAndVerificationStatusDTO);
+    void rollbackUpdateUserRoleAndVerificationStatus(
+            ReqRollbackUpdateUserRoleAndVerificationStatusDTO reqRollbackUpdateUserRoleAndVerificationStatusDTO);
 
-    ResUpdateUserRoleAndVerificationStatusDTO updateUserRoleAndVerificationStatus(ReqUpdateUserRoleAndVerificationStatusDTO reqUpdateUserRoleAndVerificationStatusDTO);
+    ResUpdateUserRoleAndVerificationStatusDTO updateUserRoleAndVerificationStatus(
+            ReqUpdateUserRoleAndVerificationStatusDTO reqUpdateUserRoleAndVerificationStatusDTO);
 }

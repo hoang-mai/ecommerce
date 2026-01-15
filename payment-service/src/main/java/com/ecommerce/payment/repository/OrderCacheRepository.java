@@ -8,10 +8,10 @@ import java.util.Optional;
 
 public interface OrderCacheRepository extends JpaRepository<OrderCache, Long> {
     @Query("""
-        SELECT oc FROM OrderCache oc
-        LEFT JOIN FETCH oc.orderItems oic
-        LEFT JOIN FETCH oc.payment p
-        WHERE oc.orderId = :orderId
-        """)
+            SELECT oc FROM OrderCache oc
+            LEFT JOIN FETCH oc.orderItems oic
+            LEFT JOIN FETCH oc.payment p
+            WHERE oc.orderId = :orderId
+            """)
     Optional<OrderCache> findByOrderId(Long orderId);
 }

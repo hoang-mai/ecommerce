@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateOrderEvent {
     private Long orderId;
+    private String orderCode;
     private Long userId;
     private Long ownerId;
     private Long shopId;

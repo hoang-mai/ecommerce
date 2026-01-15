@@ -53,69 +53,75 @@ public class OrderViewServiceImpl implements OrderViewService {
     @Override
     public void createOrderView(CreateListOrderEvent createListOrderEvent) {
         List<Long> cartItemIds = createListOrderEvent.getCreateOrderEventList().stream()
-            .map(CreateOrderEvent::getCartItemId)
-            .toList();
+                .map(CreateOrderEvent::getCartItemId)
+                .toList();
         for (CreateOrderEvent createOrderViewEvent : createListOrderEvent.getCreateOrderEventList()) {
             OrderView orderView = OrderView.builder()
-                ._id(String.valueOf(createOrderViewEvent.getOrderId()))
-                .userId(String.valueOf(createOrderViewEvent.getUserId()))
-                .ownerId(String.valueOf(createOrderViewEvent.getOwnerId()))
-                .shopId(String.valueOf(createOrderViewEvent.getShopId()))
-                .shopName(createOrderViewEvent.getShopName())
-                .shopLogoUrl(createOrderViewEvent.getShopLogoUrl())
-                .orderStatus(createOrderViewEvent.getOrderStatus())
-                .reason(createOrderViewEvent.getReason())
-                .receiverName(createOrderViewEvent.getReceiverName())
-                .address(createOrderViewEvent.getAddress())
-                .phoneNumber(createOrderViewEvent.getPhoneNumber())
-                .createdAt(createOrderViewEvent.getCreatedAt())
-                .updatedAt(createOrderViewEvent.getUpdatedAt())
-                .totalPrice(createOrderViewEvent.getTotalPrice())
-                .note(createOrderViewEvent.getNote())
-                .orderItems(createOrderViewEvent.getCreateOrderItemEventList().stream().map(createOrderItemEvent -> OrderView.OrderItem.builder()
-                    ._id(String.valueOf(createOrderItemEvent.getOrderItemId()))
-                    .productId(String.valueOf(createOrderItemEvent.getProductId()))
-                    .productName(createOrderItemEvent.getProductName())
-                    .productVariantId(String.valueOf(createOrderItemEvent.getProductVariantId()))
-                    .productImageUrl(createOrderItemEvent.getProductImageUrl())
-                    .totalPrice(createOrderItemEvent.getTotalPrice())
-                    .totalDiscount(createOrderItemEvent.getTotalDiscount())
-                    .totalFinalPrice(createOrderItemEvent.getTotalFinalPrice())
-                    .quantity(createOrderItemEvent.getQuantity())
-                    .price(createOrderItemEvent.getPrice())
-                    .productAttributes(createOrderItemEvent.getCreateProductAttributeList().stream().map(attribute ->
-                        OrderView.ProductAttribute.builder()
-                            .attributeName(attribute.getAttributeName())
-                            .attributeValue(attribute.getAttributeValue())
-                            .build()).toList())
-                    .build()).toList())
-                .build();
+                    ._id(String.valueOf(createOrderViewEvent.getOrderId()))
+                    .orderCode(createOrderViewEvent.getOrderCode())
+                    .userId(String.valueOf(createOrderViewEvent.getUserId()))
+                    .ownerId(String.valueOf(createOrderViewEvent.getOwnerId()))
+                    .shopId(String.valueOf(createOrderViewEvent.getShopId()))
+                    .shopName(createOrderViewEvent.getShopName())
+                    .shopLogoUrl(createOrderViewEvent.getShopLogoUrl())
+                    .orderStatus(createOrderViewEvent.getOrderStatus())
+                    .reason(createOrderViewEvent.getReason())
+                    .receiverName(createOrderViewEvent.getReceiverName())
+                    .address(createOrderViewEvent.getAddress())
+                    .phoneNumber(createOrderViewEvent.getPhoneNumber())
+                    .createdAt(createOrderViewEvent.getCreatedAt())
+                    .updatedAt(createOrderViewEvent.getUpdatedAt())
+                    .totalPrice(createOrderViewEvent.getTotalPrice())
+                    .note(createOrderViewEvent.getNote())
+                    .orderItems(createOrderViewEvent.getCreateOrderItemEventList().stream()
+                            .map(createOrderItemEvent -> OrderView.OrderItem.builder()
+                                    ._id(String.valueOf(createOrderItemEvent.getOrderItemId()))
+                                    .productId(String.valueOf(createOrderItemEvent.getProductId()))
+                                    .productName(createOrderItemEvent.getProductName())
+                                    .productVariantId(String.valueOf(createOrderItemEvent.getProductVariantId()))
+                                    .productImageUrl(createOrderItemEvent.getProductImageUrl())
+                                    .totalPrice(createOrderItemEvent.getTotalPrice())
+                                    .totalDiscount(createOrderItemEvent.getTotalDiscount())
+                                    .totalFinalPrice(createOrderItemEvent.getTotalFinalPrice())
+                                    .quantity(createOrderItemEvent.getQuantity())
+                                    .price(createOrderItemEvent.getPrice())
+                                    .productAttributes(createOrderItemEvent.getCreateProductAttributeList().stream()
+                                            .map(attribute -> OrderView.ProductAttribute.builder()
+                                                    .attributeName(attribute.getAttributeName())
+                                                    .attributeValue(attribute.getAttributeValue())
+                                                    .build())
+                                            .toList())
+                                    .build())
+                            .toList())
+                    .build();
             orderViewRepository.save(orderView);
 
             CompletableFuture.runAsync(() -> createOrderViewEvent.getCreateOrderItemEventList().forEach(orderItem -> {
-                String categoryIdStr = productViewService.getProductById(orderItem.getProductId(), false).getCategoryId();
+                String categoryIdStr = productViewService.getProductById(orderItem.getProductId(), false)
+                        .getCategoryId();
                 if (FnCommon.isNotNullOrEmpty(categoryIdStr)) {
                     UserCategoryDTO userCategoryDTO = UserCategoryDTO.builder()
-                        .categoryId(Long.parseLong(categoryIdStr))
-                        .userCategoryType(UserCategoryType.PURCHASE)
-                        .build();
+                            .categoryId(Long.parseLong(categoryIdStr))
+                            .userCategoryType(UserCategoryType.PURCHASE)
+                            .build();
                     userCategoryService.addUserCategoryByUserId(createOrderViewEvent.getUserId(), userCategoryDTO);
                 }
             }));
         }
-        cartViewService.clearCartItems(cartItemIds,createListOrderEvent.getUserId());
+        cartViewService.clearCartItems(cartItemIds, createListOrderEvent.getUserId());
         productViewService.updateStockAfterCreateOrder(createListOrderEvent);
     }
 
     @Override
     public void updateOrderStatusView(OrderStatusEvent orderStatusEvent) {
         OrderView orderView = orderViewRepository.findById(String.valueOf(orderStatusEvent.getOrderId()))
-            .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
 
         OrderStatus previousStatus = orderView.getOrderStatus();
         orderView.setOrderStatus(orderStatusEvent.getOrderStatus());
 
-        if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
+        if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED
+                || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
             orderView.setReason(orderStatusEvent.getReason());
         }
 
@@ -129,11 +135,10 @@ public class OrderViewServiceImpl implements OrderViewService {
     private void updateSoldAndRevenue(OrderView orderView) {
         orderView.getOrderItems().forEach(orderItem -> {
             productViewService.updateProductSoldAndRevenue(
-                orderItem.getProductId(),
-                orderItem.getProductVariantId(),
-                orderItem.getQuantity(),
-                orderItem.getTotalFinalPrice()
-            );
+                    orderItem.getProductId(),
+                    orderItem.getProductVariantId(),
+                    orderItem.getQuantity(),
+                    orderItem.getTotalFinalPrice());
         });
 
         shopViewRepository.findById(orderView.getShopId()).ifPresent(shopView -> {
@@ -145,9 +150,9 @@ public class OrderViewServiceImpl implements OrderViewService {
             }
 
             int totalQuantity = orderView.getOrderItems().stream()
-                .mapToInt(OrderView.OrderItem::getQuantity)
-                .sum();
-            if(shopView.getTotalOrder() == null){
+                    .mapToInt(OrderView.OrderItem::getQuantity)
+                    .sum();
+            if (shopView.getTotalOrder() == null) {
                 shopView.setTotalOrder(0L);
             }
             shopView.setTotalOrder(shopView.getTotalOrder() + 1);
@@ -158,31 +163,32 @@ public class OrderViewServiceImpl implements OrderViewService {
     }
 
     @Override
-    public PageResponse<OrderView> getOrderViews(String shopId, Boolean isOwner, OrderStatus orderStatus, String keyword, String productId, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public PageResponse<OrderView> getOrderViews(String shopId, Boolean isOwner, OrderStatus orderStatus,
+            String keyword, String productId, int pageNo, int pageSize, String sortBy, String sortDir) {
 
         Long currentUserId = userHelper.getCurrentUserId();
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-            ? Sort.by(sortBy).ascending()
-            : Sort.by(sortBy).descending();
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        Page<OrderView> orderViewPage = orderViewRepositoryImpl.getOrderView(shopId, isOwner, currentUserId, orderStatus, keyword, productId, pageable);
+        Page<OrderView> orderViewPage = orderViewRepositoryImpl.getOrderView(shopId, isOwner, currentUserId,
+                orderStatus, keyword, productId, pageable);
 
         return PageResponse.<OrderView>builder()
-            .data(orderViewPage.getContent().stream().peek(
-                orderView -> {
-                    orderView.setShopLogoUrl(fileService.getPresignedUrl(orderView.getShopLogoUrl()));
-                    orderView.getOrderItems().forEach(orderItem ->
-                        orderItem.setProductImageUrl(fileService.getPresignedUrl(orderItem.getProductImageUrl()))
-                    );
-                }).toList())
-            .pageNo(orderViewPage.getNumber())
-            .pageSize(orderViewPage.getSize())
-            .totalElements(orderViewPage.getTotalElements())
-            .totalPages(orderViewPage.getTotalPages())
-            .hasNextPage(orderViewPage.hasNext())
-            .hasPreviousPage(orderViewPage.hasPrevious())
-            .build();
+                .data(orderViewPage.getContent().stream().peek(
+                        orderView -> {
+                            orderView.setShopLogoUrl(fileService.getPresignedUrl(orderView.getShopLogoUrl()));
+                            orderView.getOrderItems().forEach(orderItem -> orderItem
+                                    .setProductImageUrl(fileService.getPresignedUrl(orderItem.getProductImageUrl())));
+                        }).toList())
+                .pageNo(orderViewPage.getNumber())
+                .pageSize(orderViewPage.getSize())
+                .totalElements(orderViewPage.getTotalElements())
+                .totalPages(orderViewPage.getTotalPages())
+                .hasNextPage(orderViewPage.hasNext())
+                .hasPreviousPage(orderViewPage.hasPrevious())
+                .build();
     }
 
     @Override
@@ -197,7 +203,8 @@ public class OrderViewServiceImpl implements OrderViewService {
     }
 
     @Override
-    public List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, Instant fromDate, Instant toDate) {
+    public List<OrderViewStatisticDTO> getOrderStatisticsByDateRange(String shopId, Boolean isOwner, Instant fromDate,
+            Instant toDate) {
         Long currentUserId = userHelper.getCurrentUserId();
         return orderViewRepositoryImpl.getOrderStatisticsByDateRange(shopId, isOwner, currentUserId, fromDate, toDate);
     }
@@ -207,19 +214,21 @@ public class OrderViewServiceImpl implements OrderViewService {
     public void updateOrderStatusFromOrderEvent(CreateListOrderStatusEvent createListOrderStatusEvent) {
         createListOrderStatusEvent.getOrderStatusEventList().forEach(orderStatusEvent -> {
             OrderView orderView = orderViewRepository.findById(String.valueOf(orderStatusEvent.getOrderId()))
-                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+                    .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
 
             OrderStatus previousStatus = orderView.getOrderStatus();
             orderView.setOrderStatus(orderStatusEvent.getOrderStatus());
 
-            if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
+            if (orderStatusEvent.getOrderStatus() == OrderStatus.CANCELLED
+                    || orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED) {
                 orderView.setReason(orderStatusEvent.getReason());
                 // Restore product stock when order fails
                 if (previousStatus != OrderStatus.CANCELLED && previousStatus != OrderStatus.RETURNED) {
                     restoreProductStock(orderView);
                 }
                 // Reduce sold and revenue when order is returned (only if previously completed)
-                if (orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED && previousStatus == OrderStatus.COMPLETED) {
+                if (orderStatusEvent.getOrderStatus() == OrderStatus.RETURNED
+                        && previousStatus == OrderStatus.COMPLETED) {
                     reduceSoldAndRevenue(orderView);
                 }
             }
@@ -234,46 +243,45 @@ public class OrderViewServiceImpl implements OrderViewService {
     }
 
     @Override
-    public List<OrderViewStatisticRevenueDTO> getRevenueStatisticsByDateRange(String shopId, Boolean isOwner, Instant fromDate, Instant toDate) {
+    public List<OrderViewStatisticRevenueDTO> getRevenueStatisticsByDateRange(String shopId, Boolean isOwner,
+            Instant fromDate, Instant toDate) {
         Long currentUserId = userHelper.getCurrentUserId();
-        return orderViewRepositoryImpl.getOrderStatisticRevenuesByDateRange(shopId, isOwner, currentUserId, fromDate, toDate);
+        return orderViewRepositoryImpl.getOrderStatisticRevenuesByDateRange(shopId, isOwner, currentUserId, fromDate,
+                toDate);
     }
 
     @Override
     public OrderView getOrderViewById(String orderId) {
         OrderView orderView = orderViewRepository.findById(orderId)
-            .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
         orderView.setShopLogoUrl(fileService.getPresignedUrl(orderView.getShopLogoUrl()));
-        orderView.getOrderItems().forEach(orderItem ->
-            orderItem.setProductImageUrl(fileService.getPresignedUrl(orderItem.getProductImageUrl()))
-        );
+        orderView.getOrderItems().forEach(
+                orderItem -> orderItem.setProductImageUrl(fileService.getPresignedUrl(orderItem.getProductImageUrl())));
         return orderView;
     }
 
     private void restoreProductStock(OrderView orderView) {
         orderView.getOrderItems().forEach(orderItem -> productViewService.restoreProductStock(
-            orderItem.getProductId(),
-            orderItem.getProductVariantId(),
-            orderItem.getQuantity()
-        ));
+                orderItem.getProductId(),
+                orderItem.getProductVariantId(),
+                orderItem.getQuantity()));
     }
 
     private void reduceSoldAndRevenue(OrderView orderView) {
         // Reduce product sold and revenue
         orderView.getOrderItems().forEach(orderItem -> {
             productViewService.updateProductSoldAndRevenue(
-                orderItem.getProductId(),
-                orderItem.getProductVariantId(),
-                -orderItem.getQuantity(),
-                orderItem.getTotalFinalPrice().negate()
-            );
+                    orderItem.getProductId(),
+                    orderItem.getProductVariantId(),
+                    -orderItem.getQuantity(),
+                    orderItem.getTotalFinalPrice().negate());
         });
 
         // Reduce shop sold and revenue
         shopViewRepository.findById(orderView.getShopId()).ifPresent(shopView -> {
             int totalQuantity = orderView.getOrderItems().stream()
-                .mapToInt(OrderView.OrderItem::getQuantity)
-                .sum();
+                    .mapToInt(OrderView.OrderItem::getQuantity)
+                    .sum();
 
             if (shopView.getTotalSold() != null) {
                 shopView.setTotalSold(Math.max(0, shopView.getTotalSold() - totalQuantity));
@@ -289,4 +297,3 @@ public class OrderViewServiceImpl implements OrderViewService {
         });
     }
 }
-

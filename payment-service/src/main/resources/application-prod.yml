@@ -29,6 +29,7 @@ spring:
 vnpay:
   vnp_TmnCode: ${VNP_TMN_CODE:ROZ4O53D}
   vnp_HashSecret: ${VNP_HASH_SECRET:F3H0O9XDMD9R4KTSDE8Z8L0FFRU0O1DY}
+  vnp_ReturnUrl: ${VNP_RETURN_URL:http://localhost:3000/checkout/result}
 
 server:
   port: ${SERVER_PORT:8084}

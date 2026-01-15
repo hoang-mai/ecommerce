@@ -23,6 +23,9 @@ public class Order extends BaseEntity {
     @Column(name = "order_id", updatable = false, nullable = false)
     private Long orderId;
 
+    @Column(name = "order_code", nullable = false)
+    private String orderCode;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
