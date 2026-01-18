@@ -102,4 +102,5 @@ public final class MessageSuccess {
     public static final String FLASH_SALE_PRODUCT_RETRIEVED_SUCCESS = "flash.sale.product.retrieved.success";
     public static final String FLASH_SALE_PRODUCTS_RETRIEVED_SUCCESS = "flash.sale.products.retrieved.success";
     public static final String USER_PURCHASE_LIMIT_CHECKED_SUCCESS = "user.purchase.limit.checked.success";
+    public static final String ALL_OUT_OF_STOCK_MESSAGE = "all.out.of.stock.message";
 }

@@ -17,8 +17,9 @@ public interface FlashSaleProductService {
      * Cập nhật flash sale product nếu startTime > ngày hiện tại
      *
      * @param flashSaleProductId ID của flash sale product cần cập nhật
-     * @param request Thông tin cập nhật
-     * @throws IllegalArgumentException nếu flash sale đã bắt đầu (startTime <= ngày hiện tại)
+     * @param request            Thông tin cập nhật
+     * @throws IllegalArgumentException nếu flash sale đã bắt đầu (startTime <= ngày
+     *                                  hiện tại)
      */
     void updateFlashSaleProduct(Long flashSaleProductId, ReqUpdateFlashSaleProductDTO request);
 
@@ -26,9 +27,11 @@ public interface FlashSaleProductService {
      * Xóa flash sale product nếu startTime > ngày hiện tại
      *
      * @param flashSaleProductId ID của flash sale product cần xóa
-     * @throws IllegalArgumentException nếu flash sale đã bắt đầu (startTime <= ngày hiện tại)
+     * @throws IllegalArgumentException nếu flash sale đã bắt đầu (startTime <= ngày
+     *                                  hiện tại)
      */
     void deleteFlashSaleProduct(Long flashSaleProductId);
 
-}
+    void handleUpdateFlashSaleProductStock(Long flashSaleProductId, Integer stock);
 
+}

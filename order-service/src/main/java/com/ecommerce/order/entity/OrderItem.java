@@ -1,7 +1,6 @@
 package com.ecommerce.order.entity;
 
 import com.ecommerce.library.entity.BaseEntity;
-import com.ecommerce.library.enumeration.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -30,21 +29,33 @@ public class OrderItem extends BaseEntity {
     @Column(name = "product_variant_id", nullable = false)
     private Long productVariantId;
 
-    @Column(name = "quantity", nullable = false)
+    @Column(name = "quantity")
     private Integer quantity;
 
+    @Column(name = "quantity_discount")
+    @Builder.Default
+    private Integer quantityDiscount = 0;
+
+    @Column(name = "discount")
+    @Builder.Default
+    private Double discount = 0.0;
+
     @Column(name = "price", precision = 15, scale = 2, nullable = false)
-    private BigDecimal price;
+    @Builder.Default
+    private BigDecimal price = BigDecimal.ZERO;
 
     @Column(name = "total_price", nullable = false)
-    private BigDecimal totalPrice;
+    @Builder.Default
+    private BigDecimal totalPrice = BigDecimal.ZERO;
 
     @Column(name = "total_discount", nullable = false)
-    private BigDecimal totalDiscount;
+    @Builder.Default
+    private BigDecimal totalDiscount = BigDecimal.ZERO;
 
     @Column(name = "total_final_price", nullable = false)
-    private BigDecimal totalFinalPrice;
+    @Builder.Default
+    private BigDecimal totalFinalPrice = BigDecimal.ZERO;
 
-    @Column(name = "is_flash_sale")
-    private Boolean isFlashSale;
+    @Column(name = "flash_sale_product_id")
+    private Long flashSaleProductId;
 }

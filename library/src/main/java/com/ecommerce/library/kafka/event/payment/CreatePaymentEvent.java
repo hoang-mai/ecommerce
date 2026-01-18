@@ -11,5 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreatePaymentEvent {
     private Long userId;
+    private Boolean isPartiallyOutOfStock;
+    private Boolean isAllOutOfStock;
     private String paymentUrl;
 }

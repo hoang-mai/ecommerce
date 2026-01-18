@@ -11,6 +11,7 @@ import java.util.List;
 
 import static com.ecommerce.library.kafka.Constant.CREATE_ORDER_TOPIC;
 import static com.ecommerce.library.kafka.Constant.UPDATE_ORDER_STATUS_VIEW_TOPIC;
+import static com.ecommerce.library.kafka.Constant.CREATE_ORDER_FLASH_SALE_TOPIC;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,10 @@ public class OrderEventProducer {
 
     public void send(CreateListOrderEvent createListOrderEvent){
         kafkaTemplate.send(CREATE_ORDER_TOPIC, createListOrderEvent.getUserId(), createListOrderEvent);
+    }
+
+    public void sendOrderFlashSale(CreateListOrderEvent createListOrderEvent){
+        kafkaTemplate.send(CREATE_ORDER_FLASH_SALE_TOPIC, createListOrderEvent.getUserId(), createListOrderEvent);
     }
 
     public void send(OrderStatusEvent orderStatusEvent){

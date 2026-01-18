@@ -4,7 +4,6 @@ import com.ecommerce.library.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +38,9 @@ public class FlashSaleProduct extends BaseEntity {
 
     @Column(name = "total_quantity", nullable = false)
     private Integer totalQuantity;
+
+    @Column(name = "total_quantity_register", nullable = false)
+    private Integer totalQuantityRegister;
 
     @Column(name = "sold_quantity", nullable = false)
     private Integer soldQuantity;

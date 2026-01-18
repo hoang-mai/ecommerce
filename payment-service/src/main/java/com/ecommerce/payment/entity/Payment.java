@@ -23,6 +23,9 @@ public class Payment extends BaseEntity {
     @Column(name = "payment_id", updatable = false, nullable = false)
     private Long paymentId;
 
+    @Column(name = "payment_code", nullable = false, unique = true)
+    private String paymentCode;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
@@ -43,6 +46,9 @@ public class Payment extends BaseEntity {
     @Column(name = "reason")
     private String reason;
 
+    @Column(name = "count_refund")
+    @Builder.Default
+    private Integer countRefund = 0;
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

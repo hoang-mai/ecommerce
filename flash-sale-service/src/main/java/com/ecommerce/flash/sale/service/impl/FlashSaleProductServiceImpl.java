@@ -30,16 +30,15 @@ public class FlashSaleProductServiceImpl implements FlashSaleProductService {
     private final UserHelper userHelper;
     private final FlashSaleProductProducer flashSaleProductProducer;
 
-
     @Transactional
     @Override
     public void createFlashSaleProduct(ReqCreateFlashSaleProductDTO request) {
         Long userId = userHelper.getCurrentUserId();
         FlashSaleCampaign campaign = flashSaleCampaignRepository.findByFlashSaleCampaignId(request.getCampaignId())
-            .orElseThrow(() -> new NotFoundException(MessageError.FLASH_SALE_CAMPAIGN_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(MessageError.FLASH_SALE_CAMPAIGN_NOT_FOUND));
 
         if (flashSaleProductRepository.existsByFlashSaleCampaign_FlashSaleCampaignIdAndProductIdAndProductVariantId(
-            request.getCampaignId(), request.getProductId(), request.getProductVariantId())) {
+                request.getCampaignId(), request.getProductId(), request.getProductVariantId())) {
             throw new IllegalArgumentException(MessageError.FLASH_SALE_PRODUCT_ALREADY_EXISTS_IN_CAMPAIGN);
         }
 
@@ -48,53 +47,55 @@ public class FlashSaleProductServiceImpl implements FlashSaleProductService {
             throw new IllegalArgumentException(MessageError.MAX_QUANTITY_PER_USER_EXCEEDS_TOTAL_QUANTITY);
         }
 
-        double score = calculateProductScore(request.getDiscountPercentage(), request.getRating(), request.getTotalSold(), request.getTotalQuantity());
+        double score = calculateProductScore(request.getDiscountPercentage(), request.getRating(),
+                request.getTotalSold(), request.getTotalQuantity());
 
         FlashSaleProduct flashSaleProduct = FlashSaleProduct.builder()
-            .ownerId(userId)
-            .shopId(request.getShopId())
-            .productId(request.getProductId())
-            .productVariantId(request.getProductVariantId())
-            .discountPercentage(request.getDiscountPercentage())
-            .totalQuantity(request.getTotalQuantity())
-            .soldQuantity(0)
-            .maxQuantityPerUser(request.getMaxQuantityPerUser())
-            .isSoldOut(false)
-            .score(score)
-            .flashSaleCampaign(campaign)
-            .build();
+                .ownerId(userId)
+                .shopId(request.getShopId())
+                .productId(request.getProductId())
+                .productVariantId(request.getProductVariantId())
+                .discountPercentage(request.getDiscountPercentage())
+                .totalQuantity(request.getTotalQuantity())
+                .totalQuantityRegister(request.getTotalQuantity())
+                .soldQuantity(0)
+                .maxQuantityPerUser(request.getMaxQuantityPerUser())
+                .isSoldOut(false)
+                .score(score)
+                .flashSaleCampaign(campaign)
+                .build();
 
         flashSaleProductRepository.save(flashSaleProduct);
-        campaign.setCountRegisteredProducts(campaign.getCountRegisteredProducts() != null ? campaign.getCountRegisteredProducts() + 1 : 1);
+        campaign.setCountRegisteredProducts(
+                campaign.getCountRegisteredProducts() != null ? campaign.getCountRegisteredProducts() + 1 : 1);
         flashSaleCampaignRepository.save(campaign);
         flashSaleProductProducer.send(
-            FlashSaleProductEvent.builder()
-                .flashSaleCampaignId(campaign.getFlashSaleCampaignId())
-                .flashSaleProductId(flashSaleProduct.getFlashSaleProductId())
-                .ownerId(flashSaleProduct.getOwnerId())
-                .shopId(flashSaleProduct.getShopId())
-                .productId(flashSaleProduct.getProductId())
-                .productVariantId(flashSaleProduct.getProductVariantId())
-                .originalPrice(request.getOriginalPrice())
-                .discountPercentage(flashSaleProduct.getDiscountPercentage())
-                .totalQuantity(flashSaleProduct.getTotalQuantity())
-                .soldQuantity(flashSaleProduct.getSoldQuantity())
-                .maxQuantityPerUser(flashSaleProduct.getMaxQuantityPerUser())
-                .isSoldOut(flashSaleProduct.getIsSoldOut())
-                .score(flashSaleProduct.getScore())
-                .flashSaleCampaignName(campaign.getCampaignName())
-                .startTime(campaign.getStartTime())
-                .endTime(campaign.getEndTime())
-                .totalSold(request.getTotalSold())
-                .rating(request.getRating())
-                .build()
-        );
+                FlashSaleProductEvent.builder()
+                        .flashSaleCampaignId(campaign.getFlashSaleCampaignId())
+                        .flashSaleProductId(flashSaleProduct.getFlashSaleProductId())
+                        .ownerId(flashSaleProduct.getOwnerId())
+                        .shopId(flashSaleProduct.getShopId())
+                        .productId(flashSaleProduct.getProductId())
+                        .productVariantId(flashSaleProduct.getProductVariantId())
+                        .originalPrice(request.getOriginalPrice())
+                        .discountPercentage(flashSaleProduct.getDiscountPercentage())
+                        .totalQuantity(flashSaleProduct.getTotalQuantity())
+                        .soldQuantity(flashSaleProduct.getSoldQuantity())
+                        .maxQuantityPerUser(flashSaleProduct.getMaxQuantityPerUser())
+                        .isSoldOut(flashSaleProduct.getIsSoldOut())
+                        .score(flashSaleProduct.getScore())
+                        .flashSaleCampaignName(campaign.getCampaignName())
+                        .startTime(campaign.getStartTime())
+                        .endTime(campaign.getEndTime())
+                        .totalSold(request.getTotalSold())
+                        .rating(request.getRating())
+                        .build());
     }
 
     @Override
     public void updateFlashSaleProduct(Long flashSaleProductId, ReqUpdateFlashSaleProductDTO request) {
         FlashSaleProduct flashSaleProduct = flashSaleProductRepository.findByFlashSaleProductId(flashSaleProductId)
-            .orElseThrow(() -> new NotFoundException(MessageError.FLASH_SALE_PRODUCT_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(MessageError.FLASH_SALE_PRODUCT_NOT_FOUND));
 
         FlashSaleCampaign campaign = flashSaleProduct.getFlashSaleCampaign();
         Instant now = Instant.now();
@@ -110,14 +111,14 @@ public class FlashSaleProductServiceImpl implements FlashSaleProductService {
         }
 
         double score = calculateProductScore(
-            request.getDiscountPercentage(),
-            request.getRating(),
-            request.getTotalSold(),
-            request.getTotalQuantity()
-        );
+                request.getDiscountPercentage(),
+                request.getRating(),
+                request.getTotalSold(),
+                request.getTotalQuantity());
 
         flashSaleProduct.setDiscountPercentage(request.getDiscountPercentage());
         flashSaleProduct.setTotalQuantity(request.getTotalQuantity());
+        flashSaleProduct.setTotalQuantityRegister(request.getTotalQuantity());
         flashSaleProduct.setMaxQuantityPerUser(request.getMaxQuantityPerUser());
         flashSaleProduct.setScore(score);
 
@@ -128,31 +129,31 @@ public class FlashSaleProductServiceImpl implements FlashSaleProductService {
         flashSaleProductRepository.save(flashSaleProduct);
 
         flashSaleProductProducer.sendUpdate(
-            FlashSaleProductEvent.builder()
-                .flashSaleCampaignId(campaign.getFlashSaleCampaignId())
-                .flashSaleProductId(flashSaleProduct.getFlashSaleProductId())
-                .ownerId(flashSaleProduct.getOwnerId())
-                .shopId(flashSaleProduct.getShopId())
-                .productId(flashSaleProduct.getProductId())
-                .productVariantId(flashSaleProduct.getProductVariantId())
-                .originalPrice(request.getOriginalPrice())
-                .discountPercentage(flashSaleProduct.getDiscountPercentage())
-                .totalQuantity(flashSaleProduct.getTotalQuantity())
-                .soldQuantity(flashSaleProduct.getSoldQuantity())
-                .maxQuantityPerUser(flashSaleProduct.getMaxQuantityPerUser())
-                .isSoldOut(flashSaleProduct.getIsSoldOut())
-                .score(flashSaleProduct.getScore())
-                .flashSaleCampaignName(campaign.getCampaignName())
-                .startTime(campaign.getStartTime())
-                .endTime(campaign.getEndTime())
-                .build()
-        );
+                FlashSaleProductEvent.builder()
+                        .flashSaleCampaignId(campaign.getFlashSaleCampaignId())
+                        .flashSaleProductId(flashSaleProduct.getFlashSaleProductId())
+                        .ownerId(flashSaleProduct.getOwnerId())
+                        .shopId(flashSaleProduct.getShopId())
+                        .productId(flashSaleProduct.getProductId())
+                        .productVariantId(flashSaleProduct.getProductVariantId())
+                        .originalPrice(request.getOriginalPrice())
+                        .discountPercentage(flashSaleProduct.getDiscountPercentage())
+                        .totalQuantity(flashSaleProduct.getTotalQuantity())
+                        .soldQuantity(flashSaleProduct.getSoldQuantity())
+                        .maxQuantityPerUser(flashSaleProduct.getMaxQuantityPerUser())
+                        .isSoldOut(flashSaleProduct.getIsSoldOut())
+                        .score(flashSaleProduct.getScore())
+                        .flashSaleCampaignName(campaign.getCampaignName())
+                        .startTime(campaign.getStartTime())
+                        .endTime(campaign.getEndTime())
+                        .build());
     }
+
     @Transactional
     @Override
     public void deleteFlashSaleProduct(Long flashSaleProductId) {
         FlashSaleProduct flashSaleProduct = flashSaleProductRepository.findByFlashSaleProductId(flashSaleProductId)
-            .orElseThrow(() -> new NotFoundException(MessageError.FLASH_SALE_PRODUCT_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(MessageError.FLASH_SALE_PRODUCT_NOT_FOUND));
 
         FlashSaleCampaign campaign = flashSaleProduct.getFlashSaleCampaign();
         Instant now = Instant.now();
@@ -166,6 +167,41 @@ public class FlashSaleProductServiceImpl implements FlashSaleProductService {
 
         flashSaleProductProducer.sendDelete(flashSaleProductId);
     }
+
+    @Transactional
+    @Override
+    public void handleUpdateFlashSaleProductStock(Long flashSaleProductId, Integer stock) {
+        FlashSaleProduct flashSaleProduct = flashSaleProductRepository.findByFlashSaleProductId(flashSaleProductId)
+                .orElseThrow(() -> new NotFoundException(MessageError.FLASH_SALE_PRODUCT_NOT_FOUND));
+
+        if (stock < flashSaleProduct.getTotalQuantity()) {
+            flashSaleProduct.setTotalQuantity(stock);
+        } else  {
+            flashSaleProduct.setTotalQuantity(Math.min(flashSaleProduct.getTotalQuantityRegister(), stock));
+        }
+        flashSaleProductRepository.save(flashSaleProduct);
+
+        FlashSaleCampaign campaign = flashSaleProduct.getFlashSaleCampaign();
+        flashSaleProductProducer.sendUpdate(
+                FlashSaleProductEvent.builder()
+                        .flashSaleCampaignId(campaign.getFlashSaleCampaignId())
+                        .flashSaleProductId(flashSaleProduct.getFlashSaleProductId())
+                        .ownerId(flashSaleProduct.getOwnerId())
+                        .shopId(flashSaleProduct.getShopId())
+                        .productId(flashSaleProduct.getProductId())
+                        .productVariantId(flashSaleProduct.getProductVariantId())
+                        .discountPercentage(flashSaleProduct.getDiscountPercentage())
+                        .totalQuantity(flashSaleProduct.getTotalQuantity())
+                        .soldQuantity(flashSaleProduct.getSoldQuantity())
+                        .maxQuantityPerUser(flashSaleProduct.getMaxQuantityPerUser())
+                        .isSoldOut(flashSaleProduct.getIsSoldOut())
+                        .score(flashSaleProduct.getScore())
+                        .flashSaleCampaignName(campaign.getCampaignName())
+                        .startTime(campaign.getStartTime())
+                        .endTime(campaign.getEndTime())
+                        .build());
+    }
+
 
     /**
      * Validate phần trăm giảm giá phải từ 20% đến 70%
@@ -185,7 +221,7 @@ public class FlashSaleProductServiceImpl implements FlashSaleProductService {
      */
     private double calculateProductScore(double discountPercentage, double rating, int totalSold, int totalQuantity) {
         double normalizedDiscount = (discountPercentage - MIN_DISCOUNT_PERCENTAGE) /
-            (MAX_DISCOUNT_PERCENTAGE - MIN_DISCOUNT_PERCENTAGE);
+                (MAX_DISCOUNT_PERCENTAGE - MIN_DISCOUNT_PERCENTAGE);
 
         double normalizedRating = rating / 5.0;
 
@@ -194,9 +230,9 @@ public class FlashSaleProductServiceImpl implements FlashSaleProductService {
         double normalizedTotalQuantity = Math.log(1 + totalQuantity) / Math.log(10001);
 
         double score = (normalizedDiscount * 40.0) +
-            (normalizedRating * 30.0) +
-            (normalizedSold * 20.0) +
-            (normalizedTotalQuantity * 10.0);
+                (normalizedRating * 30.0) +
+                (normalizedSold * 20.0) +
+                (normalizedTotalQuantity * 10.0);
 
         return Math.round(score * 100.0) / 100.0;
     }

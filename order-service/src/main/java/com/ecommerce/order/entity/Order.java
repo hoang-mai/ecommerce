@@ -46,7 +46,8 @@ public class Order extends BaseEntity {
     private String reason;
 
     @Column(name = "total_price", precision = 15, scale = 2, nullable = false)
-    private BigDecimal totalPrice;
+    @Builder.Default
+    private BigDecimal totalPrice = BigDecimal.ZERO;
 
     @Column(name = "payment_id")
     private Long paymentId;

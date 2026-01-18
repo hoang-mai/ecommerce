@@ -31,7 +31,6 @@ public class User extends BaseEntity {
     @Column(name = "description")
     private String description;
 
-
     @Column(name = "full_name")
     private String fullName;
 

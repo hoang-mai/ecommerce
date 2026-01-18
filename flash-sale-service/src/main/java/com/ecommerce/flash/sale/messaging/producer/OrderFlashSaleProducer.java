@@ -1,19 +1,19 @@
 package com.ecommerce.flash.sale.messaging.producer;
 
-import com.ecommerce.library.kafka.event.flash.sale.FlashSaleOrderEvent;
+import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import static com.ecommerce.library.kafka.Constant.CREATE_FLASH_SALE_ORDER_TOPIC;
+import static com.ecommerce.library.kafka.Constant.CREATE_ORDER_TOPIC;
+
 
 @Service
 @RequiredArgsConstructor
 public class OrderFlashSaleProducer {
+    private final KafkaTemplate<Long , CreateListOrderEvent> kafkaTemplate;
 
-    private final KafkaTemplate<Long, FlashSaleOrderEvent> flashSaleOrderEventKafkaTemplate;
-
-    public void send(FlashSaleOrderEvent event) {
-        flashSaleOrderEventKafkaTemplate.send(CREATE_FLASH_SALE_ORDER_TOPIC, event.getUserId(), event);
+    public void send(CreateListOrderEvent createListOrderEvent){
+        kafkaTemplate.send(CREATE_ORDER_TOPIC, createListOrderEvent.getUserId(), createListOrderEvent);
     }
 }

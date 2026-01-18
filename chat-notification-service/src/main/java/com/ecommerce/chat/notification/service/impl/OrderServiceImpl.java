@@ -111,6 +111,13 @@ public class OrderServiceImpl implements OrderService {
             .sentRealtime(true)
             .message(createPaymentEvent.getPaymentUrl())
             .build();
+        if(Boolean.TRUE.equals(createPaymentEvent.getIsAllOutOfStock())) {
+            notification.setNotificationType(NotificationType.ALL_OUT_OF_STOCK);
+            notification.setMessage(messageService.getMessage(MessageSuccess.ALL_OUT_OF_STOCK_MESSAGE));
+        } else if( Boolean.TRUE.equals(createPaymentEvent.getIsPartiallyOutOfStock())) {
+            notification.setNotificationType(NotificationType.PARTIALLY_OUT_OF_STOCK);
+        }
+
         simpMessagingTemplate.convertAndSendToUser(
             String.valueOf(userId),
             "/queue/notify",
@@ -148,7 +155,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         String title = messageService.getMessage(titleKey);
-        String message = messageService.getMessage(messageKey, orderStatusEvent.getOrderId(), orderStatus.getValueVi());
+        String message = messageService.getMessage(messageKey, orderStatusEvent.getOrderCode(), orderStatus.getValueVi());
 
         // Create and save notification
         Notification notification = Notification.builder()

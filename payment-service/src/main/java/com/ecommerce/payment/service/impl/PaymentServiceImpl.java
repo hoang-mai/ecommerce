@@ -4,6 +4,7 @@ import com.ecommerce.library.enumeration.OrderStatus;
 import com.ecommerce.library.enumeration.PaymentStatus;
 import com.ecommerce.library.exception.NotFoundException;
 import com.ecommerce.library.kafka.event.order.CreateListOrderEvent;
+import com.ecommerce.library.kafka.event.flashsale.RestoreFlashSaleStockEvent;
 import com.ecommerce.library.kafka.event.order.CreateListOrderStatusEvent;
 import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.library.kafka.event.payment.CreatePaymentEvent;
@@ -14,11 +15,13 @@ import com.ecommerce.payment.dto.VnpayResponseDTO;
 import com.ecommerce.payment.entity.OrderCache;
 import com.ecommerce.payment.entity.OrderItemCache;
 import com.ecommerce.payment.entity.Payment;
-import com.ecommerce.payment.messaging.producer.OrderEventProvider;
+import com.ecommerce.payment.messaging.producer.OrderEventProducer;
 import com.ecommerce.payment.repository.OrderCacheRepository;
 import com.ecommerce.payment.repository.PaymentRepository;
 import com.ecommerce.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,15 +32,18 @@ import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-        private final OrderEventProvider orderEventProvider;
+        private final OrderEventProducer orderEventProducer;
 
         private final PaymentRepository paymentRepository;
         private final String vnp_Version = "2.1.0";
@@ -59,14 +65,20 @@ public class PaymentServiceImpl implements PaymentService {
 
         @Override
         public void handleCreatePaymentEvent(CreateListOrderEvent createListOrderEvent) {
+                AtomicBoolean isPartiallyOutOfStock = new AtomicBoolean(false);
+                boolean isAllOutOfStock = false;
                 Payment payment = Payment.builder()
                                 .paymentStatus(PaymentStatus.PENDING)
+                                .paymentCode(generatePaymentCode())
                                 .userId(createListOrderEvent.getUserId())
                                 .build();
                 paymentRepository.save(payment);
                 createListOrderEvent.getCreateOrderEventList().forEach(createOrderEvent -> {
-                        if (createOrderEvent.getOrderStatus() == OrderStatus.CANCELLED)
+                        if (createOrderEvent.getOrderStatus() == OrderStatus.CANCELLED) {
+                                isPartiallyOutOfStock.set(true);
                                 return;
+                        }
+
                         payment.addPrice(createOrderEvent.getTotalPrice());
                         OrderCache orderCache = OrderCache.builder()
                                         .orderId(createOrderEvent.getOrderId())
@@ -81,7 +93,12 @@ public class PaymentServiceImpl implements PaymentService {
                                                                 .productId(orderItemEvent.getProductId())
                                                                 .quantity(orderItemEvent.getQuantity())
                                                                 .productVariantId(orderItemEvent.getProductVariantId())
-                                                                .isFlashSale(orderItemEvent.getIsFlashSale())
+                                                                .quantityDiscount(orderItemEvent.getQuantityDiscount())
+                                                                .flashSaleProductId(
+                                                                                orderItemEvent.getFlashSaleProductId())
+                                                    .totalDiscount(orderItemEvent.getTotalDiscount())
+                                                    .totalFinalPrice(orderItemEvent.getTotalFinalPrice())
+                                                    .totalPrice(orderItemEvent.getTotalPrice())
                                                                 .build());
                         });
                         payment.addOrderCache(orderCache);
@@ -112,7 +129,7 @@ public class PaymentServiceImpl implements PaymentService {
                 vnp_Params.put("vnp_ExpireDate",
                                 payment.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).plusMinutes(15)
                                                 .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
-                vnp_Params.put("vnp_TxnRef", String.valueOf(payment.getPaymentId()));
+                vnp_Params.put("vnp_TxnRef", payment.getPaymentCode());
 
                 List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
                 Collections.sort(fieldNames);
@@ -140,8 +157,10 @@ public class PaymentServiceImpl implements PaymentService {
                 String vnp_SecureHash = hmacSHA512(vnp_HashSecret, hashData.toString());
                 queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
                 String paymentUrl = vnp_PayUrl + "?" + queryUrl;
-                orderEventProvider.send(CreatePaymentEvent.builder()
+                orderEventProducer.send(CreatePaymentEvent.builder()
                                 .userId(createListOrderEvent.getUserId())
+                                .isPartiallyOutOfStock(isPartiallyOutOfStock.get())
+                                .isAllOutOfStock(payment.getPrice().compareTo(BigDecimal.ZERO) == 0)
                                 .paymentUrl(paymentUrl)
                                 .build());
                 paymentRepository.save(payment);
@@ -181,8 +200,7 @@ public class PaymentServiceImpl implements PaymentService {
                 String hashDataStr = hashData.substring(0, hashData.length() - 1);
                 String checkSum = hmacSHA512(vnp_HashSecret, hashDataStr);
                 if (checkSum.equals(secureHash)) {
-                        Long paymentId = Long.parseLong(txnRef);
-                        Payment payment = paymentRepository.findById(paymentId).orElse(null);
+                        Payment payment = paymentRepository.findByPaymentCode(txnRef).orElse(null);
                         if (payment == null)
                                 return;
                         if (payment.getPaymentStatus() == PaymentStatus.SUCCESS)
@@ -192,7 +210,7 @@ public class PaymentServiceImpl implements PaymentService {
                                 payment.setTransactionNo(transactionNo);
                                 payment.setPayDate(payDate);
                                 paymentRepository.save(payment);
-                                orderEventProvider.sendUpdatePaymentStatusEvent(
+                                orderEventProducer.sendUpdatePaymentStatusEvent(
                                                 CreateListOrderStatusEvent.builder()
                                                                 .userId(payment.getUserId())
                                                                 .orderStatusEventList(payment.getOrderCaches().stream()
@@ -211,7 +229,7 @@ public class PaymentServiceImpl implements PaymentService {
                                 paymentRepository.save(payment);
 
                                 // Send order cancellation event
-                                orderEventProvider.sendUpdatePaymentStatusEvent(
+                                orderEventProducer.sendUpdatePaymentStatusEvent(
                                                 CreateListOrderStatusEvent.builder()
                                                                 .userId(payment.getUserId())
                                                                 .orderStatusEventList(payment.getOrderCaches().stream()
@@ -242,11 +260,39 @@ public class PaymentServiceImpl implements PaymentService {
                                         });
                                 });
 
-                                orderEventProvider.sendRestoreStockEvent(
+                                orderEventProducer.sendRestoreStockEvent(
                                                 RestoreStockEvent.builder()
                                                                 .userId(payment.getUserId())
                                                                 .restoreStockItems(restoreStockItems)
                                                                 .build());
+
+                                // Send restore flash sale stock event to flash-sale-service
+                                List<RestoreFlashSaleStockEvent.RestoreFlashSaleItemEvent> restoreFlashSaleStockItems = new ArrayList<>();
+                                payment.getOrderCaches().forEach(orderCache -> {
+                                        orderCache.getOrderItems().forEach(orderItemCache -> {
+                                                if (FnCommon.isNotNull(orderItemCache.getFlashSaleProductId())) {
+                                                        restoreFlashSaleStockItems.add(
+                                                                        RestoreFlashSaleStockEvent.RestoreFlashSaleItemEvent
+                                                                                        .builder()
+                                                                                        .flashSaleProductId(
+                                                                                                        orderItemCache.getFlashSaleProductId())
+                                                                                        .quantity(orderItemCache
+                                                                                                        .getQuantityDiscount())
+                                                                                        .totalFinalPrice(orderItemCache
+                                                                                                        .getTotalFinalPrice())
+                                                                                        .build());
+                                                }
+                                        });
+                                });
+
+                                if (!restoreFlashSaleStockItems.isEmpty()) {
+                                        orderEventProducer.sendRestoreFlashSaleStockEvent(
+                                                        RestoreFlashSaleStockEvent.builder()
+                                                                        .userId(payment.getUserId())
+                                                                        .restoreFlashSaleItems(
+                                                                                        restoreFlashSaleStockItems)
+                                                                        .build());
+                                }
                         }
                 }
         }
@@ -257,8 +303,17 @@ public class PaymentServiceImpl implements PaymentService {
                 OrderCache orderCache = orderCacheRepository.findByOrderId(orderId)
                                 .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
                 Payment payment = orderCache.getPayment();
+                int countOrder = payment.getOrderCaches().size();
+                String vnp_TransactionType;
+                if (countOrder - 1 == payment.getCountRefund()) {
+                        vnp_TransactionType = "02";
+                } else {
+                        vnp_TransactionType = "03";
+                }
+
                 Payment refundPayment = Payment.builder()
                                 .paymentStatus(paymentStatus)
+                                .paymentCode(generatePaymentCode())
                                 .userId(payment.getUserId())
                                 .price(orderCache.getTotalPrice())
                                 .reason(reason)
@@ -272,12 +327,12 @@ public class PaymentServiceImpl implements PaymentService {
                         amountStr = amountStr.substring(0, amountStr.indexOf('.'));
                 }
                 Map<String, String> vnp_Params = new HashMap<>();
-                vnp_Params.put("vnp_RequestId", String.valueOf(refundPayment.getPaymentId()));
+                vnp_Params.put("vnp_RequestId", refundPayment.getPaymentCode());
                 vnp_Params.put("vnp_Version", vnp_Version);
                 vnp_Params.put("vnp_Command", "refund");
                 vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-                vnp_Params.put("vnp_TransactionType", "02");
-                vnp_Params.put("vnp_TxnRef", String.valueOf(payment.getPaymentId()));
+                vnp_Params.put("vnp_TransactionType", vnp_TransactionType);
+                vnp_Params.put("vnp_TxnRef", payment.getPaymentCode());
                 vnp_Params.put("vnp_Amount", amountStr);
                 vnp_Params.put("vnp_OrderInfo", "Hoan tien don hang");
                 vnp_Params.put("vnp_TransactionNo", payment.getTransactionNo());
@@ -311,10 +366,9 @@ public class PaymentServiceImpl implements PaymentService {
                                 .retrieve()
                                 .body(VnpayResponseDTO.class);
 
-                if (vnpayResponseDTO == null || !"00".equals(vnpayResponseDTO.getVnp_ResponseCode())) {
-                        throw new RuntimeException(MessageError.REFUND_FAILED);
-                }
-                orderEventProvider.sendUpdatePaymentStatusEvent(
+                payment.setCountRefund(payment.getCountRefund() + 1);
+                paymentRepository.save(payment);
+                orderEventProducer.sendUpdatePaymentStatusEvent(
                                 CreateListOrderStatusEvent.builder()
                                                 .userId(payment.getUserId())
                                                 .orderStatusEventList(List.of(
@@ -328,7 +382,7 @@ public class PaymentServiceImpl implements PaymentService {
                                                                                 .reason(reason)
                                                                                 .build()))
                                                 .build());
-                orderEventProvider.sendRestoreStockEvent(
+                orderEventProducer.sendRestoreStockEvent(
                                 RestoreStockEvent.builder()
                                                 .userId(payment.getUserId())
                                                 .restoreStockItems(orderCache.getOrderItems().stream()
@@ -342,6 +396,28 @@ public class PaymentServiceImpl implements PaymentService {
                                                                                 .build())
                                                                 .toList())
                                                 .build());
+
+                // Send restore flash sale stock event to flash-sale-service
+                List<RestoreFlashSaleStockEvent.RestoreFlashSaleItemEvent> restoreFlashSaleStockItems = new ArrayList<>();
+                orderCache.getOrderItems().forEach(orderItemCache -> {
+                        if (FnCommon.isNotNull(orderItemCache.getFlashSaleProductId())) {
+                                restoreFlashSaleStockItems.add(
+                                                RestoreFlashSaleStockEvent.RestoreFlashSaleItemEvent.builder()
+                                                                .flashSaleProductId(
+                                                                                orderItemCache.getFlashSaleProductId())
+                                                                .quantity(orderItemCache.getQuantityDiscount())
+                                                                .totalFinalPrice(orderItemCache.getTotalFinalPrice())
+                                                                .build());
+                        }
+                });
+
+                if (!restoreFlashSaleStockItems.isEmpty()) {
+                        orderEventProducer.sendRestoreFlashSaleStockEvent(
+                                        RestoreFlashSaleStockEvent.builder()
+                                                        .userId(payment.getUserId())
+                                                        .restoreFlashSaleItems(restoreFlashSaleStockItems)
+                                                        .build());
+                }
         }
 
         private String hmacSHA512(String key, String data) {
@@ -360,5 +436,13 @@ public class PaymentServiceImpl implements PaymentService {
                 } catch (Exception ex) {
                         return "";
                 }
+        }
+
+        private String generatePaymentCode() {
+                Instant instant = Instant.now();
+                LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.of("Asia/Ho_Chi_Minh"));
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                String random = RandomStringUtils.secure().next(4, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                return "PAY" + localDateTime.format(formatter) + random;
         }
 }

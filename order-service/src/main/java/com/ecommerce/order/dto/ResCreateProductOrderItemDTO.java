@@ -17,8 +17,6 @@ public class ResCreateProductOrderItemDTO {
     @Schema(description = "Product ID", example = "1")
     private Long productId;
 
-    private Double discount;
-
     @NotNull(message = MessageError.PRODUCT_VARIANT_NOT_NULL)
     @Schema(description = "Product variant ID", example = "1")
     private Long productVariantId;
@@ -28,10 +26,5 @@ public class ResCreateProductOrderItemDTO {
     @Schema(description = "Quantity to order", example = "2")
     private Integer quantity;
 
-    @NotNull(message = MessageError.PRICE_NOT_NULL)
-    @Positive(message = MessageError.PRICE_POSITIVE)
-    @Schema(description = "Price per unit", example = "100000")
-    private BigDecimal price;
-
-    private Boolean isFlashSale;
+    private Long flashSaleProductId;
 }

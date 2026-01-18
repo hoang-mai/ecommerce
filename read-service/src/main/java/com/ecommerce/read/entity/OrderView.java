@@ -52,6 +52,9 @@ public class OrderView extends BaseEntity {
     @Field(name = "totalPrice")
     private BigDecimal totalPrice;
 
+    @Field(name = "cartItemId")
+    private String cartItemId;
+
     @Field(name = "paymentId")
     private String paymentId;
 
@@ -106,6 +109,15 @@ public class OrderView extends BaseEntity {
 
         @Field(name = "totalDiscount")
         private BigDecimal totalDiscount;
+
+        @Field(name = "quantityDiscount")
+        private Integer quantityDiscount;
+
+        @Field(name = "discount")
+        private Double discount;
+
+        @Field(name = "flashSaleProductId")
+        private String flashSaleProductId;
 
         @Field(name = "totalFinalPrice")
         private BigDecimal totalFinalPrice;

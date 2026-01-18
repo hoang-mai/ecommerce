@@ -19,8 +19,10 @@ public class CreateOrderItemEvent {
     private BigDecimal totalFinalPrice;
     private Long productVariantId;
     private Integer quantity;
+    private Integer quantityDiscount;
+    private Double discount;
     private BigDecimal price;
     private String productImageUrl;
     private List<CreateProductAttribute> createProductAttributeList;
-    private Boolean isFlashSale;
+    private Long flashSaleProductId;
 }

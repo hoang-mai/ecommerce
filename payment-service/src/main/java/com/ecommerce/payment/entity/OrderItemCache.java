@@ -4,6 +4,8 @@ import com.ecommerce.library.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 
 @Entity
 @Getter
@@ -30,6 +32,30 @@ public class OrderItemCache extends BaseEntity {
     @JoinColumn(name = "order_id")
     private OrderCache orderCache;
 
-    @Column(name = "is_flash_sale")
-    private Boolean isFlashSale;
+    @Column(name = "quantity_discount")
+    @Builder.Default
+    private Integer quantityDiscount = 0;
+
+    @Column(name = "discount")
+    @Builder.Default
+    private Double discount = 0.0;
+
+    @Column(name = "price", precision = 15, scale = 2, nullable = false)
+    @Builder.Default
+    private BigDecimal price = BigDecimal.ZERO;
+
+    @Column(name = "total_price", nullable = false)
+    @Builder.Default
+    private BigDecimal totalPrice = BigDecimal.ZERO;
+
+    @Column(name = "total_discount", nullable = false)
+    @Builder.Default
+    private BigDecimal totalDiscount = BigDecimal.ZERO;
+
+    @Column(name = "total_final_price", nullable = false)
+    @Builder.Default
+    private BigDecimal totalFinalPrice = BigDecimal.ZERO;
+
+    @Column(name = "flash_sale_product_id")
+    private Long flashSaleProductId;
 }

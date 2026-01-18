@@ -13,6 +13,7 @@ import lombok.*;
 public class OrderStatusEvent {
     private Long userId;
     private Long orderId;
+    private String orderCode;
     private OrderStatus orderStatus;
     private String reason;
     private Long ownerId;

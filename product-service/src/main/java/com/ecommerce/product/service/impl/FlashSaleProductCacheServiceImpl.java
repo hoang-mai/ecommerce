@@ -12,15 +12,16 @@ import org.springframework.stereotype.Service;
 public class FlashSaleProductCacheServiceImpl implements FlashSaleProductCacheService {
 
     private final FlashSaleProductCacheRepository flashSaleProductCacheRepository;
+
     @Override
     public void createFlashSaleProductCache(FlashSaleProductEvent flashSaleProductEvent) {
         FlashSaleProductCache flashSaleProductCache = FlashSaleProductCache.builder()
-            .flashSaleProductId(flashSaleProductEvent.getFlashSaleProductId())
-            .productId(flashSaleProductEvent.getProductId())
-            .productVariantId(flashSaleProductEvent.getProductVariantId())
-            .startTime(flashSaleProductEvent.getStartTime())
-            .endTime(flashSaleProductEvent.getEndTime())
-            .build();
+                .flashSaleProductId(flashSaleProductEvent.getFlashSaleProductId())
+                .productId(flashSaleProductEvent.getProductId())
+                .productVariantId(flashSaleProductEvent.getProductVariantId())
+                .startTime(flashSaleProductEvent.getStartTime())
+                .endTime(flashSaleProductEvent.getEndTime())
+                .build();
         flashSaleProductCacheRepository.save(flashSaleProductCache);
     }
 

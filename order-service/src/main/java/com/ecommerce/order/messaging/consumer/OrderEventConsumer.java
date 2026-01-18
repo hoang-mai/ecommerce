@@ -1,13 +1,10 @@
 package com.ecommerce.order.messaging.consumer;
 
 import com.ecommerce.library.kafka.event.order.CreateListOrderStatusEvent;
-import com.ecommerce.library.kafka.event.order.OrderStatusEvent;
 import com.ecommerce.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 import static com.ecommerce.library.kafka.Constant.ORDER_SERVICE_GROUP;
 import static com.ecommerce.library.kafka.Constant.UPDATE_ORDER_STATUS_TOPIC;

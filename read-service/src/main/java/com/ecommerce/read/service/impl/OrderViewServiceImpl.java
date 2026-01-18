@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -49,12 +50,11 @@ public class OrderViewServiceImpl implements OrderViewService {
     private final UserHelper userHelper;
     private final FileService fileService;
     private final UserCategoryService userCategoryService;
+    private final com.ecommerce.read.service.FlashSaleProductService flashSaleProductService;
 
     @Override
     public void createOrderView(CreateListOrderEvent createListOrderEvent) {
-        List<Long> cartItemIds = createListOrderEvent.getCreateOrderEventList().stream()
-                .map(CreateOrderEvent::getCartItemId)
-                .toList();
+
         for (CreateOrderEvent createOrderViewEvent : createListOrderEvent.getCreateOrderEventList()) {
             OrderView orderView = OrderView.builder()
                     ._id(String.valueOf(createOrderViewEvent.getOrderId()))
@@ -72,6 +72,7 @@ public class OrderViewServiceImpl implements OrderViewService {
                     .createdAt(createOrderViewEvent.getCreatedAt())
                     .updatedAt(createOrderViewEvent.getUpdatedAt())
                     .totalPrice(createOrderViewEvent.getTotalPrice())
+                    .cartItemId(String.valueOf(createOrderViewEvent.getCartItemId()))
                     .note(createOrderViewEvent.getNote())
                     .orderItems(createOrderViewEvent.getCreateOrderItemEventList().stream()
                             .map(createOrderItemEvent -> OrderView.OrderItem.builder()
@@ -83,7 +84,13 @@ public class OrderViewServiceImpl implements OrderViewService {
                                     .totalPrice(createOrderItemEvent.getTotalPrice())
                                     .totalDiscount(createOrderItemEvent.getTotalDiscount())
                                     .totalFinalPrice(createOrderItemEvent.getTotalFinalPrice())
+                                    .totalFinalPrice(createOrderItemEvent.getTotalFinalPrice())
                                     .quantity(createOrderItemEvent.getQuantity())
+                                    .quantityDiscount(createOrderItemEvent.getQuantityDiscount())
+                                    .discount(createOrderItemEvent.getDiscount())
+                                    .flashSaleProductId(FnCommon.isNotNull(createOrderItemEvent.getFlashSaleProductId())
+                                            ? String.valueOf(createOrderItemEvent.getFlashSaleProductId())
+                                            : null)
                                     .price(createOrderItemEvent.getPrice())
                                     .productAttributes(createOrderItemEvent.getCreateProductAttributeList().stream()
                                             .map(attribute -> OrderView.ProductAttribute.builder()
@@ -106,9 +113,16 @@ public class OrderViewServiceImpl implements OrderViewService {
                             .build();
                     userCategoryService.addUserCategoryByUserId(createOrderViewEvent.getUserId(), userCategoryDTO);
                 }
+
+                if (createOrderViewEvent.getOrderStatus() != OrderStatus.CANCELLED
+                        && FnCommon.isNotNull(orderItem.getFlashSaleProductId())) {
+                    flashSaleProductService.updateFlashSaleProductSold(
+                            String.valueOf(orderItem.getFlashSaleProductId()),
+                            orderItem.getQuantityDiscount(),
+                            orderItem.getTotalFinalPrice());
+                }
             }));
         }
-        cartViewService.clearCartItems(cartItemIds, createListOrderEvent.getUserId());
         productViewService.updateStockAfterCreateOrder(createListOrderEvent);
     }
 
@@ -212,6 +226,8 @@ public class OrderViewServiceImpl implements OrderViewService {
     @Transactional
     @Override
     public void updateOrderStatusFromOrderEvent(CreateListOrderStatusEvent createListOrderStatusEvent) {
+        List<Long> cartItemIds = new ArrayList<>();
+        Long currentUserId = createListOrderStatusEvent.getUserId();
         createListOrderStatusEvent.getOrderStatusEventList().forEach(orderStatusEvent -> {
             OrderView orderView = orderViewRepository.findById(String.valueOf(orderStatusEvent.getOrderId()))
                     .orElseThrow(() -> new NotFoundException(MessageError.ORDER_NOT_FOUND));
@@ -237,9 +253,15 @@ public class OrderViewServiceImpl implements OrderViewService {
             if (orderStatusEvent.getOrderStatus() == OrderStatus.COMPLETED && previousStatus != OrderStatus.COMPLETED) {
                 updateSoldAndRevenue(orderView);
             }
+            if (OrderStatus.PAID.equals(orderStatusEvent.getOrderStatus())) {
+                if (FnCommon.isNotNull(orderView.getCartItemId())) {
+                    cartItemIds.add(Long.parseLong(orderView.getCartItemId()));
+                }
+            }
 
             orderViewRepository.save(orderView);
         });
+        cartViewService.clearCartItems(cartItemIds, currentUserId);
     }
 
     @Override
