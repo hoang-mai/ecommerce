@@ -21,6 +21,8 @@ public class ResFlashSaleCampaignDTO {
 
     private Instant endTime;
 
+    private Long countRegisteredProducts;
+
     private Long flashSaleCampaignScheduleId;
 
     private Instant createdAt;

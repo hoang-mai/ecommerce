@@ -506,7 +506,13 @@ public class ProductServiceImpl implements ProductService {
                     createOrderEvent.setReason(messageService
                             .getMessage(MessageError.INSUFFICIENT_PRODUCT_VARIANT_STOCK, product.getName()));
                 }
-                BigDecimal totalPrice = productVariant.getPrice()
+                boolean hasDiscount = FnCommon.isNotNull(createOrderItemEvent.getQuantityDiscount())
+                    && createOrderItemEvent.getQuantityDiscount() > 0;
+                BigDecimal price = productVariant.getPrice();
+                if (!hasDiscount && FnCommon.isNotNull(productVariant.getSalePrice())) {
+                    price = productVariant.getSalePrice();
+                }
+                BigDecimal totalPrice = price
                         .multiply(BigDecimal.valueOf(createOrderItemEvent.getQuantity()));
                 BigDecimal totalDiscount = BigDecimal.ZERO;
                 if (FnCommon.isNotNull(createOrderItemEvent.getQuantityDiscount())

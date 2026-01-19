@@ -85,13 +85,13 @@ public class FlashSaleCampaignServiceImpl implements FlashSaleCampaignService {
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        String campaignName = String.format("Flash Sale Campaign - %s đến %s",
+        String campaignName = String.format("Flash Sale - %s đến %s",
             schedule.getStartTime().format(formatter),
             schedule.getEndTime().format(formatter));
 
         FlashSaleCampaign campaign = FlashSaleCampaign.builder()
             .campaignName(campaignName)
-            .description("Campaign tự động được tạo từ lịch trình flash sale")
+            .description("Tự động tạo từ lịch trình flash sale")
             .startTime(startDateTime)
             .endTime(endDateTime)
             .flashSaleCampaignSchedule(schedule)
@@ -213,6 +213,7 @@ public class FlashSaleCampaignServiceImpl implements FlashSaleCampaignService {
             .description(campaign.getDescription())
             .startTime(campaign.getStartTime())
             .endTime(campaign.getEndTime())
+            .countRegisteredProducts(campaign.getCountRegisteredProducts())
             .flashSaleCampaignScheduleId(campaign.getFlashSaleCampaignSchedule() != null
                 ? campaign.getFlashSaleCampaignSchedule().getFlashSaleCampaignScheduleId()
                 : null)

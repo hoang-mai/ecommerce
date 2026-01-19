@@ -5,7 +5,6 @@ import com.ecommerce.flash.sale.repository.FlashSaleCampaignScheduleRepository;
 import com.ecommerce.flash.sale.service.FlashSaleCampaignService;
 import com.ecommerce.library.enumeration.FlashSaleCampaignScheduleStatus;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +27,7 @@ public class FlashSaleCampaignScheduler {
      * Lấy tất cả các FlashSaleCampaignSchedule có trạng thái ACTIVE
      * và tạo FlashSaleCampaign tương ứng cho từng schedule
      */
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void createCampaignsFromActiveSchedules() {
 

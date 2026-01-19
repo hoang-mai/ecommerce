@@ -31,7 +31,7 @@ minio:
   access-key: ${MINIO_ACCESS_KEY:root}
   secret-key: ${MINIO_SECRET_KEY:password}
   bucket-name: ${MINIO_BUCKET_NAME:ecommerce}
-
+  url-public: ${MINIO_URL_PUBLIC:http://localhost:9000}
 server:
   port: ${SERVER_PORT:8085}
 
