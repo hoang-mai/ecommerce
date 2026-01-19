@@ -26,10 +26,10 @@ spring:
     show-sql: true
 minio:
   url: http://${MINIO_HOST:host.docker.internal}:${MINIO_PORT:9000}
-  access-key: root
-  secret-key: password
-  bucket-name: ecommerce
-  url-public: http://localhost:9000
+  access-key: ${MINIO_ACCESS_KEY:root}
+  secret-key: ${MINIO_SECRET_KEY:password}
+  bucket-name: ${MINIO_BUCKET_NAME:ecommerce}
+  url-public: ${MINIO_URL_PUBLIC:http://localhost:9000}
 server:
   port: ${SERVER_PORT:8089}
 
