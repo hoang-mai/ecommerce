@@ -3,6 +3,8 @@ package com.ecommerce.read.repository.impl;
 import com.ecommerce.library.utils.FnCommon;
 import com.ecommerce.read.dto.FlashSaleStatisticDTO;
 import com.ecommerce.read.entity.FlashSaleProductView;
+import org.bson.Document;
+import org.springframework.data.domain.Sort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -34,11 +36,10 @@ public class FlashSaleProductViewRepositoryImpl {
      * @return Page của FlashSaleProductView
      */
     public Page<FlashSaleProductView> getFlashSaleProducts(
-        String flashSaleCampaignId,
-        String shopId,
-        String ownerId,
-        Pageable pageable
-    ) {
+            String flashSaleCampaignId,
+            String shopId,
+            String ownerId,
+            Pageable pageable) {
         List<Criteria> criteriaList = new ArrayList<>();
 
         if (FnCommon.isNotNullOrEmpty(flashSaleCampaignId)) {
@@ -58,13 +59,42 @@ public class FlashSaleProductViewRepositoryImpl {
             finalCriteria = finalCriteria.andOperator(criteriaList.toArray(new Criteria[0]));
         }
 
-        Query query = new Query(finalCriteria);
-        long total = mongoTemplate.count(query, FlashSaleProductView.class);
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(finalCriteria),
+                Aggregation.sort(Sort.Direction.DESC, "score"),
+                Aggregation.group("productId").first("$$ROOT").as("result"),
+                Aggregation.replaceRoot("result"),
+                Aggregation.sort(Sort.Direction.DESC, "score"),
+                Aggregation.facet()
+                        .and(Aggregation.count().as("count")).as("total")
+                        .and(Aggregation.skip(pageable.getOffset()), Aggregation.limit(pageable.getPageSize()))
+                        .as("data"));
 
-        query.with(pageable);
-        List<FlashSaleProductView> flashSaleProducts = mongoTemplate.find(query, FlashSaleProductView.class);
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, FlashSaleProductView.class,
+                Document.class);
+        Document result = results.getUniqueMappedResult();
 
-        return new PageImpl<>(flashSaleProducts, pageable, total);
+        List<FlashSaleProductView> content = new ArrayList<>();
+        long total = 0;
+
+        if (result != null) {
+            List<Document> data = (List<Document>) result.get("data");
+            if (data != null) {
+                for (Document doc : data) {
+                    content.add(mongoTemplate.getConverter().read(FlashSaleProductView.class, doc));
+                }
+            }
+
+            List<Document> totalList = (List<Document>) result.get("total");
+            if (totalList != null && !totalList.isEmpty()) {
+                Number count = totalList.get(0).get("count", Number.class);
+                if (count != null) {
+                    total = count.longValue();
+                }
+            }
+        }
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -78,17 +108,45 @@ public class FlashSaleProductViewRepositoryImpl {
         Instant now = Instant.now();
 
         Criteria criteria = new Criteria().andOperator(
-            Criteria.where("startTime").lte(now),
-            Criteria.where("endTime").gte(now)
-        );
+                Criteria.where("startTime").lte(now),
+                Criteria.where("endTime").gte(now));
 
-        Query query = new Query(criteria);
-        long total = mongoTemplate.count(query, FlashSaleProductView.class);
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(criteria),
+                Aggregation.sort(Sort.Direction.DESC, "score"),
+                Aggregation.group("productId").first("$$ROOT").as("result"),
+                Aggregation.replaceRoot("result"),
+                Aggregation.sort(Sort.Direction.DESC, "score"),
+                Aggregation.facet()
+                        .and(Aggregation.count().as("count")).as("total")
+                        .and(Aggregation.skip(pageable.getOffset()), Aggregation.limit(pageable.getPageSize()))
+                        .as("data"));
 
-        query.with(pageable);
-        List<FlashSaleProductView> flashSaleProducts = mongoTemplate.find(query, FlashSaleProductView.class);
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, FlashSaleProductView.class,
+                Document.class);
+        Document result = results.getUniqueMappedResult();
 
-        return new PageImpl<>(flashSaleProducts, pageable, total);
+        List<FlashSaleProductView> content = new ArrayList<>();
+        long total = 0;
+
+        if (result != null) {
+            List<Document> data = (List<Document>) result.get("data");
+            if (data != null) {
+                for (Document doc : data) {
+                    content.add(mongoTemplate.getConverter().read(FlashSaleProductView.class, doc));
+                }
+            }
+
+            List<Document> totalList = (List<Document>) result.get("total");
+            if (totalList != null && !totalList.isEmpty()) {
+                Number count = totalList.get(0).get("count", Number.class);
+                if (count != null) {
+                    total = count.longValue();
+                }
+            }
+        }
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     public FlashSaleStatisticDTO getFlashSaleProductStatistics(String flashSaleCampaignId, Long ownerId) {
@@ -98,53 +156,51 @@ public class FlashSaleProductViewRepositoryImpl {
         }
 
         Aggregation aggregation = Aggregation.newAggregation(
-            Aggregation.match(matchCriteria),
+                Aggregation.match(matchCriteria),
 
-            Aggregation.project()
-                .andInclude("soldQuantity", "totalQuantity", "salePrice",
-                    "flashSaleCampaignId", "flashSaleCampaignName", "startTime", "endTime","totalRevenue")
-                .and(ConvertOperators.ToDouble.toDouble("$totalRevenue")).as("totalRevenueNum"),
+                Aggregation.project()
+                        .andInclude("soldQuantity", "totalQuantity", "salePrice",
+                                "flashSaleCampaignId", "flashSaleCampaignName", "startTime", "endTime", "totalRevenue")
+                        .and(ConvertOperators.ToDouble.toDouble("$totalRevenue")).as("totalRevenueNum"),
 
-            Aggregation.group()
-                .first("flashSaleCampaignId").as("flashSaleCampaignId")
-                .first("flashSaleCampaignName").as("flashSaleCampaignName")
-                .first("startTime").as("startTime")
-                .first("endTime").as("endTime")
-                .sum("soldQuantity").as("totalSoldQuantity")
-                .sum("totalQuantity").as("totalQuantity")
-                .sum("totalRevenueNum").as("totalRevenue"),
+                Aggregation.group()
+                        .first("flashSaleCampaignId").as("flashSaleCampaignId")
+                        .first("flashSaleCampaignName").as("flashSaleCampaignName")
+                        .first("startTime").as("startTime")
+                        .first("endTime").as("endTime")
+                        .sum("soldQuantity").as("totalSoldQuantity")
+                        .sum("totalQuantity").as("totalQuantity")
+                        .sum("totalRevenueNum").as("totalRevenue"),
 
-            Aggregation.project()
-                .andInclude("flashSaleCampaignId", "flashSaleCampaignName",
-                    "startTime", "endTime", "totalQuantity",
-                    "totalSoldQuantity", "totalRevenue")
-                .and(ConditionalOperators.when(Criteria.where("totalQuantity").gt(0))
-                    .then(ArithmeticOperators.Multiply.valueOf(
-                            ArithmeticOperators.Divide.valueOf("totalSoldQuantity")
-                                .divideBy("totalQuantity"))
-                        .multiplyBy(100))
-                    .otherwise(0))
-                .as("soldRate")
-        );
+                Aggregation.project()
+                        .andInclude("flashSaleCampaignId", "flashSaleCampaignName",
+                                "startTime", "endTime", "totalQuantity",
+                                "totalSoldQuantity", "totalRevenue")
+                        .and(ConditionalOperators.when(Criteria.where("totalQuantity").gt(0))
+                                .then(ArithmeticOperators.Multiply.valueOf(
+                                        ArithmeticOperators.Divide.valueOf("totalSoldQuantity")
+                                                .divideBy("totalQuantity"))
+                                        .multiplyBy(100))
+                                .otherwise(0))
+                        .as("soldRate"));
 
         AggregationResults<FlashSaleStatisticDTO> results = mongoTemplate.aggregate(
-            aggregation,
-            FlashSaleProductView.class,
-            FlashSaleStatisticDTO.class
-        );
+                aggregation,
+                FlashSaleProductView.class,
+                FlashSaleStatisticDTO.class);
 
         FlashSaleStatisticDTO result = results.getUniqueMappedResult();
         if (result == null) {
             return FlashSaleStatisticDTO.builder()
-                .flashSaleCampaignId(flashSaleCampaignId)
-                .flashSaleCampaignName(null)
-                .startTime(null)
-                .endTime(null)
-                .totalQuantity(0L)
-                .totalSoldQuantity(0L)
-                .soldRate(0.0)
-                .totalRevenue(BigDecimal.ZERO)
-                .build();
+                    .flashSaleCampaignId(flashSaleCampaignId)
+                    .flashSaleCampaignName(null)
+                    .startTime(null)
+                    .endTime(null)
+                    .totalQuantity(0L)
+                    .totalSoldQuantity(0L)
+                    .soldRate(0.0)
+                    .totalRevenue(BigDecimal.ZERO)
+                    .build();
         }
 
         return result;
