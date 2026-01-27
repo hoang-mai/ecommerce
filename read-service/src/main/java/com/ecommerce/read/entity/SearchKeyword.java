@@ -2,7 +2,6 @@ package com.ecommerce.read.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.*;
 
 import java.time.Instant;

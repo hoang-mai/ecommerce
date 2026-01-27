@@ -3,6 +3,7 @@ package com.ecommerce.read.repository.impl;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.json.JsonData;
 import com.ecommerce.library.enumeration.ProductStatus;
 import com.ecommerce.library.enumeration.ShopStatus;
@@ -69,9 +70,18 @@ public class ProductSearchRepositoryImpl {
 
 
         if (FnCommon.isNotNullOrEmpty(keyword)) {
-            boolQuery.must(m -> m.multiMatch(mm -> mm
+            boolQuery.must(m -> m.bool(b -> b
+            .should(s -> s.matchPhrase(mp -> mp
+                .field("name")
+                .query(keyword)
+                .boost(3.0f)
+            ))
+            .should(s -> s.multiMatch(mm -> mm
                 .query(keyword)
                 .fields("name^3", "categoryName^2")
+                .minimumShouldMatch("75%")
+            ))
+            .minimumShouldMatch("1") // ít nhất 1 should phải match
             ));
             scriptSource[0] = "def id = doc['id'].value;" +
                 "def img = params.scores.containsKey(id) ? params.scores.get(id) : 0.0;" +

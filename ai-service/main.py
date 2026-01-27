@@ -41,9 +41,9 @@ async def lifespan(app: FastAPI):
         vector_storage = VectorStorage(storage_dir=vector_storage_dir)
         image_search_service = ImageSearchService(vector_storage=vector_storage)
 
-        kafka_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:19092')
+        kafka_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:9092')
         kafka_group = os.getenv('KAFKA_GROUP_ID', 'ai-service-group')
-        kafka_topics_str = os.getenv('KAFKA_TOPICS', 'product-events')
+        kafka_topics_str = os.getenv('KAFKA_TOPICS', 'ai-service-topic.upload-product-image')
         kafka_topics = [topic.strip() for topic in kafka_topics_str.split(',')]
 
         logger.info(f"📋 Subscribing to topics: {', '.join(kafka_topics)}")

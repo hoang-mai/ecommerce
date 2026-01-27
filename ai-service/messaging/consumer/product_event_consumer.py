@@ -21,7 +21,7 @@ class ProductEventConsumer:
     def __init__(self,
                  bootstrap_servers: str = None,
                  group_id: str = "ai-service-group",
-                 topics: Union[str, List[str]] = "product-events",
+                 topics: Union[str, List[str]] = "ai-service-topic.upload-product-image",
                  auto_offset_reset: str = "earliest",
                  vector_storage: VectorStorage = None
                  ):
