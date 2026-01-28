@@ -13,6 +13,8 @@ management:
   endpoint:
     health:
       show-details: always
+frontend:
+  url: http://localhost:3000
 spring:
   application:
     name: api-gateway
